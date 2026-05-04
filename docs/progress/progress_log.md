@@ -1,0 +1,94 @@
+# Progress Log
+
+Append-only. Each entry records what was completed for a task, with a timestamp.
+Never edit or delete past entries. Newest entries go at the bottom.
+
+Format:
+```
+## [TASK_ID] Task Name
+**Date**: YYYY-MM-DD
+**Files changed**: list of files
+- bullet: what was done / added / decided
+```
+
+---
+
+## [C1] Database Setup
+**Date**: 2026-05-01 (retroactive)
+**Files changed**: `core/data/db_module.dart`
+- Created DatabaseModule with sqflite, 10 tables, foreign keys enabled
+- Added PRAGMA foreign_keys = ON in onConfigure
+- Added CHECK constraints for enum columns (tracking_type, status, set_type)
+
+---
+
+## [C3] Seed Data
+**Date**: 2026-05-01 (retroactive)
+**Files changed**: `core/data/seed_helper.dart`, `assets/seed_data.json`
+- Implemented seedDatabaseFromJson() loading muscles, equipment, exercises, and secondary muscles from JSON
+- Batch insert with ConflictAlgorithm.replace
+- Secondary muscle parsing handles multiple JSON formats (array of strings, array of objects)
+
+---
+
+## [C4] Database Indexes
+**Date**: 2026-05-01 (retroactive)
+**Files changed**: `core/data/db_module.dart`
+- Added standard indexes on foreign key columns
+- Added unique composite indexes on (parent_id, order) for all ordered child tables
+- Order column quoted as reserved SQL word
+
+---
+
+## [C2] DI Setup
+**Date**: 2026-05-01 (retroactive)
+**Files changed**: `common/utils/getit_utils.dart`, `common/utils/getit_utils.config.dart`, `core/data/db_module.dart`, `core/data/uuid_module.dart`
+- Set up get_it + injectable with @injectableInit entry point
+- DatabaseModule as @preResolve @singleton
+- UuidModule providing Uuid singleton
+
+---
+
+## [E1–E8] Exercise Library Data Layer
+**Date**: 2026-05-01 (retroactive)
+**Files changed**: `core/models/exercise_model.dart`, `core/models/muscle_model.dart`, `core/models/equipment_model.dart`, `core/models/exercise_second_muscle_model.dart`, `core/dao/exercise_dao.dart`, `core/dao/muscle_dao.dart`, `core/dao/equipment_dao.dart`, `core/dao/exercise_stats_dao.dart`, `core/repositories/exercise_repository.dart`, `core/repository_impl/exercise_repository_impl.dart`, `core/repositories/repository_models.dart`
+- Complete exercise domain models with toMap/fromMap
+- Full DAO set including filtered queries and stats
+- ExerciseRepositoryImpl assembling ExerciseDetail from multiple DAOs
+- ExerciseStats with personal best, history, weight/volume over time
+
+---
+
+## [R1–R6] Routine Data Layer
+**Date**: 2026-05-01 (retroactive)
+**Files changed**: `core/models/routine_model.dart`, `core/models/routine_exercise_model.dart`, `core/models/routine_set_model.dart`, `core/dao/routine_dao.dart`, `core/dao/routine_exercise_dao.dart`, `core/dao/routine_set_dao.dart`, `core/repositories/routine_repository.dart`, `core/repository_impl/routine_repository_impl.dart`
+- Full routine CRUD with transaction management
+- Exercise and set add/remove/reorder operations
+- Save/draft/copy flows with RoutineInput DTOs
+- Sync completed workout sets back to routine template
+
+---
+
+## [W1–W6] Workout Data Layer
+**Date**: 2026-05-01 (retroactive)
+**Files changed**: `core/models/workout_model.dart`, `core/models/workout_exercise_model.dart`, `core/models/workout_set_model.dart`, `core/dao/workout_dao.dart`, `core/dao/workout_exercise_dao.dart`, `core/dao/workout_set_dao.dart`, `core/repositories/workout_repository.dart`, `core/repository_impl/workout_repository_impl.dart`
+- Full workout lifecycle (start, complete, cancel)
+- Transaction-based set completion with volume recalculation
+- Workout history with paginated summaries and batch exercise name fetching
+- Start workout from routine with exercise/set copying
+
+---
+
+## [A1–A3] Analytics Data Layer
+**Date**: 2026-05-01 (retroactive)
+**Files changed**: `core/dao/analytics_dao.dart`, `core/repositories/analytics_repository.dart`, `core/repository_impl/analytics_repository_impl.dart`
+- Volume history, workout frequency (week buckets), muscle group breakdown
+- AnalyticsRepositoryImpl with UTC week-bucket calculation
+
+---
+
+## [DOCS] Project Documentation
+**Date**: 2026-05-01
+**Files changed**: `docs/architecture/general_architecture.md`, `docs/architecture/features_architecture.md`, `docs/architecture/database_and_models.md`, `docs/technical/technical_reference.md`, `docs/progress/todo.md`, `docs/progress/current_work.md`, `docs/progress/progress_log.md`
+- Created full project documentation following Agent Rule docs template
+- Documented all architecture, features, database schema, technical patterns, and progress
