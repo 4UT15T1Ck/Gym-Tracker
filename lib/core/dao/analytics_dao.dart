@@ -33,11 +33,12 @@ class AnalyticsDao {
     required int weeks,
     required int weekMs,
   }) async {
+    if (weekMs <= 0) throw ArgumentError('weekMs must be positive');
     final cutoff = DateTime.now().subtract(Duration(days: weeks * 7));
     return await _db.rawQuery(
       '''
       SELECT
-        (${Workout.columnStartTime} / $weekMs) as week_bucket,
+        (${Workout.columnStartTime} / ?) as week_bucket,
         COUNT(*) as count
       FROM ${Workout.tableName}
       WHERE ${Workout.columnStatus} = ?
@@ -45,7 +46,7 @@ class AnalyticsDao {
       GROUP BY week_bucket
       ORDER BY week_bucket ASC
     ''',
-      [WorkoutStatus.completed.dbValue, cutoff.millisecondsSinceEpoch],
+      [weekMs, WorkoutStatus.completed.dbValue, cutoff.millisecondsSinceEpoch],
     );
   }
 

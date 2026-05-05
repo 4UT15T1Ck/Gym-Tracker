@@ -2243,26 +2243,6 @@
       "video_url": null
     },
     {
-      "id": "ex116",
-      "name": "Barbell Good Morning",
-      "tracking_type": "weight_reps",
-      "short_description": "Hip hinge with barbell on back for lower back and hamstrings.",
-      "instructions": [
-        "Place barbell on upper traps, feet hip-width apart.",
-        "Slight knee bend, hinge forward at the hips.",
-        "Lower torso toward parallel, keeping back flat.",
-        "Drive hips through to return upright."
-      ],
-      "primary_muscle_id": "m11",
-      "secondary_muscle_ids": [
-        "m7",
-        "m8"
-      ],
-      "equipment_id": "e1",
-      "image_url": null,
-      "video_url": null
-    },
-    {
       "id": "ex117",
       "name": "Dumbbell Deadlift",
       "tracking_type": "weight_reps",
@@ -3763,25 +3743,6 @@
       "primary_muscle_id": "m5",
       "secondary_muscle_ids": [],
       "equipment_id": "e3",
-      "image_url": null,
-      "video_url": null
-    },
-    {
-      "id": "ex196",
-      "name": "Barbell Hip Thrust",
-      "tracking_type": "weight_reps",
-      "short_description": "Primary glute builder — same as Barbell Hip Thrust.",
-      "instructions": [
-        "Upper back against bench, barbell across hip crease.",
-        "Feet flat, hip-width apart.",
-        "Drive hips up to parallel, squeeze glutes hard.",
-        "Lower with control."
-      ],
-      "primary_muscle_id": "m8",
-      "secondary_muscle_ids": [
-        "m7"
-      ],
-      "equipment_id": "e1",
       "image_url": null,
       "video_url": null
     },

@@ -175,7 +175,7 @@ class RoutineRepositoryImpl implements RoutineRepository {
 
   @override
   Future<void> deleteRoutine(String routineId) async {
-    await _routineDao.delete(routineId);
+    await _routineDao.delete(routineId, _db);
   }
 
   @override

@@ -27,12 +27,12 @@ class RoutineDao {
   }
 
   Future<String> insert(Routine routine, DatabaseExecutor db) async {
-    final id = await db.insert(
+    await db.insert(
       Routine.tableName,
       routine.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    return id.toString();
+    return routine.id;
   }
 
   Future<void> update(Routine routine, DatabaseExecutor db) async {
@@ -44,8 +44,8 @@ class RoutineDao {
     );
   }
 
-  Future<void> delete(String id) async {
-    await _db.delete(
+  Future<void> delete(String id, DatabaseExecutor db) async {
+    await db.delete(
       Routine.tableName,
       where: '${Routine.columnId} = ?',
       whereArgs: [id],
