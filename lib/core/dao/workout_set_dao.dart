@@ -88,7 +88,7 @@ class WorkoutSetDao {
         AND ws.${WorkoutSet.columnWeight} IS NOT NULL
         AND ws.${WorkoutSet.columnReps} IS NOT NULL
     ''', [workoutId]);
-    return result.first['volume'] as double? ?? 0.0;
+    return (result.first['volume'] as num?)?.toDouble() ?? 0.0;
   }
 
   Future<DateTime?> getLastCompletedAt(String workoutExerciseId) async {

@@ -64,11 +64,11 @@ class RoutineSetDao {
     );
   }
 
-  Future<void> deleteByRoutineExerciseId(String id, DatabaseExecutor db) async {
+  Future<void> deleteByRoutineExerciseId(String routineExerciseId, DatabaseExecutor db) async {
     await db.delete(
       RoutineSet.tableName,
       where: '${RoutineSet.columnRoutineExerciseId} = ?',
-      whereArgs: [id],
+      whereArgs: [routineExerciseId],
     );
   }
 

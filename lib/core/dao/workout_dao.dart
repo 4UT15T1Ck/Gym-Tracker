@@ -28,6 +28,7 @@ class WorkoutDao {
       Workout.tableName,
       where: '${Workout.columnStatus} = ?',
       whereArgs: [WorkoutStatus.active.dbValue],
+      orderBy: '${Workout.columnStartTime} DESC',
       limit: 1,
     );
     if (maps.isEmpty) return null;
