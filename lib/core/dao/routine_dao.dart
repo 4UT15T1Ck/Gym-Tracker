@@ -16,8 +16,9 @@ class RoutineDao {
     return maps.map((map) => Routine.fromMap(map)).toList();
   }
 
-  Future<Routine?> getById(String id) async {
-    final maps = await _db.query(
+  Future<Routine?> getById(String id, [DatabaseExecutor? db]) async {
+    final executor = db ?? _db;
+    final maps = await executor.query(
       Routine.tableName,
       where: '${Routine.columnId} = ?',
       whereArgs: [id],

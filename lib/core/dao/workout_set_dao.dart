@@ -9,8 +9,12 @@ class WorkoutSetDao {
 
   WorkoutSetDao(this._db);
 
-  Future<List<WorkoutSet>> getByWorkoutExerciseId(String workoutExerciseId) async {
-    final maps = await _db.query(
+  Future<List<WorkoutSet>> getByWorkoutExerciseId(
+    String workoutExerciseId, [
+    DatabaseExecutor? db,
+  ]) async {
+    final executor = db ?? _db;
+    final maps = await executor.query(
       WorkoutSet.tableName,
       where: '${WorkoutSet.columnWorkoutExerciseId} = ?',
       whereArgs: [workoutExerciseId],
@@ -19,10 +23,14 @@ class WorkoutSetDao {
     return maps.map((map) => WorkoutSet.fromMap(map)).toList();
   }
 
-  Future<List<WorkoutSet>> getByWorkoutExerciseIds(List<String> ids) async {
+  Future<List<WorkoutSet>> getByWorkoutExerciseIds(
+    List<String> ids, [
+    DatabaseExecutor? db,
+  ]) async {
     if (ids.isEmpty) return [];
+    final executor = db ?? _db;
     final placeholders = List.filled(ids.length, '?').join(',');
-    final maps = await _db.query(
+    final maps = await executor.query(
       WorkoutSet.tableName,
       where: '${WorkoutSet.columnWorkoutExerciseId} IN ($placeholders)',
       whereArgs: ids,

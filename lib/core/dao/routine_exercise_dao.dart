@@ -8,8 +8,12 @@ class RoutineExerciseDao {
 
   RoutineExerciseDao(this._db);
 
-  Future<List<RoutineExercise>> getByRoutineId(String routineId) async {
-    final maps = await _db.query(
+  Future<List<RoutineExercise>> getByRoutineId(
+    String routineId, [
+    DatabaseExecutor? db,
+  ]) async {
+    final executor = db ?? _db;
+    final maps = await executor.query(
       RoutineExercise.tableName,
       where: '${RoutineExercise.columnRoutineId} = ?',
       whereArgs: [routineId],

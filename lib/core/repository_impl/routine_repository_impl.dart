@@ -47,20 +47,28 @@ class RoutineRepositoryImpl implements RoutineRepository {
 
   @override
   Future<RoutineDetail> getRoutineDetail(String routineId) async {
-    final routine = await _routineDao.getById(routineId);
+    return _getRoutineDetail(routineId);
+  }
+
+  Future<RoutineDetail> _getRoutineDetail(
+    String routineId, [
+    DatabaseExecutor? db,
+  ]) async {
+    final routine = await _routineDao.getById(routineId, db);
     if (routine == null) {
       throw Exception('Routine not found: $routineId');
     }
 
     final routineExercises = await _routineExerciseDao.getByRoutineId(
       routineId,
+      db,
     );
     final reIds = routineExercises.map((re) => re.id).toList();
     final routineSets = reIds.isEmpty
         ? <RoutineSet>[]
-        : await _routineSetDao.getByRoutineExerciseIds(reIds);
+        : await _routineSetDao.getByRoutineExerciseIds(reIds, db);
     final exerciseIds = routineExercises.map((re) => re.exerciseId).toList();
-    final exercises = await _exerciseDao.getByIds(exerciseIds);
+    final exercises = await _exerciseDao.getByIds(exerciseIds, db);
 
     final exerciseMap = {for (var e in exercises) e.id: e};
     final setsByReId = <String, List<RoutineSet>>{};
@@ -123,7 +131,7 @@ class RoutineRepositoryImpl implements RoutineRepository {
         }
       }
 
-      return await getRoutineDetail(routineId);
+      return await _getRoutineDetail(routineId, txn);
     });
   }
 
@@ -169,13 +177,15 @@ class RoutineRepositoryImpl implements RoutineRepository {
         }
       }
 
-      return await getRoutineDetail(routineId);
+      return await _getRoutineDetail(routineId, txn);
     });
   }
 
   @override
   Future<void> deleteRoutine(String routineId) async {
-    await _routineDao.delete(routineId, _db);
+    await _db.transaction((txn) async {
+      await _routineDao.delete(routineId, txn);
+    });
   }
 
   @override
@@ -235,6 +245,10 @@ class RoutineRepositoryImpl implements RoutineRepository {
     required List<String> orderedIds,
   }) async {
     await _db.transaction((txn) async {
+      // Two-pass: avoid unique constraint violation on (routine_id, order).
+      for (final (index, id) in orderedIds.indexed) {
+        await _routineExerciseDao.updateOrder(id, -(index + 1), txn);
+      }
       for (final (index, id) in orderedIds.indexed) {
         await _routineExerciseDao.updateOrder(id, index, txn);
       }
@@ -293,6 +307,10 @@ class RoutineRepositoryImpl implements RoutineRepository {
     required List<String> orderedIds,
   }) async {
     await _db.transaction((txn) async {
+      // Two-pass: avoid unique constraint violation on (routine_exercise_id, order).
+      for (final (index, id) in orderedIds.indexed) {
+        await _routineSetDao.updateOrder(id, -(index + 1), txn);
+      }
       for (final (index, id) in orderedIds.indexed) {
         await _routineSetDao.updateOrder(id, index, txn);
       }
