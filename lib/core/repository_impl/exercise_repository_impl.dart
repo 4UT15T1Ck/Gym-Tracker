@@ -135,4 +135,25 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
     );
   }
 
+  @override
+  Future<Map<String, List<String>>> getAllSecondaryMuscleIds() async {
+    return await _exerciseDao.getAllSecondaryMuscleMap();
+  }
+
+  @override
+  Future<List<PersonalRecordSummary>> getTopPersonalRecords({int limit = 3}) async {
+    final maps = await _exerciseStatsDao.getTopPersonalRecords(limit: limit);
+    return maps.map((map) {
+      final completedAt = map['completed_at'] as int?;
+      return PersonalRecordSummary(
+        exerciseName: map['exercise_name'] as String,
+        weight: (map['weight'] as num?)?.toDouble(),
+        reps: map['reps'] as int?,
+        achievedAt: completedAt != null
+            ? DateTime.fromMillisecondsSinceEpoch(completedAt)
+            : null,
+      );
+    }).toList();
+  }
+
 }

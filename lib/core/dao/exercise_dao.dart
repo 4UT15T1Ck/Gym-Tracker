@@ -18,8 +18,9 @@ class ExerciseDao {
     return maps.map((map) => Exercise.fromMap(map)).toList();
   }
 
-  Future<Exercise?> getById(String id) async {
-    final maps = await _db.query(
+  Future<Exercise?> getById(String id, [DatabaseExecutor? db]) async {
+    final executor = db ?? _db;
+    final maps = await executor.query(
       Exercise.tableName,
       where: '${Exercise.columnId} = ?',
       whereArgs: [id],
@@ -28,10 +29,11 @@ class ExerciseDao {
     return Exercise.fromMap(maps.first);
   }
 
-  Future<List<Exercise>> getByIds(List<String> ids) async {
+  Future<List<Exercise>> getByIds(List<String> ids, [DatabaseExecutor? db]) async {
     if (ids.isEmpty) return [];
+    final executor = db ?? _db;
     final placeholders = List.filled(ids.length, '?').join(',');
-    final maps = await _db.query(
+    final maps = await executor.query(
       Exercise.tableName,
       where: '${Exercise.columnId} IN ($placeholders)',
       whereArgs: ids,
@@ -95,5 +97,16 @@ class ExerciseDao {
     return maps
         .map((map) => map[ExerciseSecondaryMuscle.columnMuscleId] as String)
         .toList();
+  }
+
+  Future<Map<String, List<String>>> getAllSecondaryMuscleMap() async {
+    final maps = await _db.query(ExerciseSecondaryMuscle.tableName);
+    final result = <String, List<String>>{};
+    for (final map in maps) {
+      final exerciseId = map[ExerciseSecondaryMuscle.columnExerciseId] as String;
+      final muscleId = map[ExerciseSecondaryMuscle.columnMuscleId] as String;
+      result.putIfAbsent(exerciseId, () => []).add(muscleId);
+    }
+    return result;
   }
 }
