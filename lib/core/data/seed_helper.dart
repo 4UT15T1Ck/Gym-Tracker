@@ -7,7 +7,7 @@ import 'package:gym_tracker/core/models/exercise_second_muscle_model.dart';
 import 'package:gym_tracker/core/models/muscle_model.dart';
 import 'package:sqflite/sqflite.dart';
 
-Future<void> seedDatabaseFromJson(Database db) async {
+Future<void> seedDatabaseFromJson(DatabaseExecutor db) async {
   final String jsonString = await rootBundle.loadString(
     'assets/seed_data.json',
   );

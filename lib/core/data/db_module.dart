@@ -1,4 +1,5 @@
 import 'package:gym_tracker/core/data/seed_helper.dart';
+import 'package:gym_tracker/core/models/body_measure_entry_model.dart';
 import 'package:gym_tracker/core/models/equipment_model.dart';
 import 'package:gym_tracker/core/models/exercise_model.dart';
 import 'package:gym_tracker/core/models/exercise_second_muscle_model.dart';
@@ -122,7 +123,30 @@ Future<void> _createTables(DatabaseExecutor db) async {
     )
   ''');
 
-  await _createRoutineSetsTable(db);
+  await db.execute('''
+    CREATE TABLE ${RoutineSet.tableName} (
+      ${RoutineSet.columnId} TEXT PRIMARY KEY,
+      ${RoutineSet.columnRoutineExerciseId} TEXT NOT NULL,
+      ${RoutineSet.columnSetType} TEXT NOT NULL CHECK (
+        ${RoutineSet.columnSetType} IN (
+          'warm_up',
+          'working',
+          'drop_set',
+          'amrap',
+          'failure'
+        )
+      ),
+      ${RoutineSet.columnTargetWeight} REAL,
+      ${RoutineSet.columnTargetReps} INTEGER,
+      ${RoutineSet.columnTargetDurationSeconds} INTEGER,
+      ${RoutineSet.columnTargetDistance} REAL,
+      ${RoutineSet.columnTargetRpe} REAL,
+      "${RoutineSet.columnOrder}" INTEGER NOT NULL,
+      FOREIGN KEY (${RoutineSet.columnRoutineExerciseId}) REFERENCES ${RoutineExercise.tableName}(${RoutineExercise.columnId})
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+    )
+  ''');
 
   await db.execute('''
     CREATE TABLE ${Workout.tableName} (
@@ -178,37 +202,22 @@ Future<void> _createTables(DatabaseExecutor db) async {
       ${WorkoutSet.columnRpe} REAL,
       ${WorkoutSet.columnCompletedAt} INTEGER,
       "${WorkoutSet.columnOrder}" INTEGER NOT NULL,
-      ${WorkoutSet.columnIsCompleted} INTEGER NOT NULL DEFAULT 0 CHECK (${WorkoutSet.columnIsCompleted} IN (0, 1)),
+      ${WorkoutSet.columnIsCompleted} INTEGER NOT NULL DEFAULT 0 CHECK (
+        ${WorkoutSet.columnIsCompleted} IN (0, 1)
+      ),
       FOREIGN KEY (${WorkoutSet.columnWorkoutExerciseId}) REFERENCES ${WorkoutExercise.tableName}(${WorkoutExercise.columnId})
         ON UPDATE CASCADE
         ON DELETE CASCADE
     )
   ''');
-}
 
-Future<void> _createRoutineSetsTable(DatabaseExecutor db) async {
   await db.execute('''
-    CREATE TABLE ${RoutineSet.tableName} (
-      ${RoutineSet.columnId} TEXT PRIMARY KEY,
-      ${RoutineSet.columnRoutineExerciseId} TEXT NOT NULL,
-      ${RoutineSet.columnSetType} TEXT NOT NULL CHECK (
-        ${RoutineSet.columnSetType} IN (
-          'warm_up',
-          'working',
-          'drop_set',
-          'amrap',
-          'failure'
-        )
-      ),
-      ${RoutineSet.columnTargetWeight} REAL,
-      ${RoutineSet.columnTargetReps} INTEGER,
-      ${RoutineSet.columnTargetDurationSeconds} INTEGER,
-      ${RoutineSet.columnTargetDistance} REAL,
-      ${RoutineSet.columnTargetRpe} REAL,
-      "${RoutineSet.columnOrder}" INTEGER NOT NULL,
-      FOREIGN KEY (${RoutineSet.columnRoutineExerciseId}) REFERENCES ${RoutineExercise.tableName}(${RoutineExercise.columnId})
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
+    CREATE TABLE ${BodyMeasureEntry.tableName} (
+      ${BodyMeasureEntry.columnId} TEXT PRIMARY KEY,
+      ${BodyMeasureEntry.columnDate} INTEGER NOT NULL,
+      ${BodyMeasureEntry.columnWeight} REAL,
+      ${BodyMeasureEntry.columnBodyFatPercent} REAL,
+      ${BodyMeasureEntry.columnCustomMeasurementsJson} TEXT NOT NULL DEFAULT '{}'
     )
   ''');
 }
@@ -230,13 +239,13 @@ Future<void> _createIndexes(DatabaseExecutor db) async {
     'CREATE INDEX IF NOT EXISTS idx_${RoutineExercise.tableName}_${RoutineExercise.columnExerciseId} ON ${RoutineExercise.tableName}(${RoutineExercise.columnExerciseId})',
   );
   await db.execute(
-    'CREATE UNIQUE INDEX IF NOT EXISTS idx_${RoutineExercise.tableName}_${RoutineExercise.columnRoutineId}_${RoutineExercise.columnOrder} ON ${RoutineExercise.tableName}(${RoutineExercise.columnRoutineId}, "${RoutineExercise.columnOrder}")',
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_${RoutineExercise.tableName}_${RoutineExercise.columnRoutineId}_order ON ${RoutineExercise.tableName}(${RoutineExercise.columnRoutineId}, "${RoutineExercise.columnOrder}")',
   );
   await db.execute(
     'CREATE INDEX IF NOT EXISTS idx_${RoutineSet.tableName}_${RoutineSet.columnRoutineExerciseId} ON ${RoutineSet.tableName}(${RoutineSet.columnRoutineExerciseId})',
   );
   await db.execute(
-    'CREATE UNIQUE INDEX IF NOT EXISTS idx_${RoutineSet.tableName}_${RoutineSet.columnRoutineExerciseId}_${RoutineSet.columnOrder} ON ${RoutineSet.tableName}(${RoutineSet.columnRoutineExerciseId}, "${RoutineSet.columnOrder}")',
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_${RoutineSet.tableName}_${RoutineSet.columnRoutineExerciseId}_order ON ${RoutineSet.tableName}(${RoutineSet.columnRoutineExerciseId}, "${RoutineSet.columnOrder}")',
   );
   await db.execute(
     'CREATE INDEX IF NOT EXISTS idx_${Workout.tableName}_${Workout.columnRoutineId} ON ${Workout.tableName}(${Workout.columnRoutineId})',
@@ -248,12 +257,15 @@ Future<void> _createIndexes(DatabaseExecutor db) async {
     'CREATE INDEX IF NOT EXISTS idx_${WorkoutExercise.tableName}_${WorkoutExercise.columnExerciseId} ON ${WorkoutExercise.tableName}(${WorkoutExercise.columnExerciseId})',
   );
   await db.execute(
-    'CREATE UNIQUE INDEX IF NOT EXISTS idx_${WorkoutExercise.tableName}_${WorkoutExercise.columnWorkoutId}_${WorkoutExercise.columnOrder} ON ${WorkoutExercise.tableName}(${WorkoutExercise.columnWorkoutId}, "${WorkoutExercise.columnOrder}")',
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_${WorkoutExercise.tableName}_${WorkoutExercise.columnWorkoutId}_order ON ${WorkoutExercise.tableName}(${WorkoutExercise.columnWorkoutId}, "${WorkoutExercise.columnOrder}")',
   );
   await db.execute(
     'CREATE INDEX IF NOT EXISTS idx_${WorkoutSet.tableName}_${WorkoutSet.columnWorkoutExerciseId} ON ${WorkoutSet.tableName}(${WorkoutSet.columnWorkoutExerciseId})',
   );
   await db.execute(
-    'CREATE UNIQUE INDEX IF NOT EXISTS idx_${WorkoutSet.tableName}_${WorkoutSet.columnWorkoutExerciseId}_${WorkoutSet.columnOrder} ON ${WorkoutSet.tableName}(${WorkoutSet.columnWorkoutExerciseId}, "${WorkoutSet.columnOrder}")',
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_${WorkoutSet.tableName}_${WorkoutSet.columnWorkoutExerciseId}_order ON ${WorkoutSet.tableName}(${WorkoutSet.columnWorkoutExerciseId}, "${WorkoutSet.columnOrder}")',
+  );
+  await db.execute(
+    'CREATE INDEX IF NOT EXISTS idx_${BodyMeasureEntry.tableName}_${BodyMeasureEntry.columnDate} ON ${BodyMeasureEntry.tableName}(${BodyMeasureEntry.columnDate})',
   );
 }
