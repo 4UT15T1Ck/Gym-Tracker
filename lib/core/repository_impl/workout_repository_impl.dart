@@ -52,11 +52,11 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       await _workoutDao.insert(workout, txn);
 
       if (routineId != null) {
-        final routineExercises = await _routineExerciseDao.getByRoutineId(routineId);
+        final routineExercises = await _routineExerciseDao.getByRoutineId(routineId, txn);
         final reIds = routineExercises.map((re) => re.id).toList();
         final routineSets = reIds.isEmpty
             ? <RoutineSet>[]
-            : await _routineSetDao.getByRoutineExerciseIds(reIds);
+            : await _routineSetDao.getByRoutineExerciseIds(reIds, txn);
 
         final setsByReId = <String, List<RoutineSet>>{};
         for (final set in routineSets) {
@@ -94,13 +94,13 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         }
       }
 
-      final workoutExercises = await _workoutExerciseDao.getByWorkoutId(workoutId);
+      final workoutExercises = await _workoutExerciseDao.getByWorkoutId(workoutId, txn);
       final weIds = workoutExercises.map((we) => we.id).toList();
       final workoutSets = weIds.isEmpty
           ? <WorkoutSet>[]
-          : await _workoutSetDao.getByWorkoutExerciseIds(weIds);
+          : await _workoutSetDao.getByWorkoutExerciseIds(weIds, txn);
       final exerciseIds = workoutExercises.map((we) => we.exerciseId).toList();
-      final exercises = await _exerciseDao.getByIds(exerciseIds);
+      final exercises = await _exerciseDao.getByIds(exerciseIds, txn);
 
       final exerciseMap = {for (var e in exercises) e.id: e};
       final setsByWeId = <String, List<WorkoutSet>>{};
@@ -270,6 +270,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     required List<String> orderedIds,
   }) async {
     await _db.transaction((txn) async {
+      // Two-pass: avoid unique constraint violation on (workout_id, order).
+      for (final (index, id) in orderedIds.indexed) {
+        await _workoutExerciseDao.updateOrder(id, -(index + 1), txn);
+      }
       for (final (index, id) in orderedIds.indexed) {
         await _workoutExerciseDao.updateOrder(id, index, txn);
       }
@@ -278,7 +282,13 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
 
   @override
   Future<void> removeExerciseFromWorkout(String workoutExerciseId) async {
-    await _workoutExerciseDao.delete(workoutExerciseId, _db);
+    await _db.transaction((txn) async {
+      final workoutExercise = await _workoutExerciseDao.getById(workoutExerciseId, txn);
+      if (workoutExercise == null) return;
+      await _workoutExerciseDao.delete(workoutExerciseId, txn);
+      final newVolume = await _workoutSetDao.computeVolume(workoutExercise.workoutId, txn);
+      await _workoutDao.updateVolume(workoutExercise.workoutId, newVolume, txn);
+    });
   }
 
   @override
@@ -303,8 +313,16 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
 
   @override
   Future<WorkoutSet> updateSet(WorkoutSet set) async {
-    await _workoutSetDao.update(set, _db);
-    return set;
+    return await _db.transaction((txn) async {
+      await _workoutSetDao.update(set, txn);
+      // Recalculate volume so it stays in sync after weight/reps edits.
+      final we = await _workoutExerciseDao.getById(set.workoutExerciseId, txn);
+      if (we != null) {
+        final newVolume = await _workoutSetDao.computeVolume(we.workoutId, txn);
+        await _workoutDao.updateVolume(we.workoutId, newVolume, txn);
+      }
+      return set;
+    });
   }
 
   @override
@@ -407,6 +425,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     required List<String> orderedIds,
   }) async {
     await _db.transaction((txn) async {
+      // Two-pass: avoid unique constraint violation on (workout_exercise_id, order).
+      for (final (index, id) in orderedIds.indexed) {
+        await _workoutSetDao.updateOrder(id, -(index + 1), txn);
+      }
       for (final (index, id) in orderedIds.indexed) {
         await _workoutSetDao.updateOrder(id, index, txn);
       }

@@ -1,4 +1,5 @@
 import 'package:gym_tracker/core/enums/workout_status_enum.dart';
+import 'package:gym_tracker/core/models/exercise_model.dart';
 import 'package:gym_tracker/core/models/workout_exercise_model.dart';
 import 'package:gym_tracker/core/models/workout_model.dart';
 import 'package:gym_tracker/core/models/workout_set_model.dart';
@@ -126,5 +127,27 @@ class ExerciseStatsDao {
         AND w.${Workout.columnStatus} = ?
     ''', [exerciseId, WorkoutStatus.completed.dbValue]);
     return result.first['total_sessions'] as int? ?? 0;
+  }
+
+  /// Returns the top [limit] personal records across all exercises,
+  /// ordered by most recently achieved.
+  Future<List<Map<String, dynamic>>> getTopPersonalRecords({int limit = 3}) async {
+    return await _db.rawQuery('''
+      SELECT e.${Exercise.columnName} as exercise_name,
+             MAX(ws.${WorkoutSet.columnWeight} * COALESCE(ws.${WorkoutSet.columnReps}, 1)) as best_volume,
+             ws.${WorkoutSet.columnWeight} as weight,
+             ws.${WorkoutSet.columnReps} as reps,
+             ws.${WorkoutSet.columnCompletedAt} as completed_at
+      FROM ${WorkoutSet.tableName} ws
+      JOIN ${WorkoutExercise.tableName} we ON we.${WorkoutExercise.columnId} = ws.${WorkoutSet.columnWorkoutExerciseId}
+      JOIN ${Workout.tableName} w ON w.${Workout.columnId} = we.${WorkoutExercise.columnWorkoutId}
+      JOIN ${Exercise.tableName} e ON e.${Exercise.columnId} = we.${WorkoutExercise.columnExerciseId}
+      WHERE ws.${WorkoutSet.columnIsCompleted} = 1
+        AND ws.${WorkoutSet.columnWeight} IS NOT NULL
+        AND w.${Workout.columnStatus} = ?
+      GROUP BY we.${WorkoutExercise.columnExerciseId}
+      ORDER BY ws.${WorkoutSet.columnCompletedAt} DESC
+      LIMIT ?
+    ''', [WorkoutStatus.completed.dbValue, limit]);
   }
 }

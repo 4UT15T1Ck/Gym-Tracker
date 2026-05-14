@@ -158,3 +158,17 @@ class ExerciseHistoryEntry {
     required this.sets,
   });
 }
+
+class PersonalRecordSummary {
+  final String exerciseName;
+  final double? weight;
+  final int? reps;
+  final DateTime? achievedAt;
+
+  const PersonalRecordSummary({
+    required this.exerciseName,
+    this.weight,
+    this.reps,
+    this.achievedAt,
+  });
+}

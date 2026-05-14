@@ -20,4 +20,10 @@ abstract class ExerciseRepository {
   Future<List<Muscle>> getMuscles();
 
   Future<List<Equipment>> getEquipment();
+
+  /// Returns { exerciseId: [muscleId, ...] } for all exercises.
+  Future<Map<String, List<String>>> getAllSecondaryMuscleIds();
+
+  /// Returns the top [limit] personal records across all exercises.
+  Future<List<PersonalRecordSummary>> getTopPersonalRecords({int limit = 3});
 }
