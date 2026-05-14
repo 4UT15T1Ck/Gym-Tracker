@@ -30,6 +30,21 @@ extension SetTypeX on SetType {
         return 'Failure';
     }
   }
+
+  String get marker {
+    switch (this) {
+      case SetType.warmUp:
+        return 'W';
+      case SetType.working:
+        return '';
+      case SetType.dropSet:
+        return 'D';
+      case SetType.amrap:
+        return 'A';
+      case SetType.failure:
+        return 'F';
+    }
+  }
 }
 
 SetType setTypeFromDbValue(String? value) {
