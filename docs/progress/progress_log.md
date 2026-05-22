@@ -102,3 +102,13 @@ Format:
 - Refreshed architecture docs for shell navigation, home dashboard, workout/routine flows, exercise library, profile, notifications, preferences, and measurements
 - Added `body_measure_entries`, `BodyMeasurementDao`, and `BodyMeasurementRepositoryImpl` to database/DAL docs
 - Updated progress docs to show implemented presentation surfaces and remaining engineering follow-ups
+
+---
+
+## [UI-HOME-2026-05-22] Home Dashboard Visual Redesign
+**Date**: 2026-05-22
+**Files changed**: `lib/features/home/presentation/home_dashboard_screen.dart`, `README.md`, `docs/architecture/features_architecture.md`, `docs/architecture/general_architecture.md`, `docs/progress/todo.md`, `docs/progress/current_work.md`, `docs/progress/progress_log.md`
+- Rebuilt Home tab body as dark card-based sections with clearer data hierarchy (header, quick start, week streak, last workout, PRs, recovery)
+- Added lightweight section-level entrance animation in presentation layer only
+- Kept all existing Home business logic and navigation behavior unchanged (`HomeDashboardCubit`, dashboard service, route flow)
+- Synced docs to reflect the visual-only scope and new Home UI structure

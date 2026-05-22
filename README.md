@@ -4,7 +4,7 @@ Flutter fitness tracker for planning routines, logging active workouts, browsing
 
 ## Current App Surface
 
-- Home dashboard with weekly consistency, streak, last workout, recent PRs, muscle recovery, and suggested routine.
+- Home dashboard with a redesigned dark card-based UI (header, quick start, weekly streak, last workout, recent PRs, and muscle recovery) while keeping the same existing business logic and flows.
 - Workout tab for starting an empty workout, creating routines, editing/deleting routines, and starting workouts from routines.
 - Active workout flow with exercise/set management, set completion, rest timer controls, and in-progress workout banner.
 - Exercise library with search/filter support and exercise detail stats.

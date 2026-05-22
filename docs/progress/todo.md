@@ -42,6 +42,7 @@ ENTRY FORMAT: | XX | Item description | Status | Short approach note |
 | H1 | Dashboard aggregation service | ✅ | Summary, streak, PRs, recovery, suggested routine |
 | H2 | HomeDashboardCubit | ✅ | Loads dashboard and starts empty/suggested workouts |
 | H3 | Home dashboard screen | ✅ | Quick start, suggestion, weekly strip, last workout, PRs, recovery |
+| H4 | Home UI redesign (visual-only) | ✅ | Dark card-based section UI, compact data hierarchy, light section animation; no logic changes |
 
 ---
 

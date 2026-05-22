@@ -76,6 +76,7 @@ Presentation -> Domain contracts -> Data implementations
 - State classes and Cubits/Blocs live under `features/<feature>/bloc/`.
 - Most screens use `Cubit`; the rest timer uses `Bloc` because it is event/timer driven.
 - `app.dart` provides global Cubits for the shell/home/workout/profile surfaces and route-specific providers for detail flows.
+- The Home dashboard UI is section-based and composed from private presentation widgets with local style tokens in a single screen file, so visual redesigns can ship without touching shared business logic.
 
 ---
 
