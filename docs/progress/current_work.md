@@ -1,7 +1,7 @@
-# Current Work — In Progress
+# Current Work - In Progress
 
-<!-- 
-FORMAT: 
+<!--
+FORMAT:
     ## Active Item: <Name> (TASK_ID)
 
     **Status**: In Progress | Proposed | Blocked
@@ -13,57 +13,59 @@ FORMAT:
     1. step
 
     ### Files
-    - `path/to/file.dart` — new | modify
+    - `path/to/file.dart` - new | modify
 
     ### Out of Scope
-    - item 
+    - item
 
     ## Up next
 
-    N. **TASK_ID — Name** — one-line description; depends on XX if applicable
+    N. **TASK_ID - Name** - one-line description; depends on XX if applicable
 -->
 
 ## Session Context
 
-- **Last updated**: 2026-05-01
-- **Active area**: Data layer complete; presentation layer pending
-- **Immediate next action**: Begin implementing first presentation feature — Exercise List or Active Workout screen
+- **Last updated**: 2026-05-22
+- **Active area**: Documentation refresh only
+- **Immediate next action**: After docs, run a codegen/test follow-up before any feature work
 
 ---
 
-## Active Item: Presentation Layer Foundation (S2, S5)
+## Active Item: Documentation Sync (DOCS-2026-05-22)
 
-**Status**: Not Started
+**Status**: In Progress
 
 ### Problem
-All data layer infrastructure (models, DAOs, repositories) is complete, but no presentation screens exist. The app currently shows a blank Scaffold placeholder.
+README and docs still described the project as data-layer-only, while the app now includes shell navigation, dashboards, routine/workout flows, exercise library, profile surfaces, notifications, and measurements.
 
 ### Agreed Approach
-1. Define navigation routes in `common/routes/`.
-2. Set up full Material3 theme in `main.dart`.
-3. Implement bottom navigation structure (Workout, Library, Profile).
-4. Build first feature screen (likely Exercise List or Active Workout).
+1. Update README with the current app surface, setup commands, stack, and docs map.
+2. Refresh architecture docs to describe the current package layout, navigation, DI, services, and feature surfaces.
+3. Refresh progress docs to distinguish completed presentation work from remaining engineering follow-ups.
+4. Do not edit core app code, generated code, assets, platform folders, or tests during this pass.
 
 ### Files
-- `common/routes/` — new route definitions
-- `main.dart` — modify: add theme, routing, bottom nav
-- `features/library/` or `features/workout/` — new: first Cubit + Screen
+- `README.md` - modify
+- `docs/architecture/general_architecture.md` - modify
+- `docs/architecture/features_architecture.md` - modify
+- `docs/architecture/database_and_models.md` - modify
+- `docs/technical/technical_reference.md` - modify
+- `docs/progress/todo.md` - modify
+- `docs/progress/progress_log.md` - append
+- `docs/progress/current_work.md` - modify
 
 ### Out of Scope
-- Analytics dashboard (depends on workout data existing)
-- Profile feature (design not defined)
+- Core source changes under `lib/`
+- Regenerating `getit_utils.config.dart`
+- Fixing tests
+- Schema migrations
 
 ---
 
-## Up Next (ordered by priority)
+## Up Next
 
-1. **S2/S5 — Navigation + Theme** — define routes, Material3 theme, bottom nav scaffold
-2. **E9 — Exercise List Screen** — filterable exercise browser with BLoC; depends on S2
-3. **E10 — Exercise Detail Screen** — exercise info + stats + history; depends on E9
-4. **R7 — Routine List Screen** — display all routines; depends on S2
-5. **R8 — Routine Detail/Edit Screen** — exercise and set management within routines; depends on R7
-6. **W7 — Active Workout Screen** — live workout tracking; depends on S2
-7. **W8 — Workout History Screen** — paginated history list; depends on W7
-8. **W10 — Start from Routine flow** — UI for launching workout from routine template; depends on W7 + R7
-9. **A4 — Analytics Dashboard** — charts and stats; depends on workout data
-10. **P1 — Profile Screen** — design TBD
+1. **DI1 - Regenerate DI config** - run `dart run build_runner build --delete-conflicting-outputs` after confirming all current injectable annotations should be registered.
+2. **TST1 - Refresh widget test** - replace the default counter smoke test with a Gym Tracker smoke test that matches `MainApp`.
+3. **C6 - Database migrations** - add an `onUpgrade` path before any future schema version bump.
+4. **S3 - Shared widgets** - extract repeated UI pieces only after duplication is clear across features.
+5. **UX1 - Theme polish** - expand the current dark Material 3 seed theme into a fuller app theme if design direction is needed.

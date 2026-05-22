@@ -489,6 +489,38 @@ The DAL follows a strict separation of concerns:
 
 ---
 
+### BodyMeasurementDao
+
+**Purpose**: Store and fetch profile body measurement entries.
+
+**Functions**:
+
+#### `getAll()`
+- **What**: Returns all body measurement entries, newest first.
+- **How**: Queries `body_measure_entries` ordered by date descending.
+- **Why**: Provides the Measures screen history.
+- **For**: Body measurement list UI.
+
+#### `getLatest()`
+- **What**: Returns the newest body measurement entry, or null.
+- **How**: Queries `body_measure_entries` ordered by date descending with `limit: 1`.
+- **Why**: Allows profile/dashboard surfaces to show the latest metric snapshot.
+- **For**: Profile summaries and measurement screens.
+
+#### `insert(BodyMeasureEntry entry, DatabaseExecutor db)`
+- **What**: Inserts or replaces a body measurement entry.
+- **How**: Uses the provided executor with `ConflictAlgorithm.replace`.
+- **Why**: Allows inserts inside repository-owned transactions.
+- **For**: Adding body weight/body fat entries.
+
+#### `delete(String id)`
+- **What**: Deletes a measurement entry by ID.
+- **How**: Deletes from `body_measure_entries` with an ID filter.
+- **Why**: Allows users to remove incorrect measurements.
+- **For**: Measures screen delete action.
+
+---
+
 ## Repository Layer
 
 ### ExerciseRepositoryImpl
@@ -876,6 +908,43 @@ The DAL follows a strict separation of concerns:
   3. Includes comment about muscle name uniqueness assumption
 - **Why**: Shows users which muscle groups they've been working on.
 - **For**: Analytics dashboard, muscle balance tracking.
+
+---
+
+### BodyMeasurementRepositoryImpl
+
+**Purpose**: Provide transactional body measurement operations for the profile feature.
+
+**Injected Dependencies**: `BodyMeasurementDao`, `Database`, `Uuid`
+
+**Functions**:
+
+#### `getEntries()`
+- **What**: Returns all measurement entries.
+- **How**: Delegates to `BodyMeasurementDao.getAll()`.
+- **Why**: Supplies the Measures screen list.
+- **For**: Body measurement history.
+
+#### `getLatestEntry()`
+- **What**: Returns the latest measurement entry, or null.
+- **How**: Delegates to `BodyMeasurementDao.getLatest()`.
+- **Why**: Supplies the latest body metric snapshot.
+- **For**: Profile/measurement summaries.
+
+#### `addEntry({required DateTime date, double? weight, double? bodyFatPercent, Map<String, double> customMeasurements})`
+- **What**: Creates and stores a new measurement entry.
+- **How**:
+  1. Generates a UUID
+  2. Builds a `BodyMeasureEntry`
+  3. Inserts it inside a database transaction
+- **Why**: Keeps entry creation consistent with the repository transaction pattern.
+- **For**: Adding measurements.
+
+#### `deleteEntry(String id)`
+- **What**: Deletes a measurement entry by ID.
+- **How**: Runs the delete inside a database transaction.
+- **Why**: Keeps writes owned by repositories.
+- **For**: Removing measurements.
 
 ---
 
