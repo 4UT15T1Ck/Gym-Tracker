@@ -431,25 +431,19 @@ The DAL follows a strict separation of concerns:
 - **Why**: Shows users their best performance for motivation and tracking.
 - **For**: Exercise detail page, personal best display.
 
-#### `getRecentHistoryWorkouts(String exerciseId, {int limit})`
-- **What**: Returns recent workouts that include the given exercise.
-- **How**: Uses raw SQL with JOIN to workouts, ordered by start time descending.
-- **Why**: Shows users when they last performed this exercise.
-- **For**: Exercise detail page, workout history context.
+#### `getRecentHistory(String exerciseId, {int limit})`
+- **What**: Returns recent completed workout entries for the given exercise, each with completed sets.
+- **How**: Uses raw SQL JOINs through workouts, workout exercises, and workout sets, then groups rows by workout in Dart.
+- **Why**: Shows users recent performance context for an exercise.
+- **For**: Exercise detail page and performance history.
 
-#### `getRecentHistorySets(String exerciseId, {int limit})`
-- **What**: Returns recent completed sets for the given exercise.
-- **How**: Uses raw SQL ordered by completion time descending.
-- **Why**: Shows users their recent performance for the exercise.
-- **For**: Exercise detail page, performance tracking.
-
-#### `getWeightOverTime(String exerciseId, {int days})`
+#### `getWeightOverTime(String exerciseId)`
 - **What**: Returns weight progression data over time for the exercise.
 - **How**: Uses raw SQL with date grouping and MAX weight aggregation.
 - **Why**: Shows users their strength progression over time.
 - **For**: Exercise analytics, progress charts.
 
-#### `getVolumeOverTime(String exerciseId, {int days})`
+#### `getVolumeOverTime(String exerciseId)`
 - **What**: Returns volume progression data over time for the exercise.
 - **How**: Uses raw SQL with date grouping and SUM volume aggregation.
 - **Why**: Shows users their volume progression over time.
@@ -460,6 +454,12 @@ The DAL follows a strict separation of concerns:
 - **How**: Uses raw SQL with COUNT DISTINCT on workout IDs.
 - **Why**: Shows users how frequently they perform this exercise.
 - **For**: Exercise detail page, frequency tracking.
+
+#### `getTopPersonalRecords({int limit})`
+- **What**: Returns recent top personal record summaries across exercises.
+- **How**: Uses raw SQL JOINs across completed workout sets, workout exercises, workouts, and exercises.
+- **Why**: Feeds dashboard/profile PR summaries without loading each exercise detail separately.
+- **For**: Home dashboard recent PR cards.
 
 ---
 
@@ -489,13 +489,45 @@ The DAL follows a strict separation of concerns:
 
 ---
 
+### BodyMeasurementDao
+
+**Purpose**: Store and fetch profile body measurement entries.
+
+**Functions**:
+
+#### `getAll()`
+- **What**: Returns all body measurement entries, newest first.
+- **How**: Queries `body_measure_entries` ordered by date descending.
+- **Why**: Provides the Measures screen history.
+- **For**: Body measurement list UI.
+
+#### `getLatest()`
+- **What**: Returns the newest body measurement entry, or null.
+- **How**: Queries `body_measure_entries` ordered by date descending with `limit: 1`.
+- **Why**: Allows profile/dashboard surfaces to show the latest metric snapshot.
+- **For**: Profile summaries and measurement screens.
+
+#### `insert(BodyMeasureEntry entry, DatabaseExecutor db)`
+- **What**: Inserts or replaces a body measurement entry.
+- **How**: Uses the provided executor with `ConflictAlgorithm.replace`.
+- **Why**: Allows inserts inside repository-owned transactions.
+- **For**: Adding body weight/body fat entries.
+
+#### `delete(String id)`
+- **What**: Deletes a measurement entry by ID.
+- **How**: Deletes from `body_measure_entries` with an ID filter.
+- **Why**: Allows users to remove incorrect measurements.
+- **For**: Measures screen delete action.
+
+---
+
 ## Repository Layer
 
 ### ExerciseRepositoryImpl
 
 **Purpose**: Assemble exercise-related data from multiple DAOs into composite read models.
 
-**Injected Dependencies**: `ExerciseDao`, `MuscleDao`, `EquipmentDao`, `ExerciseStatsDao`, `WorkoutExerciseDao`
+**Injected Dependencies**: `ExerciseDao`, `MuscleDao`, `EquipmentDao`, `ExerciseStatsDao`
 
 **Functions**:
 
@@ -517,16 +549,28 @@ The DAL follows a strict separation of concerns:
 - **Why**: Provides a complete view of an exercise for the detail page.
 - **For**: Exercise detail page.
 
-#### `_buildExerciseStats(Exercise exercise)`
+#### `_buildExerciseStats(String exerciseId)`
 - **What**: Builds the `ExerciseStats` model for an exercise.
 - **How**:
   1. Gets personal best from `ExerciseStatsDao`
-  2. Gets recent workout history from `ExerciseStatsDao`
-  3. Gets recent sets from `ExerciseStatsDao`
-  4. Maps workout exercise IDs to workout IDs using `WorkoutExerciseDao.getByIds`
-  5. Groups sets by workout and assembles `ExerciseHistoryEntry` objects
+  2. Gets recent grouped exercise history from `ExerciseStatsDao`
+  3. Gets weight-over-time data from `ExerciseStatsDao`
+  4. Gets volume-over-time data from `ExerciseStatsDao`
+  5. Gets total session count from `ExerciseStatsDao`
 - **Why**: Provides rich statistics and history for the exercise detail page.
 - **For**: Exercise detail page (private helper).
+
+#### `getAllSecondaryMuscleIds()`
+- **What**: Returns a map of exercise IDs to secondary muscle IDs.
+- **How**: Delegates to `ExerciseDao.getAllSecondaryMuscleMap()`.
+- **Why**: Lets dashboard recovery calculations batch secondary muscle lookup.
+- **For**: Home dashboard recovery and routine suggestion logic.
+
+#### `getTopPersonalRecords({int limit})`
+- **What**: Returns personal record summaries across exercises.
+- **How**: Delegates to `ExerciseStatsDao.getTopPersonalRecords()` and maps SQL rows to `PersonalRecordSummary`.
+- **Why**: Avoids loading many exercise details to compute dashboard PR cards.
+- **For**: Home dashboard recent PRs.
 
 ---
 
@@ -534,7 +578,7 @@ The DAL follows a strict separation of concerns:
 
 **Purpose**: Manage routines, exercises within routines, and sets within routine exercises.
 
-**Injected Dependencies**: `RoutineDao`, `RoutineExerciseDao`, `RoutineSetDao`, `ExerciseDao`, `WorkoutExerciseDao`, `WorkoutSetDao`, `Database`, `Uuid`
+**Injected Dependencies**: `RoutineDao`, `RoutineExerciseDao`, `RoutineSetDao`, `ExerciseDao`, `WorkoutDao`, `WorkoutExerciseDao`, `WorkoutSetDao`, `Database`, `Uuid`
 
 **Functions**:
 
@@ -876,6 +920,43 @@ The DAL follows a strict separation of concerns:
   3. Includes comment about muscle name uniqueness assumption
 - **Why**: Shows users which muscle groups they've been working on.
 - **For**: Analytics dashboard, muscle balance tracking.
+
+---
+
+### BodyMeasurementRepositoryImpl
+
+**Purpose**: Provide transactional body measurement operations for the profile feature.
+
+**Injected Dependencies**: `BodyMeasurementDao`, `Database`, `Uuid`
+
+**Functions**:
+
+#### `getEntries()`
+- **What**: Returns all measurement entries.
+- **How**: Delegates to `BodyMeasurementDao.getAll()`.
+- **Why**: Supplies the Measures screen list.
+- **For**: Body measurement history.
+
+#### `getLatestEntry()`
+- **What**: Returns the latest measurement entry, or null.
+- **How**: Delegates to `BodyMeasurementDao.getLatest()`.
+- **Why**: Supplies the latest body metric snapshot.
+- **For**: Profile/measurement summaries.
+
+#### `addEntry({required DateTime date, double? weight, double? bodyFatPercent, Map<String, double> customMeasurements})`
+- **What**: Creates and stores a new measurement entry.
+- **How**:
+  1. Generates a UUID
+  2. Builds a `BodyMeasureEntry`
+  3. Inserts it inside a database transaction
+- **Why**: Keeps entry creation consistent with the repository transaction pattern.
+- **For**: Adding measurements.
+
+#### `deleteEntry(String id)`
+- **What**: Deletes a measurement entry by ID.
+- **How**: Runs the delete inside a database transaction.
+- **Why**: Keeps writes owned by repositories.
+- **For**: Removing measurements.
 
 ---
 

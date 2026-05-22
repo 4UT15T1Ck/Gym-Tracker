@@ -1,242 +1,223 @@
 # Technical Reference
 
 <!--
-  FILE PURPOSE   : Configuration, setup, and usage patterns for every library and technical concern in the project.
+  FILE PURPOSE   : Configuration, setup, and usage patterns for libraries and technical concerns.
 
   WHAT BELONGS   : Library versions, initialization, configuration, code patterns, and constraints to follow.
-  
-  WHAT DOES NOT  : Implementation status (→ todo.md), feature design (→ features_architecture.md),
-                   schema details (→ database_and_models.md), active work (→ current_work.md).
-  
+
+  WHAT DOES NOT  : Implementation status (-> todo.md), feature design (-> features_architecture.md),
+                   schema details (-> database_and_models.md), active work (-> current_work.md).
+
   UPDATE WHEN    : A new library is added, a configuration changes, or a usage pattern is established.
-
-  FORMAT: 
-            ## N. Library / Concern Name
-
-            **Library**: `package-name` **Version**: x.y.z
-
-            ### Configuration
-            \```dart
-            // minimal setup snippet
-            \```
-
-            ### Usage Pattern
-            - bullet: rule or constraint to follow
 -->
 
 ---
 
-## 1. Dependency Injection — get_it + injectable
+## 1. Dependency Injection
 
-**Libraries**: `get_it: ^9.2.1`, `injectable: ^2.5.1`, `injectable_generator: ^2.7.0` (dev)
-
-### Annotations
-
-| Annotation | Purpose |
-|---|---|
-| `@singleton` | Singleton — Database, repositories |
-| `@preResolve` | Async singleton resolved before `runApp()` (Database) |
-| `@injectable` | Factory — new instance per injection (Cubits, use cases) |
-| `@module` | Abstract class providing bindings for third-party types |
-| `@injectableInit` | Marks the DI entry point for code generation |
+**Libraries**: `get_it: ^9.2.1`, `injectable: ^2.5.1`, `injectable_generator: ^2.7.0`
 
 ### Entry Point
 
 ```dart
-// common/utils/getit_utils.dart
 final getIt = GetIt.instance;
 
 @injectableInit
 Future<void> configureDependencies() => getIt.init();
 
 class GetItUtils {
-  static Future<void> setup() => configureDependencies();
-}
-```
-
-### Initialization
-
-```dart
-// main.dart
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await GetItUtils.setup();
-  runApp(const MyApp());
-}
-```
-
-### Code Generation
-
-Run after any DI annotation change:
-```bash
-dart run build_runner build
-```
-
-Generated file: `common/utils/getit_utils.config.dart`
-
----
-
-## 2. Database — sqflite
-
-**Library**: `sqflite: ^2.4.2`, `path: ^1.9.1`
-
-### Configuration
-
-```dart
-// core/data/db_module.dart
-@module
-abstract class DatabaseModule {
-  @preResolve
-  @singleton
-  Future<Database> initDatabase() async {
-    final path = join(await getDatabasesPath(), 'gym_tracker.db');
-    return openDatabase(
-      path,
-      version: 1,
-      onConfigure: (db) async {
-        await db.execute('PRAGMA foreign_keys = ON');
-      },
-      onCreate: (db, version) async {
-        await _createTables(db);
-        await _createIndexes(db);
-        await seedDatabaseFromJson(db);
-      },
-    );
+  static Future<void> setup() async {
+    await configureDependencies();
+    // Manual singleton registrations live here when lifecycle wiring is custom.
   }
 }
 ```
 
-### Key Patterns
+### Registration Patterns
 
-- **Foreign keys always ON** — enforced in `onConfigure`.
-- **Static column names** — all models define `static const` column name constants. Schema DDL references these constants.
-- **`DatabaseExecutor` parameter** — all DAO write methods accept `DatabaseExecutor db` to support both standalone and transactional calls.
-- **Optional `DatabaseExecutor` for reads** — `[DatabaseExecutor? db]` pattern for methods that need transaction isolation (uses `db ?? _db`).
-- **Batch operations** — use `IN (?)` clauses for batch fetches to avoid N+1 queries.
-- **Order column quoting** — `"order"` is a SQL reserved word; always quoted in DDL and queries.
+| Pattern | Use |
+|---|---|
+| `@preResolve @singleton` | Async database singleton |
+| `@LazySingleton(as: SomeRepository)` | Repository implementations |
+| `@LazySingleton()` | Global Cubits reused by the shell |
+| `@injectable` | DAOs and route-scoped Cubits |
+| Manual `getIt.register...` | Services or Blocs needing custom callbacks/lifecycle |
 
-### Seeding
+### Code Generation
 
-- Seed data loaded from `assets/seed_data.json` via `rootBundle.loadString()`.
-- Batch insert with `ConflictAlgorithm.replace`.
-- Seeds: muscles, equipment, exercises, exercise secondary muscles.
-- File: `core/data/seed_helper.dart`.
+Run after DI annotation changes:
 
----
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
 
-## 3. State Management — flutter_bloc
+Generated file: `lib/common/utils/getit_utils.config.dart`
 
-**Library**: `flutter_bloc: ^9.1.1`, `equatable: ^2.0.7`
-
-### Pattern
-
-- **Cubit** for simple state with method calls (most screens).
-- **Bloc** with explicit events only when event mapping adds clarity.
-- State classes extend `Equatable` for efficient rebuilds.
-
-### Usage Rules
-
-- No business logic inside widgets — only display and callback dispatch to cubit.
-- Prefer `const` constructors wherever possible.
-- Do not pass cubits/blocs down the widget tree — use `BlocProvider` / `context.read<XxxCubit>()`.
-- One-shot side effects (navigation, snackbars) via `BlocListener`.
-- State and lambdas are passed down — never pass the Cubit itself into child widgets.
+Do not edit the generated file by hand.
 
 ---
 
-## 4. UUID Generation
+## 2. Database
 
-**Library**: `uuid: ^4.5.1`
+**Libraries**: `sqflite: ^2.4.2`, `path: ^1.9.1`
 
 ### Configuration
 
 ```dart
-// core/data/uuid_module.dart
-@module
-abstract class UuidModule {
-  @singleton
-  Uuid get uuid => const Uuid();
+return openDatabase(
+  path,
+  version: 1,
+  onConfigure: (db) async {
+    await db.execute('PRAGMA foreign_keys = ON');
+  },
+  onCreate: (db, version) async {
+    await _createTables(db);
+    await _createIndexes(db);
+    await seedDatabaseFromJson(db);
+  },
+);
+```
+
+### Key Patterns
+
+- Foreign keys are enabled in `onConfigure`.
+- Model classes define static table and column constants.
+- Models use manual `toMap()` / `fromMap()` for SQLite rows.
+- Most DAO writes accept `DatabaseExecutor` so repository transactions can reuse the same DAO method.
+- Some DAO reads accept optional `[DatabaseExecutor? db]` for transaction isolation.
+- Batch reads use dynamic placeholders for `IN (...)`.
+- The SQL column name `order` is always quoted as `"order"`.
+
+### Migration Rule
+
+For a schema change:
+
+1. Bump `_databaseVersion`.
+2. Add `onUpgrade`.
+3. Write additive migration SQL.
+4. Do not drop/recreate user tables in production.
+
+---
+
+## 3. Seed Data
+
+**Asset**: `assets/seed_data.json`
+
+Seed data is loaded in `DatabaseModule.onCreate()` by `seedDatabaseFromJson()`.
+
+Seeded data:
+
+- muscles
+- equipment
+- exercises
+- exercise secondary muscle mappings
+
+Seed inserts use `ConflictAlgorithm.replace`.
+
+---
+
+## 4. State Management
+
+**Libraries**: `flutter_bloc: ^9.1.1`, `equatable: ^2.0.7`
+
+### Cubit Pattern
+
+- Use Cubit for method-driven screen state.
+- State classes extend `Equatable`.
+- Use `copyWith` for state transitions.
+- Keep async calls and error handling inside the Cubit.
+- Screens render with `BlocBuilder`.
+- One-shot UI side effects use `BlocListener` when needed.
+
+### Bloc Pattern
+
+Use Bloc for event-driven flows. Current example:
+
+- `RestTimerBloc` handles start, tick, adjust, skip, and cancel events.
+
+---
+
+## 5. Notifications And Rest Timer
+
+**Libraries**: `flutter_local_notifications: ^17.2.3`, `timezone: ^0.9.4`, `flutter_timezone: ^4.1.0`, `vibration: ^2.0.0`
+
+### Startup
+
+`main.dart` initializes notifications only on Android/iOS:
+
+```dart
+if (Platform.isAndroid || Platform.isIOS) {
+  final notificationService = getIt<NotificationService>();
+  await notificationService.init();
+  await notificationService.requestPermission();
 }
 ```
 
-### Usage
+### Channels
 
-All new entities use UUID v4 for primary keys:
+| Channel | Purpose |
+|---|---|
+| `rest_timer` | High-importance rest complete alert |
+| `workout_in_progress` | Ongoing workout notification |
+
+### Routing
+
+Notification taps route to `/active-workout` with `ActiveWorkoutRouteArgs`.
+
+### Timer Rules
+
+- App countdown state lives in `RestTimerBloc`.
+- OS notifications are scheduled for the end timestamp only.
+- Skip/cancel paths cancel scheduled rest notifications.
+- Workout completion/cancellation clears workout notifications.
+
+---
+
+## 6. Preferences
+
+**Library**: `shared_preferences: ^2.5.3`
+
+`PreferencesStore` stores lightweight profile identity:
+
+| Key | Purpose |
+|---|---|
+| `profile.username` | Display name, defaults to `Alex` |
+| `profile.initials` | Optional initials override |
+
+Initialize before DI-dependent Cubits load:
+
+```dart
+await PreferencesStore.init();
+```
+
+---
+
+## 7. UUID Generation
+
+**Library**: `uuid: ^4.5.1`
+
+`UuidModule` provides a singleton `Uuid`.
+
+Repositories generate IDs before inserts:
+
 ```dart
 final id = _uuid.v4();
-final entity = Entity(id: id, ...);
-```
-
-Injected via DI into repository constructors that create entities.
-
----
-
-## 5. Model Serialization Pattern
-
-All models use manual `toMap()` / `fromMap()` for sqflite compatibility:
-
-```dart
-class Exercise {
-  static const tableName = 'exercises';
-  static const columnId = 'id';
-  static const columnName = 'name';
-  // ...
-
-  Map<String, dynamic> toMap() => {
-    columnId: id,
-    columnName: name,
-    // ...
-  };
-
-  factory Exercise.fromMap(Map<String, dynamic> map) => Exercise(
-    id: map[columnId] as String,
-    name: map[columnName] as String,
-    // ...
-  );
-}
-```
-
-### Enum Serialization
-
-Enums use extensions with `dbValue` (snake_case string) and standalone `xxxFromDbValue()` functions:
-
-```dart
-enum SetType { warmUp, working, dropSet, amrap, failure }
-
-extension SetTypeX on SetType {
-  String get dbValue => switch (this) {
-    SetType.warmUp => 'warm_up',
-    // ...
-  };
-}
-
-SetType setTypeFromDbValue(String? value) {
-  return SetType.values.firstWhere(
-    (t) => t.dbValue == value,
-    orElse: () => SetType.working,
-  );
-}
 ```
 
 ---
 
-## 6. Transaction Patterns
+## 8. Repository And Transaction Patterns
 
 ### Read-Modify-Write
-
-Used when a read is needed inside the same transaction:
 
 ```dart
 await _db.transaction((txn) async {
   final set = await _workoutSetDao.getById(setId, txn);
-  // ... modify
   await _workoutSetDao.update(updatedSet, txn);
 });
 ```
 
-### Multi-Step Write
-
-Multiple writes must succeed or fail together:
+### Multi-Step Writes
 
 ```dart
 await _db.transaction((txn) async {
@@ -249,73 +230,60 @@ await _db.transaction((txn) async {
 
 ### Volume Recalculation
 
-Volume is always recalculated inside the same transaction as set changes:
-
-```dart
-await _db.transaction((txn) async {
-  await _workoutSetDao.update(set, txn);
-  final newVolume = await _workoutSetDao.computeVolume(workoutId, txn);
-  await _workoutDao.updateVolume(workoutId, newVolume, txn);
-});
-```
+Workout volume is recomputed inside the same transaction as set completion, uncompletion, or removal.
 
 ---
 
-## 7. Batch Query Pattern
+## 9. Routing
 
-### IN Clause
+Routes are centralized in `common/routes/routes.dart`.
 
-Avoid N+1 queries with batch fetches:
+Use typed argument classes from `route_args.dart`:
 
-```dart
-final placeholders = List.filled(ids.length, '?').join(',');
-final maps = await db.query(
-  tableName,
-  where: 'id IN ($placeholders)',
-  whereArgs: ids,
-);
-```
+- `ActiveWorkoutRouteArgs`
+- `AddExerciseRouteArgs`
+- `ExerciseDetailRouteArgs`
+- `WorkoutDetailRouteArgs`
+- `RoutineDetailRouteArgs`
+- `EditRoutineRouteArgs`
 
-### Grouping in Dart
+Provider rules:
 
-Group batch results by parent ID after fetch:
-
-```dart
-final grouped = <String, List<Item>>{};
-for (final item in items) {
-  grouped.putIfAbsent(item.parentId, () => []).add(item);
-}
-```
+- Use `BlocProvider.value` for singleton Cubits.
+- Use `BlocProvider(create:)` for route-scoped Cubits.
 
 ---
 
-## 8. Project Configuration
+## 10. Project Configuration
 
-### `pubspec.yaml` Key Dependencies
+### Runtime Dependencies
 
 | Package | Version | Purpose |
 |---|---|---|
-| `flutter_bloc` | ^9.1.1 | State management (BLoC/Cubit) |
-| `equatable` | ^2.0.7 | Value equality for state classes |
-| `get_it` | ^9.2.1 | Service locator for DI |
-| `injectable` | ^2.5.1 | DI annotation-based code generation |
-| `sqflite` | ^2.4.2 | SQLite database |
-| `path` | ^1.9.1 | File path manipulation |
-| `uuid` | ^4.5.1 | UUID generation |
+| `flutter_bloc` | ^9.1.1 | State management |
+| `equatable` | ^2.0.7 | State equality |
+| `get_it` | ^9.2.1 | Service locator |
+| `injectable` | ^2.5.1 | DI annotations |
+| `sqflite` | ^2.4.2 | SQLite persistence |
+| `path` | ^1.9.1 | Database path joining |
+| `uuid` | ^4.5.1 | Primary key generation |
+| `shared_preferences` | ^2.5.3 | Lightweight preferences |
+| `flutter_local_notifications` | ^17.2.3 | Local notifications |
+| `timezone` | ^0.9.4 | Zoned notification scheduling |
+| `flutter_timezone` | ^4.1.0 | Device timezone lookup |
+| `vibration` | ^2.0.0 | Rest timer haptic feedback |
 
 ### Dev Dependencies
 
 | Package | Version | Purpose |
 |---|---|---|
+| `flutter_test` | SDK | Widget/unit tests |
+| `flutter_lints` | ^6.0.0 | Lint rules |
 | `build_runner` | ^2.5.4 | Code generation runner |
-| `injectable_generator` | ^2.7.0 | Injectable code gen |
-| `flutter_lints` | ^6.0.0 | Linting rules |
+| `injectable_generator` | ^2.7.0 | Injectable code generation |
 
-### SDK
+### SDK And Assets
 
 - Dart SDK: `^3.10.7`
-- Flutter: `uses-material-design: true`
-
-### Assets
-
-- `assets/seed_data.json` — exercise, muscle, equipment seed data
+- Material icons enabled: `uses-material-design: true`
+- Seed data asset: `assets/seed_data.json`

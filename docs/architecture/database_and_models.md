@@ -47,6 +47,7 @@
 | `workouts` | `Workout` | workout |
 | `workout_exercises` | `WorkoutExercise` | workout |
 | `workout_sets` | `WorkoutSet` | workout |
+| `body_measure_entries` | `BodyMeasureEntry` | profile |
 
 ### Migration Rule
 
@@ -195,6 +196,20 @@ Unique index: `(workout_exercise_id, order)`
 
 ---
 
+### `BodyMeasureEntry` — table `body_measure_entries`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | TEXT (PK) | UUID |
+| `date` | INTEGER NOT NULL | epoch ms |
+| `weight` | REAL | nullable |
+| `body_fat_percent` | REAL | nullable |
+| `custom_measurements_json` | TEXT NOT NULL | JSON object string, default `'{}'` |
+
+Index: `date`
+
+---
+
 ## Supporting Enums
 
 | Enum | Values | File |
@@ -225,6 +240,7 @@ All enums use extensions with `dbValue` (snake_case string for DB storage) and `
 | `workout_exercises` | `(workout_id, order)` | unique |
 | `workout_sets` | `workout_exercise_id` | standard |
 | `workout_sets` | `(workout_exercise_id, order)` | unique |
+| `body_measure_entries` | `date` | standard |
 
 ---
 
@@ -240,7 +256,7 @@ All enums use extensions with `dbValue` (snake_case string for DB storage) and `
 - `getAll()`, `getById(id)`, `getByIds(ids)`, `getFiltered({muscleId, equipmentId, trackingType, query})`, `getSecondaryMuscleIds(exerciseId)`
 
 ### `ExerciseStatsDao`
-- `getPersonalBest(exerciseId)`, `getRecentHistoryWorkouts(exerciseId, {limit})`, `getRecentHistorySets(exerciseId, {limit})`, `getWeightOverTime(exerciseId, {days})`, `getVolumeOverTime(exerciseId, {days})`, `getTotalSessions(exerciseId)`
+- `getPersonalBest(exerciseId)`, `getRecentHistory(exerciseId, {limit})`, `getWeightOverTime(exerciseId)`, `getVolumeOverTime(exerciseId)`, `getTotalSessions(exerciseId)`, `getTopPersonalRecords({limit})`
 
 ### `RoutineDao`
 - `getAll()`, `getById(id)`, `insert(routine, db)`, `update(routine, db)`, `delete(id)`
@@ -262,6 +278,21 @@ All enums use extensions with `dbValue` (snake_case string for DB storage) and `
 
 ### `AnalyticsDao`
 - `getVolumeHistory({days})`, `getWorkoutFrequency({weeks, weekMs})`, `getMuscleGroupBreakdown({days})`
+
+### `BodyMeasurementDao`
+- `getAll()`, `getLatest()`, `insert(entry, db)`, `delete(id)`
+
+---
+
+## Repositories
+
+| Repository | Implementation | Purpose |
+|---|---|---|
+| `ExerciseRepository` | `ExerciseRepositoryImpl` | Exercise browsing, detail assembly, stats |
+| `RoutineRepository` | `RoutineRepositoryImpl` | Routine CRUD and template sync |
+| `WorkoutRepository` | `WorkoutRepositoryImpl` | Active workouts, set lifecycle, history |
+| `AnalyticsRepository` | `AnalyticsRepositoryImpl` | Volume, frequency, muscle breakdown aggregates |
+| `BodyMeasurementRepository` | `BodyMeasurementRepositoryImpl` | Body measurement entries |
 
 ---
 
