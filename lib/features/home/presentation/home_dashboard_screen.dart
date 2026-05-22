@@ -3,10 +3,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
 import 'package:gym_tracker/common/utils/date_formatters.dart';
 import 'package:gym_tracker/common/utils/muscle_group_utils.dart';
+import 'package:gym_tracker/core/repositories/repository_models.dart';
+import 'package:gym_tracker/core/services/dashboard_service.dart';
 import 'package:gym_tracker/features/home/bloc/home_dashboard_cubit.dart';
 import 'package:gym_tracker/features/shell/bloc/shell_active_workout_cubit.dart';
 
 class HomeDashboardScreen extends StatelessWidget {
+  static const _bgColor = Color(0xFF080A0F);
+  static const _cardColor = Color(0xFF11141B);
+  static const _cardStroke = Color(0xFF1C2230);
+  static const _accent = Color(0xFF2A7CFF);
+  static const _mutedText = Color(0xFF8C94A5);
+  static const _subtleText = Color(0xFF687287);
+  static const _radius = 16.0;
+  static const _sectionSpacing = 22.0;
+
   final VoidCallback onOpenWorkoutTab;
 
   const HomeDashboardScreen({super.key, required this.onOpenWorkoutTab});
@@ -16,166 +27,122 @@ class HomeDashboardScreen extends StatelessWidget {
     return BlocBuilder<HomeDashboardCubit, HomeDashboardState>(
       builder: (context, state) {
         final summary = state.summary;
-        return ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-              Text(
-                'Good morning, ${state.username}',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              Text(DateFormatters.shortDate(DateTime.now())),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: () async {
-                  final id = await context.read<HomeDashboardCubit>().startEmptyWorkout();
-                  if (context.mounted) {
-                    context.read<ShellActiveWorkoutCubit>().refreshNow();
-                  }
-                  if (!context.mounted) return;
-                  Navigator.of(context).pushNamed(
-                    Routes.activeWorkout,
-                    arguments: ActiveWorkoutRouteArgs(workoutId: id),
-                  );
-                },
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Start Empty Workout'),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: summary?.suggestedRoutine == null
-                    ? onOpenWorkoutTab
-                    : () async {
-                        final id = await context.read<HomeDashboardCubit>().startSuggestedRoutine();
-                        if (context.mounted) {
-                          context.read<ShellActiveWorkoutCubit>().refreshNow();
-                        }
-                        if (!context.mounted || id == null) return;
-                        Navigator.of(context).pushNamed(
-                          Routes.activeWorkout,
-                          arguments: ActiveWorkoutRouteArgs(workoutId: id),
-                        );
-                      },
-                icon: const Icon(Icons.auto_awesome),
-                label: Text(summary?.suggestedRoutine?.name ?? 'Pick a Routine'),
-              ),
-              if (summary?.suggestedRoutine != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(summary!.suggestedRoutine!.reason),
-                ),
-              const SizedBox(height: 24),
-              _SectionTitle('This Week'),
-              _ThisWeekStrip(days: summary?.thisWeekTrainedDays ?? const []),
-              Text('${summary?.streakDays ?? 0} day streak'),
-              const SizedBox(height: 24),
-              _SectionTitle('Last Workout'),
-              if (summary?.lastWorkout == null)
-                const Text('Log your first workout to see stats.')
-              else
-                Card(
-                  child: ListTile(
-                    title: Text(summary!.lastWorkout!.name),
-                    subtitle: Text(
-                      '${DateFormatters.shortDate(summary.lastWorkout!.startTime)} · '
-                      '${DateFormatters.duration(summary.lastWorkout!.startTime, summary.lastWorkout!.endTime)} · '
-                      '${summary.lastWorkout!.volume.toStringAsFixed(0)} kg',
-                    ),
-                    trailing: Wrap(
-                      spacing: 4,
-                      children: summary.lastWorkoutMuscleTags.map((tag) => Chip(label: Text(tag))).toList(),
-                    ),
+        return Container(
+          color: _bgColor,
+          child: SafeArea(
+            bottom: false,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 150),
+              children: [
+                _HeaderSection(username: state.username),
+                const SizedBox(height: _sectionSpacing),
+                _AnimatedSection(
+                  delayMs: 20,
+                  child: _QuickStartSection(
+                    suggestedRoutineName: summary?.suggestedRoutine?.name,
+                    suggestedRoutineReason: summary?.suggestedRoutine?.reason,
+                    onStartEmptyWorkout: () async {
+                      final id = await context
+                          .read<HomeDashboardCubit>()
+                          .startEmptyWorkout();
+                      if (context.mounted) {
+                        context.read<ShellActiveWorkoutCubit>().refreshNow();
+                      }
+                      if (!context.mounted) return;
+                      Navigator.of(context).pushNamed(
+                        Routes.activeWorkout,
+                        arguments: ActiveWorkoutRouteArgs(workoutId: id),
+                      );
+                    },
+                    onPickRoutine: summary?.suggestedRoutine == null
+                        ? onOpenWorkoutTab
+                        : () async {
+                            final id = await context
+                                .read<HomeDashboardCubit>()
+                                .startSuggestedRoutine();
+                            if (context.mounted) {
+                              context
+                                  .read<ShellActiveWorkoutCubit>()
+                                  .refreshNow();
+                            }
+                            if (!context.mounted || id == null) return;
+                            Navigator.of(context).pushNamed(
+                              Routes.activeWorkout,
+                              arguments: ActiveWorkoutRouteArgs(workoutId: id),
+                            );
+                          },
                   ),
                 ),
-              const SizedBox(height: 24),
-              _SectionTitle('Recent PRs'),
-              if (summary?.recentPrs.isEmpty ?? true)
-                const Text('No PRs yet.')
-              else
-                ...summary!.recentPrs.map(
-                  (pr) => Card(
-                    child: ListTile(
-                      leading: const Chip(label: Text('PR')),
-                      title: Text(pr.exerciseName),
-                      trailing: Text('${pr.weight.toStringAsFixed(1)} kg'),
-                      subtitle: Text('${pr.reps ?? '-'} reps'),
-                    ),
+                const SizedBox(height: _sectionSpacing),
+                _AnimatedSection(
+                  delayMs: 70,
+                  child: _WeekCard(
+                    days: summary?.thisWeekTrainedDays ?? const [],
+                    streak: summary?.streakDays ?? 0,
                   ),
                 ),
-              const SizedBox(height: 24),
-              _SectionTitle('Muscle Recovery'),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 2.6,
-                children: (summary?.recovery ?? const []).map((item) {
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 6,
-                        backgroundColor: _recoveryColor(item.status),
-                      ),
-                      title: Text(item.group),
-                      subtitle: Text(item.sinceLabel),
-                    ),
-                  );
-                }).toList(),
-              ),
-              if (state.isLoading) const LinearProgressIndicator(),
-              if (state.errorMessage != null) Text(state.errorMessage!),
-          ],
+                const SizedBox(height: _sectionSpacing),
+                _AnimatedSection(
+                  delayMs: 120,
+                  child: _LastWorkoutCard(
+                    workout: summary?.lastWorkout,
+                    tags: summary?.lastWorkoutMuscleTags ?? const [],
+                  ),
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _AnimatedSection(
+                  delayMs: 170,
+                  child: _RecentPrCard(
+                    prs: summary?.recentPrs ?? const <RecentPrSummary>[],
+                  ),
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _AnimatedSection(
+                  delayMs: 220,
+                  child: _RecoveryCard(
+                    items: summary?.recovery ?? const <MuscleRecoverySummary>[],
+                  ),
+                ),
+                if (state.isLoading) ...[
+                  const SizedBox(height: 16),
+                  const ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(999)),
+                    child: LinearProgressIndicator(minHeight: 3),
+                  ),
+                ],
+                if (state.errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  _ErrorNote(message: state.errorMessage!),
+                ],
+              ],
+            ),
+          ),
         );
       },
     );
   }
-
-  Color _recoveryColor(RecoveryStatus status) {
-    switch (status) {
-      case RecoveryStatus.sore:
-        return Colors.red;
-      case RecoveryStatus.recovering:
-        return Colors.orange;
-      case RecoveryStatus.ready:
-        return Colors.teal;
-      case RecoveryStatus.fresh:
-        return Colors.lightGreen;
-    }
-  }
 }
 
-class _ThisWeekStrip extends StatelessWidget {
-  final List<bool> days;
+class _AnimatedSection extends StatelessWidget {
+  final int delayMs;
+  final Widget child;
 
-  const _ThisWeekStrip({required this.days});
+  const _AnimatedSection({required this.delayMs, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(7, (index) {
-        final trained = index < days.length && days[index];
-        final isToday = now.weekday - 1 == index;
-        return Column(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isToday ? Theme.of(context).colorScheme.primaryContainer : null,
-                border: Border.all(
-                  color: trained ? Theme.of(context).colorScheme.primary : Colors.grey,
-                  width: trained ? 2 : 1,
-                ),
-              ),
-              child: Text(DateFormatters.weekday(DateTime(2024, 1, index + 1)).substring(0, 1)),
-            ),
-            Text(DateFormatters.weekday(DateTime(2024, 1, index + 1))),
-          ],
-        );
-      }),
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: 280 + delayMs),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, section) => Opacity(
+        opacity: value,
+        child: Transform.translate(
+          offset: Offset(0, (1 - value) * 10),
+          child: section,
+        ),
+      ),
+      child: child,
     );
   }
 }
@@ -187,9 +154,586 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
     );
+  }
+}
+
+class _HeaderSection extends StatelessWidget {
+  final String username;
+
+  const _HeaderSection({required this.username});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Good morning, $username',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          _fullDateLabel(DateTime.now()),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: HomeDashboardScreen._mutedText,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _fullDateLabel(DateTime date) {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    return '${days[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
+  }
+}
+
+class _QuickStartSection extends StatelessWidget {
+  final VoidCallback onStartEmptyWorkout;
+  final VoidCallback onPickRoutine;
+  final String? suggestedRoutineName;
+  final String? suggestedRoutineReason;
+
+  const _QuickStartSection({
+    required this.onStartEmptyWorkout,
+    required this.onPickRoutine,
+    required this.suggestedRoutineName,
+    required this.suggestedRoutineReason,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('Quick Start'),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 46,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: HomeDashboardScreen._accent),
+                    foregroundColor: HomeDashboardScreen._accent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: onStartEmptyWorkout,
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Start Empty Workout'),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: SizedBox(
+                height: 46,
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF0E295A),
+                    foregroundColor: const Color(0xFF66A2FF),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: onPickRoutine,
+                  icon: const Icon(Icons.view_list, size: 16),
+                  label: Text(
+                    suggestedRoutineName ?? 'Pick a Routine',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (suggestedRoutineReason != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            suggestedRoutineReason!,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: HomeDashboardScreen._subtleText,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _WeekCard extends StatelessWidget {
+  final List<bool> days;
+  final int streak;
+
+  const _WeekCard({required this.days, required this.streak});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final labels = List.generate(
+      7,
+      (index) => DateFormatters.weekday(DateTime(2024, 1, index + 1)),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('This Week'),
+        const SizedBox(height: 10),
+        _DashCard(
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(7, (index) {
+                  final trained = index < days.length && days[index];
+                  final isToday = now.weekday - 1 == index;
+                  return Expanded(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: trained
+                                ? const Color(0xFFE8E9EC)
+                                : Colors.transparent,
+                            border: Border.all(
+                              color: trained
+                                  ? const Color(0xFFE8E9EC)
+                                  : (isToday
+                                        ? HomeDashboardScreen._accent
+                                        : const Color(0xFF2A3140)),
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.circle,
+                              size: 8,
+                              color: trained
+                                  ? const Color(0xFF11141B)
+                                  : Colors.transparent,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          labels[index],
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: HomeDashboardScreen._mutedText,
+                                fontSize: 11,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 12),
+              RichText(
+                text: TextSpan(
+                  text: '$streak',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: ' day streak',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: HomeDashboardScreen._mutedText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LastWorkoutCard extends StatelessWidget {
+  final WorkoutSummary? workout;
+  final List<String> tags;
+
+  const _LastWorkoutCard({required this.workout, required this.tags});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('Last Workout'),
+        const SizedBox(height: 10),
+        _DashCard(
+          child: workout == null
+              ? Text(
+                  'Log your first workout to see stats.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: HomeDashboardScreen._mutedText,
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      workout!.name,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${_relativeDay(workout!.startTime)} • ${DateFormatters.duration(workout!.startTime, workout!.endTime)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: HomeDashboardScreen._mutedText,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: tags.isEmpty
+                          ? [_TagChip(label: 'No tags')]
+                          : tags.map((tag) => _TagChip(label: tag)).toList(),
+                    ),
+                    const SizedBox(height: 14),
+                    RichText(
+                      text: TextSpan(
+                        text: 'Total Volume: ',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: HomeDashboardScreen._mutedText,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: '${workout!.volume.toStringAsFixed(0)} kg',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  String _relativeDay(DateTime start) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(start.year, start.month, start.day);
+    final deltaDays = today.difference(target).inDays;
+    if (deltaDays <= 0) return 'Today';
+    if (deltaDays == 1) return 'Yesterday';
+    return DateFormatters.shortDate(start);
+  }
+}
+
+class _RecentPrCard extends StatelessWidget {
+  final List<RecentPrSummary> prs;
+
+  const _RecentPrCard({required this.prs});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('Recent PRs'),
+        const SizedBox(height: 10),
+        _DashCard(
+          child: prs.isEmpty
+              ? Text(
+                  'No PRs yet.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: HomeDashboardScreen._mutedText,
+                  ),
+                )
+              : Column(
+                  children: List.generate(prs.length, (i) {
+                    final pr = prs[i];
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: i == prs.length - 1 ? 0 : 10,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 20,
+                            width: 20,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF14D99A),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'PR',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: const Color(0xFF03261A),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 9,
+                                  ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              pr.exerciseName,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(color: Colors.white),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            '${pr.weight.toStringAsFixed(0)} kg',
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          if (pr.reps != null) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              '${pr.reps} reps',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: HomeDashboardScreen._subtleText,
+                                  ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecoveryCard extends StatelessWidget {
+  final List<MuscleRecoverySummary> items;
+
+  const _RecoveryCard({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    final source = items.take(6).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('Muscle Recovery'),
+        const SizedBox(height: 10),
+        _DashCard(
+          child: source.isEmpty
+              ? Text(
+                  'No recent recovery data.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: HomeDashboardScreen._mutedText,
+                  ),
+                )
+              : GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: source.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 2.55,
+                  ),
+                  itemBuilder: (context, index) {
+                    final item = source[index];
+                    return Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _recoveryColor(item.status),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.group,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _compactSince(item.sinceLabel),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: HomeDashboardScreen._mutedText,
+                                    ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  String _compactSince(String source) {
+    if (source == 'No recent training') {
+      return 'No history';
+    }
+    if (source.startsWith('Trained ')) {
+      return source.substring('Trained '.length);
+    }
+    return source;
+  }
+}
+
+class _ErrorNote extends StatelessWidget {
+  final String message;
+
+  const _ErrorNote({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A1016),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF5A1E2B)),
+      ),
+      child: Text(
+        message,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: const Color(0xFFFFC6D1)),
+      ),
+    );
+  }
+}
+
+class _DashCard extends StatelessWidget {
+  final Widget child;
+
+  const _DashCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: HomeDashboardScreen._cardColor,
+        borderRadius: BorderRadius.circular(HomeDashboardScreen._radius),
+        border: Border.all(color: HomeDashboardScreen._cardStroke),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _TagChip extends StatelessWidget {
+  final String label;
+
+  const _TagChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF262C37),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFF363E4C)),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+Color _recoveryColor(RecoveryStatus status) {
+  switch (status) {
+    case RecoveryStatus.sore:
+      return const Color(0xFFF55A5A);
+    case RecoveryStatus.recovering:
+      return const Color(0xFFF4AD36);
+    case RecoveryStatus.ready:
+      return const Color(0xFF14D99A);
+    case RecoveryStatus.fresh:
+      return const Color(0xFF39C9FF);
   }
 }
