@@ -83,7 +83,7 @@ return openDatabase(
 - Foreign keys are enabled in `onConfigure`.
 - Model classes define static table and column constants.
 - Models use manual `toMap()` / `fromMap()` for SQLite rows.
-- DAO writes accept `DatabaseExecutor` so repository transactions can reuse the same DAO method.
+- Most DAO writes accept `DatabaseExecutor` so repository transactions can reuse the same DAO method.
 - Some DAO reads accept optional `[DatabaseExecutor? db]` for transaction isolation.
 - Batch reads use dynamic placeholders for `IN (...)`.
 - The SQL column name `order` is always quoted as `"order"`.
