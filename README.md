@@ -13,7 +13,7 @@ Flutter fitness tracker for planning routines, logging active workouts, browsing
 
 ## Tech Stack
 
-- Flutter / Dart SDK `^3.10.7`
+- Dart SDK `^3.10.7` (Flutter via installed SDK)
 - `flutter_bloc` + `equatable` for presentation state
 - `get_it` + `injectable` for dependency injection
 - `sqflite` for local persistence
