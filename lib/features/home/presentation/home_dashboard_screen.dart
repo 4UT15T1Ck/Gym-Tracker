@@ -27,12 +27,16 @@ class HomeDashboardScreen extends StatelessWidget {
     return BlocBuilder<HomeDashboardCubit, HomeDashboardState>(
       builder: (context, state) {
         final summary = state.summary;
+        final mediaQuery = MediaQuery.of(context);
+        final bottomInset = mediaQuery.padding.bottom;
+        final listBottomPadding = bottomInset + 16.0;
+
         return Container(
           color: _bgColor,
           child: SafeArea(
             bottom: false,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 150),
+              padding: EdgeInsets.fromLTRB(16, 14, 16, listBottomPadding),
               children: [
                 _HeaderSection(username: state.username),
                 const SizedBox(height: _sectionSpacing),
