@@ -52,13 +52,22 @@
 | Component | Responsibility |
 |---|---|
 | `HomeDashboardCubit` | Loads dashboard summary, starts empty workout, starts suggested routine |
-| `HomeDashboardScreen` | Renders greeting, quick start, suggested routine, weekly strip, last workout, PRs, and recovery cards |
+| `HomeDashboardScreen` | Owns the Home tab body and orchestrates all dashboard sections |
+| `_AnimatedSection` | Lightweight fade/slide entrance animation for section-level polish |
+| `_HeaderSection` | Greeting and full-date presentation block |
+| `_QuickStartSection` | Two primary actions: start empty workout and pick/suggested routine |
+| `_WeekCard` | Weekly training indicators and streak summary |
+| `_LastWorkoutCard` | Last workout summary with timing, tags, and total volume |
+| `_RecentPrCard` | Compact PR rows with badge and performance values |
+| `_RecoveryCard` | 2-column recovery status grid by muscle group |
+| `_DashCard`, `_TagChip`, `_ErrorNote` | Shared local UI primitives for consistent card, chip, and error styling |
 
 ### Design Notes
 
 - Recovery groups are normalized by `MuscleGroupUtils`.
 - Dashboard loading batches muscle lookup data before deriving recovery and suggestions.
 - Suggested routine requires enough history and at least two routines.
+- Recent redesign changed only presentation structure/styles (dark card system + section animations); Cubit/service/repository behavior and navigation flow remained unchanged.
 
 ---
 
