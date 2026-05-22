@@ -1,50 +1,42 @@
 # General Architecture
 
-<!-- 
-  FILE PURPOSE   : Single source of truth for overall app structure, layers, patterns, and wiring.
+<!--
+  FILE PURPOSE   : Single source of truth for app structure, layers, patterns, and wiring.
 
   WHAT BELONGS   : Package layout, layer rules, BLoC/Cubit pattern, navigation structure, DI setup.
 
-  WHAT DOES NOT  : Feature-level detail (→ features_architecture.md), tech config (→ technical_reference.md),
-                   implementation status or TODOs (→ todo.md / current_work.md).
+  WHAT DOES NOT  : Feature-level detail (-> features_architecture.md), tech config (-> technical_reference.md),
+                   implementation status or TODOs (-> todo.md / current_work.md).
 
   UPDATE WHEN    : A new layer convention is introduced, navigation structure changes,
                    or a project-wide architectural decision is made.
-  
-  FORMAT: 
-            ## <Section Name>
-            e.g. Package Structure, a new layer, or a navigation change
-
-            Brief description of what this section establishes.
-
-            \```
-            code block or diagram if needed
-            \```
- -->
+-->
 
 ---
 
 ## Package Structure
 
-```
+```text
 lib/
-├── common/
-│   ├── extensions/            # Dart extension methods
-│   ├── routes/                # App navigation / route definitions
-│   ├── utils/                 # Shared utilities (GetIt setup, helpers)
-│   └── widgets/               # Shared reusable widgets across features
-├── core/
-│   ├── dao/                   # Data Access Objects — raw SQL via sqflite
-│   ├── data/                  # DatabaseModule, SeedHelper, UuidModule
-│   ├── enums/                 # SetType, ExerciseTrackingType, WorkoutStatus
-│   ├── models/                # DB entity models (toMap / fromMap)
-│   ├── repositories/          # Repository interfaces + composite read models
-│   └── repository_impl/       # Repository implementations
-├── features/
-│   ├── library/               # Exercise library / browser
-│   ├── profile/               # User profile
-│   └── workout/               # Active workout, workout history
-└── main.dart                  # App entry point — DI init, MaterialApp
+|-- app.dart                       # MaterialApp, theme, route generator, global Bloc providers
+|-- main.dart                      # Platform init, preferences, DI, notifications, app bootstrap
+|-- common/
+|   |-- routes/                    # Route names, onGenerateRoute, route argument objects
+|   `-- utils/                     # Date formatting, GetIt setup, muscle grouping helpers
+|-- core/
+|   |-- dao/                       # Data Access Objects, raw SQL via sqflite
+|   |-- data/                      # DatabaseModule, seed helper, UUID module, preferences store
+|   |-- enums/                     # SetType, ExerciseTrackingType, WorkoutStatus
+|   |-- models/                    # DB entity models with toMap/fromMap
+|   |-- repositories/              # Repository interfaces and composite read models
+|   |-- repository_impl/           # Repository implementations
+|   `-- services/                  # Notifications and dashboard aggregation
+`-- features/
+    |-- home/                      # Home dashboard
+    |-- library/                   # Exercise browser and exercise detail
+    |-- profile/                   # Profile, stats, measurements, history
+    |-- shell/                     # Bottom navigation and active workout banner
+    `-- workout/                   # Routine and active workout flows
 ```
 
 ---
@@ -53,127 +45,164 @@ lib/
 
 ### Dependency Flow
 
+```text
+Presentation -> Domain contracts -> Data implementations
+                  ^                  |
+                  `------------------`
 ```
-Presentation  →  Domain (Repositories)  ←  Data (DAOs)
-```
 
-Repository interfaces live in `core/repositories/`. Data layer (DAOs + repository impls) implements those interfaces. Presentation never talks to DAOs directly — only through repository interfaces.
+- Presentation screens use Cubits/Blocs and call repository interfaces.
+- Repository interfaces and composite read models live in `core/repositories/`.
+- Repository implementations own transactions and compose DAO results.
+- DAOs contain SQL and return typed entity models. Presentation does not call DAOs directly.
+- Services in `core/services/` aggregate app-level behavior that spans repositories or platform APIs.
 
-### Domain / Repository Interfaces (pure Dart — no platform imports)
-- **Models**: data classes representing business objects and enums (`core/models/`, `core/enums/`)
-- **Repository interfaces**: contracts the data layer must implement (`core/repositories/`)
-- **Composite read models**: `RoutineDetail`, `WorkoutDetail`, `ExerciseDetail`, etc. (`core/repositories/repository_models.dart`)
+### Domain / Repository Interfaces
 
-### Data Layer (sqflite, platform)
-- **DAOs**: Plain Dart classes wrapping `sqflite` queries (`core/dao/`)
-- **Repository implementations**: implement repository interfaces; talk to DAOs, own transactions (`core/repository_impl/`)
-- **Database module**: `DatabaseModule` — `@singleton` via injectable; creates tables, indexes, seeds data (`core/data/db_module.dart`)
-- **Seed**: `seedDatabaseFromJson()` loads `assets/seed_data.json` on `onCreate` (`core/data/seed_helper.dart`)
+- Entity models and enums: `core/models/`, `core/enums/`
+- Repository contracts: `core/repositories/`
+- Composite read models: `RoutineDetail`, `WorkoutDetail`, `ExerciseDetail`, `WorkoutSummary`, stats records in `repository_models.dart`
 
-### Presentation (Flutter + BLoC/Cubit)
-- **Cubit/BLoC per screen**: `XxxState`, `XxxCubit` (or `XxxBloc` for event-driven flows)
-- **Screen widgets**: observe state via `BlocBuilder` / `BlocListener`
-- **Shared widgets**: reusable components in `common/widgets/`; one responsibility per file
+### Data Layer
+
+- `DatabaseModule` creates the SQLite database, tables, indexes, and seed data.
+- DAOs wrap `sqflite` queries.
+- Repository implementations combine DAO calls, perform transactions, and generate UUIDs.
+- `PreferencesStore` wraps `shared_preferences` for lightweight profile settings.
+
+### Presentation Layer
+
+- Screens live under `features/<feature>/presentation/`.
+- State classes and Cubits/Blocs live under `features/<feature>/bloc/`.
+- Most screens use `Cubit`; the rest timer uses `Bloc` because it is event/timer driven.
+- `app.dart` provides global Cubits for the shell/home/workout/profile surfaces and route-specific providers for detail flows.
 
 ---
 
 ## BLoC / Cubit Pattern
 
 ```dart
-// State — immutable
 class XxxState extends Equatable {
-  final List<Item> items;
   final bool isLoading;
-  
-  const XxxState({this.items = const [], this.isLoading = false});
-  
+  final String? errorMessage;
+
+  const XxxState({this.isLoading = false, this.errorMessage});
+
   @override
-  List<Object?> get props => [items, isLoading];
+  List<Object?> get props => [isLoading, errorMessage];
 }
 
-// Cubit
 class XxxCubit extends Cubit<XxxState> {
   XxxCubit(this._repository) : super(const XxxState());
+
   final XxxRepository _repository;
 }
 ```
 
-- Use `Cubit` for simple state with method calls.
-- Use `Bloc` with explicit `XxxEvent` sealed class only when event mapping adds clarity.
-- UI observes state via `BlocBuilder` / `BlocListener`. Never access cubit/bloc internals from widgets.
-- One-shot side effects (navigation, snackbars) via `BlocListener`.
-- State and callbacks are passed down — Cubits/Blocs are not passed into child widgets.
+- Use `Cubit` for command-style screen state.
+- Use `Bloc` when event sequencing is meaningful, such as rest timer start/tick/adjust/skip/cancel.
+- Use `BlocBuilder` for rendering and `BlocListener` for one-shot side effects.
+- Child widgets receive values and callbacks, not Cubit instances.
+- Keep business rules in Cubits, repositories, or services; widgets only coordinate UI interactions.
 
 ---
 
-## Dependency Injection — get_it + injectable
+## Dependency Injection
 
-| Annotation | Used for |
+The project uses `get_it` plus `injectable`.
+
+| Registration | Used for |
 |---|---|
-| `@singleton` | Singletons: Database, repositories |
-| `@preResolve` | Async singletons resolved before app starts (Database) |
-| `@injectable` | Factory — fresh instance per injection (Cubits) |
-| `@module` | Abstract class providing third-party bindings (DatabaseModule, UuidModule) |
+| `@singleton` / `@preResolve` | Async database singleton |
+| `@LazySingleton(as: Interface)` | Repository implementations |
+| `@LazySingleton()` | App-level Cubits that should survive tab switches |
+| `@injectable` | Route-scoped Cubits and DAOs |
+| Manual registration in `GetItUtils.setup()` | Shell active workout Cubit, notification service, rest timer Bloc |
 
-### DI Entry Point
+Entry point: `common/utils/getit_utils.dart`
 
-`common/utils/getit_utils.dart` — single `@injectableInit` registration point. Called from `main()` via `GetItUtils.setup()` before `runApp()`.
+Generated file: `common/utils/getit_utils.config.dart`
 
-### Generated Config
+Run after DI annotation changes:
 
-`common/utils/getit_utils.config.dart` — auto-generated by `build_runner`. Run `dart run build_runner build` after any DI annotation change.
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
 
 ---
 
 ## Navigation
 
-**Status**: Route definitions pending implementation.
+Navigation is centralized in `common/routes/routes.dart` via `Routes.onGenerateRoute`.
 
-Structure (planned):
+```text
+/
+`-- MainShellScreen
+    |-- HomeDashboardScreen
+    |-- WorkoutHomeScreen
+    `-- ProfileHomeScreen
 
+Workout routes
+|-- /active-workout
+|-- /add-exercise
+|-- /create-routine
+|-- /routine-detail
+`-- /edit-routine
+
+Library routes
+|-- /exercise-list
+`-- /exercise-detail
+
+Profile routes
+|-- /statistics
+|-- /muscle-map
+|-- /measures
+|-- /workout-history
+`-- /workout-detail
 ```
-Bottom navigation bar
-├── Workout (active workout / start)
-├── Library (exercise browser)
-└── Profile
 
-Workout
-├── Active Workout Screen
-├── Workout History
-└── Workout Detail
+Route argument objects live in `common/routes/route_args.dart`.
 
-Library
-├── Exercise List (filterable by muscle, equipment, tracking type)
-└── Exercise Detail
+Provider ownership rules:
 
-Routine
-├── Routine List
-├── Routine Detail / Edit
-└── Start Workout from Routine
-```
+- Singleton/global Cubits are provided with `BlocProvider.value`.
+- Route-scoped Cubits are created in the route builder and auto-closed with `BlocProvider(create:)`.
+- Active workout uses a singleton Cubit so the shell banner, rest timer, and active workout screen remain synchronized.
 
 ---
 
-## Data Flow Example (Start Workout)
+## App Bootstrap
 
-```
-WorkoutScreen
-  │  user taps "Start Workout"
-  ▼
-WorkoutCubit
-  │  calls repository method
-  ▼
-WorkoutRepository.startWorkout()
-  │  delegates to repository impl
-  ▼
-WorkoutRepositoryImpl
-  │  starts DB transaction
-  │  inserts Workout + copies RoutineExercises/Sets
-  ▼
-WorkoutDao / WorkoutExerciseDao / WorkoutSetDao (sqflite)
-  │  returns assembled WorkoutDetail
-  ▲
-WorkoutCubit emits new state
-  ▲
-WorkoutScreen rebuilds via BlocBuilder
+`main.dart` performs startup in this order:
+
+1. `WidgetsFlutterBinding.ensureInitialized()`
+2. `PreferencesStore.init()`
+3. `GetItUtils.setup()`
+4. Notification initialization and permission request on Android/iOS
+5. Initial loads for Home, Workout, and Profile Cubits
+6. `runApp(const MainApp())`
+
+`app.dart` configures:
+
+- Dark Material 3 theme from a blue seed color
+- Global `navigatorKey` owned by `NotificationService`
+- Cupertino page transitions for Android and iOS
+- `Routes.onGenerateRoute`
+- Initial route `/`
+
+---
+
+## Data Flow Example: Start Workout From Routine
+
+```text
+WorkoutHomeScreen
+  -> WorkoutHomeCubit.startRoutine()
+  -> WorkoutRepository.startWorkout(name, routineId)
+  -> WorkoutRepositoryImpl transaction
+  -> WorkoutDao inserts workout
+  -> RoutineExerciseDao / RoutineSetDao fetch routine template
+  -> WorkoutExerciseDao / WorkoutSetDao copy exercises and sets
+  -> WorkoutDetail returned
+  -> ShellActiveWorkoutCubit.refreshNow()
+  -> Navigator pushes /active-workout
 ```
