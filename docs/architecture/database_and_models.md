@@ -256,7 +256,7 @@ All enums use extensions with `dbValue` (snake_case string for DB storage) and `
 - `getAll()`, `getById(id)`, `getByIds(ids)`, `getFiltered({muscleId, equipmentId, trackingType, query})`, `getSecondaryMuscleIds(exerciseId)`
 
 ### `ExerciseStatsDao`
-- `getPersonalBest(exerciseId)`, `getRecentHistoryWorkouts(exerciseId, {limit})`, `getRecentHistorySets(exerciseId, {limit})`, `getWeightOverTime(exerciseId, {days})`, `getVolumeOverTime(exerciseId, {days})`, `getTotalSessions(exerciseId)`
+- `getPersonalBest(exerciseId)`, `getRecentHistory(exerciseId, {limit})`, `getWeightOverTime(exerciseId)`, `getVolumeOverTime(exerciseId)`, `getTotalSessions(exerciseId)`, `getTopPersonalRecords({limit})`
 
 ### `RoutineDao`
 - `getAll()`, `getById(id)`, `insert(routine, db)`, `update(routine, db)`, `delete(id)`

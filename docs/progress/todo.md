@@ -127,6 +127,6 @@ ENTRY FORMAT: | XX | Item description | Status | Short approach note |
 | # | Item | Status | Notes |
 |---|---|---|---|
 | DOC1 | README refresh | ✅ | Current app surface, setup, docs map |
-| DOC2 | Architecture docs refresh | 🔄 | Align docs with implemented presentation/services |
+| DOC2 | Architecture docs refresh | ✅ | Aligned docs with implemented presentation/services |
 | DI1 | Regenerate DI config | ❌ | Run build_runner after docs-only pass |
 | TST1 | Replace default widget test | ❌ | Current test scaffold should be updated for `MainApp` |

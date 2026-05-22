@@ -33,7 +33,7 @@ FORMAT:
 
 ## Active Item: Documentation Sync (DOCS-2026-05-22)
 
-**Status**: In Progress
+**Status**: Completed
 
 ### Problem
 README and docs still described the project as data-layer-only, while the app now includes shell navigation, dashboards, routine/workout flows, exercise library, profile surfaces, notifications, and measurements.

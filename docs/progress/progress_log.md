@@ -92,3 +92,13 @@ Format:
 **Files changed**: `docs/architecture/general_architecture.md`, `docs/architecture/features_architecture.md`, `docs/architecture/database_and_models.md`, `docs/technical/technical_reference.md`, `docs/progress/todo.md`, `docs/progress/current_work.md`, `docs/progress/progress_log.md`
 - Created full project documentation following Agent Rule docs template
 - Documented all architecture, features, database schema, technical patterns, and progress
+
+---
+
+## [DOCS-2026-05-22] Documentation Sync
+**Date**: 2026-05-22
+**Files changed**: `README.md`, `docs/architecture/general_architecture.md`, `docs/architecture/features_architecture.md`, `docs/architecture/database_and_models.md`, `docs/architecture/DATA_ACCESS_LAYER.md`, `docs/technical/technical_reference.md`, `docs/progress/todo.md`, `docs/progress/current_work.md`, `docs/progress/progress_log.md`
+- Updated README with current app surface, setup commands, stack, and documentation map
+- Refreshed architecture docs for shell navigation, home dashboard, workout/routine flows, exercise library, profile, notifications, preferences, and measurements
+- Added `body_measure_entries`, `BodyMeasurementDao`, and `BodyMeasurementRepositoryImpl` to database/DAL docs
+- Updated progress docs to show implemented presentation surfaces and remaining engineering follow-ups
