@@ -549,16 +549,14 @@ class _RecentPrCard extends StatelessWidget {
                                   fontWeight: FontWeight.w800,
                                 ),
                           ),
-                          if (pr.reps != null) ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              '${pr.reps} reps',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: HomeDashboardScreen._subtleText,
-                                  ),
-                            ),
-                          ],
+                          const SizedBox(width: 8),
+                          Text(
+                            pr.reps != null ? '${pr.reps} reps' : '— reps',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: HomeDashboardScreen._subtleText,
+                                ),
+                          ),
                         ],
                       ),
                     );
