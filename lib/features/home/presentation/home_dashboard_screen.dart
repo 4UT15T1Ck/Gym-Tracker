@@ -647,14 +647,51 @@ class _RecoveryCard extends StatelessWidget {
     );
   }
 
-  String _compactSince(String source) {
-    if (source == 'No recent training') {
+  String _compactSince(MuscleRecoverySummary item) {
+    final lastTrainedAt = item.lastTrainedAt;
+    if (lastTrainedAt == null) {
       return 'No history';
     }
-    if (source.startsWith('Trained ')) {
-      return source.substring('Trained '.length);
+    return _compactRelativeTime(lastTrainedAt);
+  }
+
+  String _compactRelativeTime(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(date.year, date.month, date.day);
+    final days = today.difference(target).inDays;
+
+    if (days <= 0) {
+      return 'Today';
     }
-    return source;
+    if (days == 1) {
+      return '1d ago';
+    }
+    if (days < 7) {
+      return '${days}d ago';
+    }
+
+    final weeks = days ~/ 7;
+    if (weeks == 1) {
+      return '1w ago';
+    }
+    if (weeks < 5) {
+      return '${weeks}w ago';
+    }
+
+    final months = days ~/ 30;
+    if (months == 1) {
+      return '1mo ago';
+    }
+    if (months < 12) {
+      return '${months}mo ago';
+    }
+
+    final years = days ~/ 365;
+    if (years == 1) {
+      return '1y ago';
+    }
+    return '${years}y ago';
   }
 }
 
