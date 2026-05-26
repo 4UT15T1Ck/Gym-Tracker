@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
 import 'package:gym_tracker/common/utils/date_formatters.dart';
+import 'package:gym_tracker/common/widgets/app_haptics.dart';
+import 'package:gym_tracker/common/widgets/motion_tokens.dart';
+import 'package:gym_tracker/common/widgets/success_pulse_overlay.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
 import 'package:gym_tracker/core/models/exercise_model.dart';
 import 'package:gym_tracker/core/models/workout_set_model.dart';
@@ -22,8 +25,17 @@ class ActiveWorkoutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<ActiveWorkoutCubit, ActiveWorkoutState>(
       listenWhen: (previous, current) => previous.didFinish != current.didFinish,
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state.didFinish) {
+          await AppHaptics.success(context);
+          if (context.mounted) {
+            await SuccessPulseOverlay.show(
+              context,
+              message: 'Workout finished',
+              duration: MotionTokens.successPulse,
+            );
+          }
+          if (!context.mounted) return;
           context.read<ShellActiveWorkoutCubit>().refreshNow();
           context.read<HomeDashboardCubit>().load();
           context.read<WorkoutHomeCubit>().load();
@@ -375,6 +387,7 @@ class _SetRowState extends State<_SetRow> {
   late final TextEditingController _repsController;
   late final FocusNode _weightFocus;
   late final FocusNode _repsFocus;
+  late bool _wasCompleted;
 
   @override
   void didChangeDependencies() {
@@ -385,6 +398,7 @@ class _SetRowState extends State<_SetRow> {
   @override
   void initState() {
     super.initState();
+    _wasCompleted = widget.set.isCompleted;
     _weightController = TextEditingController(text: _weightDisplay);
     _repsController = TextEditingController(text: _repsDisplay);
     _weightFocus = FocusNode();
@@ -528,6 +542,21 @@ class _SetRowState extends State<_SetRow> {
     if (!_repsFocus.hasFocus && oldWidget.set.reps != widget.set.reps) {
       _repsController.text = _repsDisplay;
     }
+    if (!_wasCompleted && widget.set.isCompleted) {
+      _showCompletionFeedback();
+    }
+    _wasCompleted = widget.set.isCompleted;
+  }
+
+  Future<void> _showCompletionFeedback() async {
+    await AppHaptics.success(context);
+    if (!mounted) return;
+    await SuccessPulseOverlay.show(
+      context,
+      message: 'Set completed',
+      icon: Icons.check_circle,
+      duration: const Duration(milliseconds: 520),
+    );
   }
 
   @override
@@ -545,12 +574,14 @@ class _SetRowState extends State<_SetRow> {
   @override
   Widget build(BuildContext context) {
     final set = widget.set;
-    return Container(
+    return AnimatedContainer(
+      duration: MotionTokens.resolve(context, MotionTokens.base),
+      curve: MotionTokens.standardCurve,
       color: set.isCompleted
           ? Theme.of(context).colorScheme.primary.withOpacity(0.18)
           : set.setType == SetType.warmUp
-              ? Colors.amber.withOpacity(0.12)
-              : null,
+          ? Colors.amber.withOpacity(0.12)
+          : null,
       child: Row(
         children: [
           SizedBox(
@@ -585,7 +616,21 @@ class _SetRowState extends State<_SetRow> {
           ),
           IconButton(
             onPressed: _commitEditsThenToggle,
-            icon: Icon(set.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked),
+            icon: AnimatedSwitcher(
+              duration: MotionTokens.resolve(context, MotionTokens.fast),
+              switchInCurve: MotionTokens.standardCurve,
+              switchOutCurve: MotionTokens.standardCurve,
+              transitionBuilder: (child, animation) => ScaleTransition(
+                scale: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: Icon(
+                set.isCompleted
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+                key: ValueKey<bool>(set.isCompleted),
+              ),
+            ),
           ),
         ],
       ),
