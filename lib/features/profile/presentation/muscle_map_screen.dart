@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/features/profile/bloc/muscle_map_cubit.dart';
 
 class MuscleMapScreen extends StatelessWidget {
@@ -52,15 +53,35 @@ class MuscleMapScreen extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   alignment: WrapAlignment.center,
-                  children: sortedEntries.map((entry) {
-                    final count = entry.value;
-                    return ActionChip(
-                      backgroundColor: _colorForCount(count),
-                      label: Text(
-                        '${entry.key} ${_countLabel(count)}',
-                        style: const TextStyle(color: Colors.white),
+                  children: sortedEntries.indexed.map((entry) {
+                    final index = entry.$1;
+                    final item = entry.$2;
+                    final count = item.value;
+                    return TweenAnimationBuilder<double>(
+                      key: ValueKey<String>(
+                        'muscle-chip-${item.key}-${state.days}',
                       ),
-                      onPressed: () => _showDetail(context, entry.key, count),
+                      tween: Tween(begin: 0, end: 1),
+                      duration: MotionTokens.resolve(
+                        context,
+                        Duration(milliseconds: 180 + (index * 18)),
+                      ),
+                      curve: MotionTokens.standardCurve,
+                      builder: (context, value, chip) => Opacity(
+                        opacity: value,
+                        child: Transform.scale(
+                          scale: 0.95 + (value * 0.05),
+                          child: chip,
+                        ),
+                      ),
+                      child: ActionChip(
+                        backgroundColor: _colorForCount(count),
+                        label: Text(
+                          '${item.key} ${_countLabel(count)}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () => _showDetail(context, item.key, count),
+                      ),
                     );
                   }).toList(),
                 ),
@@ -75,8 +96,9 @@ class MuscleMapScreen extends StatelessWidget {
               ),
               ...sortedEntries.map((entry) {
                 final count = entry.value;
-                final ratio =
-                    maxCount > 0 ? (count / maxCount).clamp(0.0, 1.0) : 0.0;
+                final ratio = maxCount > 0
+                    ? (count / maxCount).clamp(0.0, 1.0)
+                    : 0.0;
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundColor: _colorForCount(count),

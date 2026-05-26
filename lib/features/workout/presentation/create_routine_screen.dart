@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
+import 'package:gym_tracker/common/widgets/app_haptics.dart';
+import 'package:gym_tracker/common/widgets/motion_tokens.dart';
+import 'package:gym_tracker/common/widgets/success_pulse_overlay.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
 import 'package:gym_tracker/core/models/exercise_model.dart';
 import 'package:gym_tracker/features/workout/bloc/create_routine_cubit.dart';
@@ -12,8 +15,20 @@ class CreateRoutineScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<CreateRoutineCubit, CreateRoutineState>(
       listenWhen: (previous, current) => previous.didSave != current.didSave,
-      listener: (context, state) {
-        if (state.didSave) Navigator.of(context).pop(true);
+      listener: (context, state) async {
+        if (state.didSave) {
+          await AppHaptics.success(context);
+          if (context.mounted) {
+            await SuccessPulseOverlay.show(
+              context,
+              message: 'Routine saved',
+              duration: MotionTokens.successPulse,
+            );
+          }
+          if (context.mounted) {
+            Navigator.of(context).pop(true);
+          }
+        }
       },
       child: BlocBuilder<CreateRoutineCubit, CreateRoutineState>(
         builder: (context, state) {
@@ -26,8 +41,18 @@ class CreateRoutineScreen extends StatelessWidget {
               title: Text(state.isEditing ? 'Edit Routine' : 'Create Routine'),
               actions: [
                 TextButton(
-                  onPressed: state.isSaving ? null : () => context.read<CreateRoutineCubit>().save(),
-                  child: const Text('Save'),
+                  onPressed:
+                      state.isSaving ? null : () => context.read<CreateRoutineCubit>().save(),
+                  child: AnimatedSwitcher(
+                    duration: MotionTokens.resolve(context, MotionTokens.fast),
+                    switchInCurve: MotionTokens.standardCurve,
+                    switchOutCurve: MotionTokens.standardCurve,
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(scale: animation, child: child),
+                    ),
+                    child: _saveLabelForState(state),
+                  ),
                 ),
               ],
             ),
@@ -181,14 +206,54 @@ class CreateRoutineScreen extends StatelessWidget {
                     ),
                   );
                 }),
-                if (state.isSaving) const LinearProgressIndicator(),
-                if (state.errorMessage != null) Text(state.errorMessage!),
+                AnimatedSwitcher(
+                  duration: MotionTokens.resolve(context, MotionTokens.base),
+                  switchInCurve: MotionTokens.standardCurve,
+                  switchOutCurve: MotionTokens.standardCurve,
+                  child: state.isSaving
+                      ? const Padding(
+                          key: ValueKey('saving-progress'),
+                          padding: EdgeInsets.only(top: 8),
+                          child: LinearProgressIndicator(),
+                        )
+                      : const SizedBox.shrink(key: ValueKey('saving-empty')),
+                ),
+                AnimatedSwitcher(
+                  duration: MotionTokens.resolve(context, MotionTokens.base),
+                  switchInCurve: MotionTokens.standardCurve,
+                  switchOutCurve: MotionTokens.standardCurve,
+                  child: state.errorMessage == null
+                      ? const SizedBox.shrink(key: ValueKey('error-empty'))
+                      : _ErrorPanel(
+                          key: const ValueKey('error-panel'),
+                          message: state.errorMessage!,
+                        ),
+                ),
               ],
             ),
           );
         },
       ),
     );
+  }
+
+  Widget _saveLabelForState(CreateRoutineState state) {
+    if (state.isSaving) {
+      return const SizedBox(
+        key: ValueKey('save-saving'),
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+    if (state.didSave) {
+      return const Icon(
+        Icons.check_rounded,
+        key: ValueKey('save-done'),
+        size: 18,
+      );
+    }
+    return const Text('Save', key: ValueKey('save-idle'));
   }
 }
 
@@ -222,5 +287,30 @@ class _SetTypeBadge extends StatelessWidget {
       case SetType.failure:
         return Colors.redAccent;
     }
+  }
+}
+
+class _ErrorPanel extends StatelessWidget {
+  final String message;
+
+  const _ErrorPanel({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A1016),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF5A1E2B)),
+      ),
+      child: Text(
+        message,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: const Color(0xFFFFC6D1)),
+      ),
+    );
   }
 }

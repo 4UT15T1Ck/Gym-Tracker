@@ -54,6 +54,8 @@
 | `HomeDashboardCubit` | Loads dashboard summary, starts empty workout, starts suggested routine |
 | `HomeDashboardScreen` | Owns the Home tab body and orchestrates all dashboard sections |
 | `_AnimatedSection` | Lightweight fade/slide entrance animation for section-level polish |
+| `TapScale` (`common/widgets`) | Press-scale interaction wrapper used by quick-start actions |
+| `AnimatedSwitcher` sections | Smooth loading/error/content transitions without data-flow changes |
 | `_HeaderSection` | Greeting and full-date presentation block |
 | `_QuickStartSection` | Two primary actions: start empty workout and pick/suggested routine |
 | `_WeekCard` | Weekly training indicators and streak summary |
@@ -67,7 +69,7 @@
 - Recovery groups are normalized by `MuscleGroupUtils`.
 - Dashboard loading batches muscle lookup data before deriving recovery and suggestions.
 - Suggested routine requires enough history and at least two routines.
-- Recent redesign changed only presentation structure/styles (dark card system + section animations); Cubit/service/repository behavior and navigation flow remained unchanged.
+- Recent redesign and motion polish changed only presentation structure/styles; Cubit/service/repository behavior and navigation flow remained unchanged.
 
 ---
 
@@ -181,6 +183,7 @@ DAOs:
 - Workout volume is recalculated inside repository transactions when sets change.
 - Starting a workout from a routine copies routine exercises and sets into workout records.
 - Active workout uses singleton state because it participates in shell banner, notification callbacks, and rest timer.
+- UI-only feedback layer now includes set completion animation, finish-workout success pulse, and lightweight haptics through shared `common/widgets` primitives.
 
 ---
 
@@ -219,6 +222,7 @@ DAOs:
 - Profile chart can switch metric (`duration`, `volume`, `reps`) and range (`week`, `month`).
 - Measurements are stored locally in SQLite and profile identity in shared preferences.
 - Workout history data comes from `WorkoutRepository.getWorkoutHistory()`.
+- Chart, bars, and statistic chips use shared animation primitives (`AnimatedMetricBar`, reveal transitions) while keeping existing Cubit/business flows unchanged.
 
 ---
 
@@ -249,6 +253,16 @@ DAOs:
 | `DateFormatters` | Short date, weekday, duration, elapsed timer labels |
 | `MuscleGroupUtils` | Seed muscle name to high-level muscle group mapping and recovery status |
 
+### Widgets
+
+| Widget/Helper | Responsibility |
+|---|---|
+| `MotionTokens` | Shared duration/curve/scale tokens and reduced-motion resolution |
+| `TapScale` | Reusable press feedback interaction wrapper |
+| `SuccessPulseOverlay` | Lightweight completion pulse overlay |
+| `AnimatedMetricBar` | Shared animated bar primitive for metric charts |
+| `AppHaptics` | Safe haptic wrapper with reduced-motion-aware no-op behavior |
+
 ### Services
 
 | Service | Responsibility |
@@ -258,5 +272,5 @@ DAOs:
 
 ### Notes
 
-- Shared widgets are currently feature-local rather than centralized under `common/widgets/`.
-- Add a shared widget only when it is used across multiple feature surfaces.
+- Shared UI motion widgets are centralized under `common/widgets/` and reused across Home, Workout, and Profile surfaces.
+- All shared motion/feedback primitives are UI-layer only and do not alter repository/service/data contracts.

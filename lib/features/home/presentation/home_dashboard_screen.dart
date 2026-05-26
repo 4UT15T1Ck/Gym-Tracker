@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
 import 'package:gym_tracker/common/utils/date_formatters.dart';
 import 'package:gym_tracker/common/utils/muscle_group_utils.dart';
+import 'package:gym_tracker/common/widgets/app_haptics.dart';
+import 'package:gym_tracker/common/widgets/motion_tokens.dart';
+import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:gym_tracker/core/services/dashboard_service.dart';
 import 'package:gym_tracker/features/home/bloc/home_dashboard_cubit.dart';
@@ -107,17 +110,37 @@ class HomeDashboardScreen extends StatelessWidget {
                     items: summary?.recovery ?? const <MuscleRecoverySummary>[],
                   ),
                 ),
-                if (state.isLoading) ...[
-                  const SizedBox(height: 16),
-                  const ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(999)),
-                    child: LinearProgressIndicator(minHeight: 3),
-                  ),
-                ],
-                if (state.errorMessage != null) ...[
-                  const SizedBox(height: 12),
-                  _ErrorNote(message: state.errorMessage!),
-                ],
+                AnimatedSwitcher(
+                  duration: MotionTokens.resolve(context, MotionTokens.base),
+                  switchInCurve: MotionTokens.standardCurve,
+                  switchOutCurve: MotionTokens.standardCurve,
+                  child: state.isLoading
+                      ? const Padding(
+                          key: ValueKey('home-loading'),
+                          padding: EdgeInsets.only(top: 16),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(999),
+                            ),
+                            child: LinearProgressIndicator(minHeight: 3),
+                          ),
+                        )
+                      : const SizedBox.shrink(
+                          key: ValueKey('home-loading-empty'),
+                        ),
+                ),
+                AnimatedSwitcher(
+                  duration: MotionTokens.resolve(context, MotionTokens.base),
+                  switchInCurve: MotionTokens.standardCurve,
+                  switchOutCurve: MotionTokens.standardCurve,
+                  child: state.errorMessage == null
+                      ? const SizedBox.shrink(key: ValueKey('home-error-empty'))
+                      : Padding(
+                          key: const ValueKey('home-error-note'),
+                          padding: const EdgeInsets.only(top: 12),
+                          child: _ErrorNote(message: state.errorMessage!),
+                        ),
+                ),
               ],
             ),
           ),
@@ -250,17 +273,24 @@ class _QuickStartSection extends StatelessWidget {
             Expanded(
               child: SizedBox(
                 height: 46,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: HomeDashboardScreen._accent),
-                    foregroundColor: HomeDashboardScreen._accent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: TapScale(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(
+                        color: HomeDashboardScreen._accent,
+                      ),
+                      foregroundColor: HomeDashboardScreen._accent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    onPressed: () async {
+                      await AppHaptics.selection(context);
+                      onStartEmptyWorkout();
+                    },
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('Start Empty Workout'),
                   ),
-                  onPressed: onStartEmptyWorkout,
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Start Empty Workout'),
                 ),
               ),
             ),
@@ -268,20 +298,25 @@ class _QuickStartSection extends StatelessWidget {
             Expanded(
               child: SizedBox(
                 height: 46,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0E295A),
-                    foregroundColor: const Color(0xFF66A2FF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: TapScale(
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF0E295A),
+                      foregroundColor: const Color(0xFF66A2FF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  onPressed: onPickRoutine,
-                  icon: const Icon(Icons.view_list, size: 16),
-                  label: Text(
-                    suggestedRoutineName ?? 'Pick a Routine',
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                    onPressed: () async {
+                      await AppHaptics.selection(context);
+                      onPickRoutine();
+                    },
+                    icon: const Icon(Icons.view_list, size: 16),
+                    label: Text(
+                      suggestedRoutineName ?? 'Pick a Routine',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ),
               ),
@@ -324,76 +359,92 @@ class _WeekCard extends StatelessWidget {
         const _SectionTitle('This Week'),
         const SizedBox(height: 10),
         _DashCard(
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(7, (index) {
-                  final trained = index < days.length && days[index];
-                  final isToday = now.weekday - 1 == index;
-                  return Expanded(
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: trained
-                                ? const Color(0xFFE8E9EC)
-                                : Colors.transparent,
-                            border: Border.all(
+          child: AnimatedSwitcher(
+            duration: MotionTokens.resolve(context, MotionTokens.base),
+            switchInCurve: MotionTokens.standardCurve,
+            switchOutCurve: MotionTokens.standardCurve,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.04),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            ),
+            child: Column(
+              key: ValueKey<String>('week-${days.join()}-$streak'),
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(7, (index) {
+                    final trained = index < days.length && days[index];
+                    final isToday = now.weekday - 1 == index;
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
                               color: trained
                                   ? const Color(0xFFE8E9EC)
-                                  : (isToday
-                                        ? HomeDashboardScreen._accent
-                                        : const Color(0xFF2A3140)),
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.circle,
-                              size: 8,
-                              color: trained
-                                  ? const Color(0xFF11141B)
                                   : Colors.transparent,
+                              border: Border.all(
+                                color: trained
+                                    ? const Color(0xFFE8E9EC)
+                                    : (isToday
+                                          ? HomeDashboardScreen._accent
+                                          : const Color(0xFF2A3140)),
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.circle,
+                                size: 8,
+                                color: trained
+                                    ? const Color(0xFF11141B)
+                                    : Colors.transparent,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          labels[index],
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: HomeDashboardScreen._mutedText,
-                                fontSize: 11,
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 12),
-              RichText(
-                text: TextSpan(
-                  text: '$streak',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: ' day streak',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: HomeDashboardScreen._mutedText,
+                          const SizedBox(height: 8),
+                          Text(
+                            labels[index],
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: HomeDashboardScreen._mutedText,
+                                  fontSize: 11,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    );
+                  }),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                RichText(
+                  text: TextSpan(
+                    text: '$streak',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: ' day streak',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: HomeDashboardScreen._mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -497,71 +548,80 @@ class _RecentPrCard extends StatelessWidget {
         const _SectionTitle('Recent PRs'),
         const SizedBox(height: 10),
         _DashCard(
-          child: prs.isEmpty
-              ? Text(
-                  'No PRs yet.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: HomeDashboardScreen._mutedText,
-                  ),
-                )
-              : Column(
-                  children: List.generate(prs.length, (i) {
-                    final pr = prs[i];
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: i == prs.length - 1 ? 0 : 10,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            height: 20,
-                            width: 20,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF14D99A),
-                              borderRadius: BorderRadius.circular(4),
+          child: AnimatedSwitcher(
+            duration: MotionTokens.resolve(context, MotionTokens.base),
+            switchInCurve: MotionTokens.standardCurve,
+            switchOutCurve: MotionTokens.standardCurve,
+            child: prs.isEmpty
+                ? Text(
+                    'No PRs yet.',
+                    key: const ValueKey('prs-empty'),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: HomeDashboardScreen._mutedText,
+                    ),
+                  )
+                : Column(
+                    key: ValueKey<String>(
+                      'prs-${prs.map((e) => '${e.exerciseName}-${e.weight}-${e.reps}').join('|')}',
+                    ),
+                    children: List.generate(prs.length, (i) {
+                      final pr = prs[i];
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: i == prs.length - 1 ? 0 : 10,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              height: 20,
+                              width: 20,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF14D99A),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'PR',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: const Color(0xFF03261A),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 9,
+                                    ),
+                              ),
                             ),
-                            child: Text(
-                              'PR',
-                              style: Theme.of(context).textTheme.labelSmall
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                pr.exerciseName,
+                                style: Theme.of(context).textTheme.bodyLarge
+                                    ?.copyWith(color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              '${pr.weight.toStringAsFixed(0)} kg',
+                              style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(
-                                    color: const Color(0xFF03261A),
+                                    color: Colors.white,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 9,
                                   ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              pr.exerciseName,
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(color: Colors.white),
-                              overflow: TextOverflow.ellipsis,
+                            const SizedBox(width: 8),
+                            Text(
+                              pr.reps != null ? '${pr.reps} reps' : '— reps',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: HomeDashboardScreen._subtleText,
+                                  ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            '${pr.weight.toStringAsFixed(0)} kg',
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            pr.reps != null ? '${pr.reps} reps' : '— reps',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: HomeDashboardScreen._subtleText,
-                                ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+          ),
         ),
       ],
     );
@@ -582,66 +642,76 @@ class _RecoveryCard extends StatelessWidget {
         const _SectionTitle('Muscle Recovery'),
         const SizedBox(height: 10),
         _DashCard(
-          child: source.isEmpty
-              ? Text(
-                  'No recent recovery data.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: HomeDashboardScreen._mutedText,
-                  ),
-                )
-              : GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: source.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 2.55,
-                  ),
-                  itemBuilder: (context, index) {
-                    final item = source[index];
-                    return Row(
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _recoveryColor(item.status),
-                          ),
+          child: AnimatedSwitcher(
+            duration: MotionTokens.resolve(context, MotionTokens.base),
+            switchInCurve: MotionTokens.standardCurve,
+            switchOutCurve: MotionTokens.standardCurve,
+            child: source.isEmpty
+                ? Text(
+                    'No recent recovery data.',
+                    key: const ValueKey('recovery-empty'),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: HomeDashboardScreen._mutedText,
+                    ),
+                  )
+                : GridView.builder(
+                    key: ValueKey<String>(
+                      'recovery-${source.map((e) => '${e.group}-${e.status.name}-${e.sinceLabel}').join('|')}',
+                    ),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: source.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 2.55,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.group,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                _compactSince(item.sinceLabel),
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: HomeDashboardScreen._mutedText,
-                                    ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                    itemBuilder: (context, index) {
+                      final item = source[index];
+                      return Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _recoveryColor(item.status),
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.group,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _compactSince(item),
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: HomeDashboardScreen._mutedText,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+          ),
         ),
       ],
     );

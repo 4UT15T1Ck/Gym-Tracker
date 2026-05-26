@@ -22,7 +22,8 @@ lib/
 |-- main.dart                      # Platform init, preferences, DI, notifications, app bootstrap
 |-- common/
 |   |-- routes/                    # Route names, onGenerateRoute, route argument objects
-|   `-- utils/                     # Date formatting, GetIt setup, muscle grouping helpers
+|   |-- utils/                     # Date formatting, GetIt setup, muscle grouping helpers
+|   `-- widgets/                   # Shared UI motion, feedback, and reusable animated primitives
 |-- core/
 |   |-- dao/                       # Data Access Objects, raw SQL via sqflite
 |   |-- data/                      # DatabaseModule, seed helper, UUID module, preferences store
@@ -76,7 +77,25 @@ Presentation -> Domain contracts -> Data implementations
 - State classes and Cubits/Blocs live under `features/<feature>/bloc/`.
 - Most screens use `Cubit`; the rest timer uses `Bloc` because it is event/timer driven.
 - `app.dart` provides global Cubits for the shell/home/workout/profile surfaces and route-specific providers for detail flows.
+- Cross-feature UI primitives live under `common/widgets/` for consistent animation/haptic behavior without touching feature business logic.
 - The Home dashboard UI is section-based and composed from private presentation widgets with local style tokens in a single screen file, so visual redesigns can ship without touching shared business logic.
+
+### UI Motion And Feedback Layer
+
+- Motion constants are centralized in `MotionTokens`:
+  - `fast=140ms`, `base=220ms`, `emphasis=320ms`, `successPulse=700ms`
+  - default curve `easeOutCubic`
+  - press scale `1.0 -> 0.97`
+- Reusable primitives:
+  - `TapScale` for press-down interaction feedback
+  - `SuccessPulseOverlay.show(...)` for short completion confirmation
+  - `AnimatedMetricBar` for chart/bar grow transitions
+  - `AppHaptics.selection()` and `AppHaptics.success()` as safe wrappers around `HapticFeedback`
+- Reduced motion contract:
+  - `MotionTokens.reduceMotion(context)` reads `MediaQuery.disableAnimations`
+  - animation durations resolve to `Duration.zero` when reduced motion is enabled
+  - haptic calls are skipped when reduced motion is enabled
+- Boundary rule: motion/feedback is presentation-only. Repository/DAO/service interfaces and behavior remain unchanged.
 
 ---
 

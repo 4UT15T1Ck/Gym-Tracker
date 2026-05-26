@@ -27,7 +27,7 @@ ENTRY FORMAT: | XX | Item description | Status | Short approach note |
 |---|---|---|---|
 | S1 | GetIt DI setup | ✅ | `getit_utils.dart` and generated config entry point |
 | S2 | Navigation / Routes | ✅ | Central `Routes.onGenerateRoute` and typed route args |
-| S3 | Shared widgets | ❌ | Feature-local widgets exist; shared `common/widgets` extraction not done |
+| S3 | Shared widgets | ✅ | Shared UI primitives centralized in `common/widgets` (`MotionTokens`, `TapScale`, `SuccessPulseOverlay`, `AnimatedMetricBar`, `AppHaptics`) |
 | S4 | Extensions | ❌ | No shared extension layer yet |
 | S5 | App theme | ⚠️ | Dark Material 3 seed theme exists; full design system not defined |
 | S6 | App entry point | ✅ | Preferences, DI, notifications, Cubit preloads, `MainApp` |
@@ -130,4 +130,4 @@ ENTRY FORMAT: | XX | Item description | Status | Short approach note |
 | DOC1 | README refresh | ✅ | Current app surface, setup, docs map |
 | DOC2 | Architecture docs refresh | ✅ | Aligned docs with implemented presentation/services |
 | DI1 | Regenerate DI config | ❌ | Run build_runner after docs-only pass |
-| TST1 | Replace default widget test | ❌ | Current test scaffold should be updated for `MainApp` |
+| TST1 | Replace default widget test | ✅ | Added app/shell smoke and UX widget tests for workout/profile/measures surfaces |
