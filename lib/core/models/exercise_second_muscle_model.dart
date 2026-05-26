@@ -1,4 +1,6 @@
-class ExerciseSecondaryMuscle {
+import 'package:equatable/equatable.dart';
+
+class ExerciseSecondaryMuscle extends Equatable {
   static const String tableName = 'exercise_secondary_muscles';
   static const String columnExerciseId = 'exercise_id';
   static const String columnMuscleId = 'muscle_id';
@@ -6,7 +8,10 @@ class ExerciseSecondaryMuscle {
   final String exerciseId;
   final String muscleId;
 
-  ExerciseSecondaryMuscle({required this.exerciseId, required this.muscleId});
+  const ExerciseSecondaryMuscle({
+    required this.exerciseId,
+    required this.muscleId,
+  });
 
   Map<String, dynamic> toMap() => {
     columnExerciseId: exerciseId,
@@ -18,4 +23,7 @@ class ExerciseSecondaryMuscle {
         exerciseId: map[columnExerciseId] as String,
         muscleId: map[columnMuscleId] as String,
       );
+
+  @override
+  List<Object?> get props => [exerciseId, muscleId];
 }

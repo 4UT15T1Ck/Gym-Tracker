@@ -1,4 +1,6 @@
-class Equipment {
+import 'package:equatable/equatable.dart';
+
+class Equipment extends Equatable {
   static const String tableName = 'equipments';
   static const String columnId = 'id';
   static const String columnName = 'name';
@@ -6,7 +8,7 @@ class Equipment {
   final String id;
   final String name;
 
-  Equipment({required this.id, required this.name});
+  const Equipment({required this.id, required this.name});
 
   Map<String, dynamic> toMap() => {columnId: id, columnName: name};
 
@@ -21,4 +23,7 @@ class Equipment {
         id: json[columnId] as String,
         name: json[columnName] as String,
       );
+
+  @override
+  List<Object?> get props => [id, name];
 }
