@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
+import 'package:gym_tracker/common/widgets/app_haptics.dart';
+import 'package:gym_tracker/common/widgets/motion_tokens.dart';
+import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
 import 'package:gym_tracker/features/shell/bloc/shell_active_workout_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/routine_detail_cubit.dart';
@@ -28,6 +31,17 @@ class RoutineDetailScreen extends StatelessWidget {
                       );
                       if (context.mounted && saved == true) {
                         await context.read<RoutineDetailCubit>().reload();
+                        await AppHaptics.success(context);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              const SnackBar(
+                                content: Text('Routine updated'),
+                                duration: Duration(milliseconds: 1100),
+                              ),
+                            );
+                        }
                       }
                     } else if (value == 'delete') {
                       final confirm = await showDialog<bool>(
@@ -47,7 +61,17 @@ class RoutineDetailScreen extends StatelessWidget {
                       );
                       if (confirm == true && context.mounted) {
                         await context.read<RoutineDetailCubit>().deleteRoutine();
-                        if (context.mounted) Navigator.of(context).pop();
+                        await AppHaptics.success(context);
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            const SnackBar(
+                              content: Text('Routine deleted'),
+                              duration: Duration(milliseconds: 1100),
+                            ),
+                          );
+                        Navigator.of(context).pop();
                       }
                     }
                   },
@@ -73,22 +97,32 @@ class RoutineDetailScreen extends StatelessWidget {
                             padding: const EdgeInsets.all(16),
                             children: [
                               if (state.isLoading) const LinearProgressIndicator(),
-                              FilledButton.icon(
-                                onPressed: state.isLoading
-                                    ? null
-                                    : () async {
-                                        final id = await context.read<RoutineDetailCubit>().startWorkoutFromCurrentRoutine();
-                                        if (context.mounted) {
-                                          context.read<ShellActiveWorkoutCubit>().refreshNow();
-                                        }
-                                        if (!context.mounted || id == null) return;
-                                        Navigator.of(context).pushNamed(
-                                          Routes.activeWorkout,
-                                          arguments: ActiveWorkoutRouteArgs(workoutId: id),
-                                        );
-                                      },
-                                icon: const Icon(Icons.play_arrow),
-                                label: const Text('Start Routine'),
+                              TapScale(
+                                child: FilledButton.icon(
+                                  onPressed: state.isLoading
+                                      ? null
+                                      : () async {
+                                          final id = await context
+                                              .read<RoutineDetailCubit>()
+                                              .startWorkoutFromCurrentRoutine();
+                                          if (context.mounted) {
+                                            context
+                                                .read<ShellActiveWorkoutCubit>()
+                                                .refreshNow();
+                                          }
+                                          if (!context.mounted || id == null) {
+                                            return;
+                                          }
+                                          Navigator.of(context).pushNamed(
+                                            Routes.activeWorkout,
+                                            arguments: ActiveWorkoutRouteArgs(
+                                              workoutId: id,
+                                            ),
+                                          );
+                                        },
+                                  icon: const Icon(Icons.play_arrow),
+                                  label: const Text('Start Routine'),
+                                ),
                               ),
                               const SizedBox(height: 16),
                               if (detail.routine.notes != null && detail.routine.notes!.trim().isNotEmpty) ...[
@@ -99,36 +133,60 @@ class RoutineDetailScreen extends StatelessWidget {
                               ],
                               Text('Exercises (${detail.exercises.length})', style: Theme.of(context).textTheme.titleMedium),
                               const SizedBox(height: 8),
-                              ...detail.exercises.map((ed) {
+                              ...detail.exercises.indexed.map((entry) {
+                                final index = entry.$1;
+                                final ed = entry.$2;
                                 final sets = [...ed.sets]..sort((a, b) => a.order.compareTo(b.order));
-                                return Card(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: [
-                                        Text(ed.exercise.name, style: Theme.of(context).textTheme.titleSmall),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Rest: ${ed.routineExercise.targetRestSeconds ?? '—'} s',
-                                          style: Theme.of(context).textTheme.bodySmall,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        ...sets.indexed.map((entry) {
-                                          final i = entry.$1;
-                                          final s = entry.$2;
-                                          final w = s.targetWeight != null ? '${s.targetWeight} kg' : '— kg';
-                                          final r = s.targetReps != null ? '${s.targetReps} reps' : '— reps';
-                                          return Padding(
-                                            padding: const EdgeInsets.only(bottom: 4),
-                                            child: Text(
-                                              'Set ${i + 1} · ${s.setType.displayName} · $w · $r',
-                                              style: Theme.of(context).textTheme.bodyMedium,
-                                            ),
-                                          );
-                                        }),
-                                      ],
+                                return TweenAnimationBuilder<double>(
+                                  tween: Tween(begin: 0, end: 1),
+                                  duration: MotionTokens.resolve(
+                                    context,
+                                    Duration(milliseconds: 220 + (index * 24)),
+                                  ),
+                                  curve: MotionTokens.standardCurve,
+                                  builder: (context, value, child) => Opacity(
+                                    opacity: value,
+                                    child: Transform.translate(
+                                      offset: Offset(0, (1 - value) * 8),
+                                      child: child,
+                                    ),
+                                  ),
+                                  child: Card(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          Text(
+                                            ed.exercise.name,
+                                            style: Theme.of(context).textTheme.titleSmall,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Rest: ${ed.routineExercise.targetRestSeconds ?? '—'} s',
+                                            style: Theme.of(context).textTheme.bodySmall,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          ...sets.indexed.map((entry) {
+                                            final i = entry.$1;
+                                            final s = entry.$2;
+                                            final w = s.targetWeight != null
+                                                ? '${s.targetWeight} kg'
+                                                : '— kg';
+                                            final r = s.targetReps != null
+                                                ? '${s.targetReps} reps'
+                                                : '— reps';
+                                            return Padding(
+                                              padding: const EdgeInsets.only(bottom: 4),
+                                              child: Text(
+                                                'Set ${i + 1} · ${s.setType.displayName} · $w · $r',
+                                                style: Theme.of(context).textTheme.bodyMedium,
+                                              ),
+                                            );
+                                          }),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 );
