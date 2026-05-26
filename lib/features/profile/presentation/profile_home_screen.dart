@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
+import 'package:gym_tracker/common/widgets/animated_metric_bar.dart';
+import 'package:gym_tracker/common/widgets/app_haptics.dart';
+import 'package:gym_tracker/common/widgets/motion_tokens.dart';
+import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/features/profile/bloc/profile_cubit.dart';
 
-class ProfileHomeScreen extends StatelessWidget {
+class ProfileHomeScreen extends StatefulWidget {
   const ProfileHomeScreen({super.key});
+
+  @override
+  State<ProfileHomeScreen> createState() => _ProfileHomeScreenState();
+}
+
+class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
+  int _avatarPulseSeed = 0;
+
+  void _pulseAvatar() {
+    setState(() => _avatarPulseSeed++);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +30,20 @@ class ProfileHomeScreen extends StatelessWidget {
           children: [
               Row(
                 children: [
-                  CircleAvatar(radius: 32, child: Text(state.initials)),
+                  TweenAnimationBuilder<double>(
+                    key: ValueKey<int>(_avatarPulseSeed),
+                    tween: Tween(begin: 0.93, end: 1),
+                    duration: MotionTokens.resolve(
+                      context,
+                      MotionTokens.emphasis,
+                    ),
+                    curve: Curves.easeOutBack,
+                    builder: (context, value, child) => Transform.scale(
+                      scale: value,
+                      child: child,
+                    ),
+                    child: CircleAvatar(radius: 32, child: Text(state.initials)),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -42,7 +70,19 @@ class ProfileHomeScreen extends StatelessWidget {
                         ),
                       );
                       if (!context.mounted || name == null) return;
-                      context.read<ProfileCubit>().updateName(name);
+                      await context.read<ProfileCubit>().updateName(name);
+                      if (!context.mounted) return;
+                      _pulseAvatar();
+                      await AppHaptics.success(context);
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          const SnackBar(
+                            content: Text('Profile updated'),
+                            duration: Duration(milliseconds: 1100),
+                          ),
+                        );
                     },
                   ),
                 ],
@@ -148,12 +188,11 @@ class _LabeledBarChart extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(_valueLabel(metric, bar.value), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    Container(
-                      height: height,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                      ),
+                    AnimatedMetricBar(
+                      value: bar.value,
+                      maxValue: maxValue,
+                      minHeight: 24,
+                      maxHeight: 144,
                     ),
                     const SizedBox(height: 4),
                     Text(bar.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
@@ -205,19 +244,21 @@ class _DashboardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: () => Navigator.of(context).pushNamed(route),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon),
-              const Spacer(),
-              Text(title, style: Theme.of(context).textTheme.titleMedium),
-              Text(subtitle),
-            ],
+    return TapScale(
+      child: Card(
+        child: InkWell(
+          onTap: () => Navigator.of(context).pushNamed(route),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon),
+                const Spacer(),
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                Text(subtitle),
+              ],
+            ),
           ),
         ),
       ),

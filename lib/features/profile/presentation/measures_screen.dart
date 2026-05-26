@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/utils/date_formatters.dart';
+import 'package:gym_tracker/common/widgets/animated_metric_bar.dart';
+import 'package:gym_tracker/common/widgets/app_haptics.dart';
+import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/features/profile/bloc/measures_cubit.dart';
 
 class MeasuresScreen extends StatefulWidget {
@@ -13,6 +16,7 @@ class MeasuresScreen extends StatefulWidget {
 class _MeasuresScreenState extends State<MeasuresScreen> {
   final _weightController = TextEditingController();
   final _bodyFatController = TextEditingController();
+  final Set<String> _removingIds = <String>{};
 
   @override
   void dispose() {
@@ -42,13 +46,24 @@ class _MeasuresScreenState extends State<MeasuresScreen> {
               ),
               const SizedBox(height: 12),
               FilledButton(
-                onPressed: () {
-                  context.read<MeasuresCubit>().add(
+                onPressed: () async {
+                  await context.read<MeasuresCubit>().add(
                         weight: double.tryParse(_weightController.text),
                         bodyFat: double.tryParse(_bodyFatController.text),
                       );
                   _weightController.clear();
                   _bodyFatController.clear();
+                  if (!mounted) return;
+                  await AppHaptics.success(context);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      const SnackBar(
+                        content: Text('Entry added'),
+                        duration: Duration(milliseconds: 1000),
+                      ),
+                    );
                 },
                 child: const Text('Add Entry'),
               ),
@@ -60,12 +75,18 @@ class _MeasuresScreenState extends State<MeasuresScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: state.entries.reversed.take(30).map((entry) {
                     final weight = entry.weight ?? 0;
+                    final maxValue = state.entries
+                        .map((e) => e.weight ?? 0)
+                        .fold<double>(1, (max, w) => w > max ? w : max);
                     return Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: Container(
-                          height: weight <= 0 ? 4 : weight.clamp(20, 160).toDouble(),
-                          color: Theme.of(context).colorScheme.primary,
+                        child: AnimatedMetricBar(
+                          value: weight <= 0 ? 0 : weight,
+                          maxValue: maxValue <= 0 ? 1 : maxValue,
+                          minHeight: 4,
+                          maxHeight: 100,
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     );
@@ -74,12 +95,20 @@ class _MeasuresScreenState extends State<MeasuresScreen> {
               ),
               if (state.entries.isEmpty) const Text('No body metrics logged yet.'),
               ...state.entries.map(
-                (entry) => ListTile(
-                  title: Text(DateFormatters.shortDate(entry.date)),
-                  subtitle: Text('Weight: ${entry.weight?.toStringAsFixed(1) ?? '-'} · Body fat: ${entry.bodyFatPercent?.toStringAsFixed(1) ?? '-'}%'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => context.read<MeasuresCubit>().delete(entry.id),
+                (entry) => AnimatedOpacity(
+                  key: ValueKey<String>(entry.id),
+                  opacity: _removingIds.contains(entry.id) ? 0 : 1,
+                  duration: MotionTokens.resolve(context, MotionTokens.fast),
+                  curve: MotionTokens.standardCurve,
+                  child: ListTile(
+                    title: Text(DateFormatters.shortDate(entry.date)),
+                    subtitle: Text(
+                      'Weight: ${entry.weight?.toStringAsFixed(1) ?? '-'} · Body fat: ${entry.bodyFatPercent?.toStringAsFixed(1) ?? '-'}%',
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => _deleteEntry(entry.id),
+                    ),
                   ),
                 ),
               ),
@@ -88,5 +117,27 @@ class _MeasuresScreenState extends State<MeasuresScreen> {
         );
       },
     );
+  }
+
+  Future<void> _deleteEntry(String id) async {
+    if (_removingIds.contains(id)) return;
+    setState(() => _removingIds.add(id));
+    await Future<void>.delayed(
+      MotionTokens.resolve(context, MotionTokens.fast),
+    );
+    if (!mounted) return;
+    await context.read<MeasuresCubit>().delete(id);
+    if (!mounted) return;
+    _removingIds.remove(id);
+    await AppHaptics.selection(context);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Entry deleted'),
+          duration: Duration(milliseconds: 1000),
+        ),
+      );
   }
 }
