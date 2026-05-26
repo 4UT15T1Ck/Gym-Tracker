@@ -24,7 +24,8 @@ class ActiveWorkoutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ActiveWorkoutCubit, ActiveWorkoutState>(
-      listenWhen: (previous, current) => previous.didFinish != current.didFinish,
+      listenWhen: (previous, current) =>
+          previous.didFinish != current.didFinish,
       listener: (context, state) async {
         if (state.didFinish) {
           await AppHaptics.success(context);
@@ -58,16 +59,28 @@ class ActiveWorkoutScreen extends StatelessWidget {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: const Text('Finish workout?'),
-                              content: const Text('Completed sets will be saved to history.'),
+                              content: const Text(
+                                'Completed sets will be saved to history.',
+                              ),
                               actions: [
-                                TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-                                FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Finish')),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Cancel'),
+                                ),
+                                FilledButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Finish'),
+                                ),
                               ],
                             ),
                           );
                           if (shouldFinish == true && context.mounted) {
                             FocusManager.instance.primaryFocus?.unfocus();
-                            await Future<void>.delayed(const Duration(milliseconds: 120));
+                            await Future<void>.delayed(
+                              const Duration(milliseconds: 120),
+                            );
                             if (context.mounted) {
                               await context.read<ActiveWorkoutCubit>().finish();
                             }
@@ -88,7 +101,10 @@ class ActiveWorkoutScreen extends StatelessWidget {
                         completedSets: state.completedSets,
                       ),
                       const SizedBox(height: 12),
-                      Text(detail.workout.name, style: Theme.of(context).textTheme.titleLarge),
+                      Text(
+                        detail.workout.name,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                       if (detail.workout.notes?.trim().isNotEmpty == true) ...[
                         const SizedBox(height: 4),
                         Text(detail.workout.notes!.trim()),
@@ -97,7 +113,11 @@ class ActiveWorkoutScreen extends StatelessWidget {
                       if (detail.exercises.isEmpty)
                         const Padding(
                           padding: EdgeInsets.all(24),
-                          child: Center(child: Text('No exercises yet. Add one to start logging.')),
+                          child: Center(
+                            child: Text(
+                              'No exercises yet. Add one to start logging.',
+                            ),
+                          ),
                         ),
                       ...detail.exercises.indexed.map(
                         (entry) => _ExerciseBlock(
@@ -110,12 +130,15 @@ class ActiveWorkoutScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       FilledButton.icon(
                         onPressed: () async {
-                          final selected = await Navigator.of(context).pushNamed<List<Exercise>>(
-                            Routes.addExercise,
-                            arguments: const AddExerciseRouteArgs(),
-                          );
+                          final selected = await Navigator.of(context)
+                              .pushNamed<List<Exercise>>(
+                                Routes.addExercise,
+                                arguments: const AddExerciseRouteArgs(),
+                              );
                           if (!context.mounted || selected == null) return;
-                          context.read<ActiveWorkoutCubit>().addExercises(selected);
+                          context.read<ActiveWorkoutCubit>().addExercises(
+                            selected,
+                          );
                         },
                         icon: const Icon(Icons.add),
                         label: const Text('Add Exercise'),
@@ -127,17 +150,29 @@ class ActiveWorkoutScreen extends StatelessWidget {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: const Text('Discard workout?'),
-                              content: const Text('This will discard the current workout and nothing will be saved.'),
+                              content: const Text(
+                                'This will discard the current workout and nothing will be saved.',
+                              ),
                               actions: [
-                                TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Keep')),
-                                FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Discard')),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Keep'),
+                                ),
+                                FilledButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Discard'),
+                                ),
                               ],
                             ),
                           );
                           if (shouldDiscard == true && context.mounted) {
                             await context.read<ActiveWorkoutCubit>().cancel();
                             if (context.mounted) {
-                              context.read<ShellActiveWorkoutCubit>().refreshNow();
+                              context
+                                  .read<ShellActiveWorkoutCubit>()
+                                  .refreshNow();
                               context.read<HomeDashboardCubit>().load();
                               context.read<WorkoutHomeCubit>().load();
                               context.read<ProfileCubit>().load();
@@ -147,7 +182,9 @@ class ActiveWorkoutScreen extends StatelessWidget {
                             }
                           }
                         },
-                        style: OutlinedButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                        ),
                         icon: const Icon(Icons.delete_outline),
                         label: const Text('Discard Workout'),
                       ),
@@ -161,8 +198,12 @@ class ActiveWorkoutScreen extends StatelessWidget {
                   ),
             bottomSheet: BlocBuilder<RestTimerBloc, RestTimerState>(
               builder: (context, restState) {
-                if (restState is! RestTimerRunning) return const SizedBox.shrink();
-                return _RestTimerBottomBar(secondsRemaining: restState.secondsRemaining);
+                if (restState is! RestTimerRunning) {
+                  return const SizedBox.shrink();
+                }
+                return _RestTimerBottomBar(
+                  secondsRemaining: restState.secondsRemaining,
+                );
               },
             ),
           );
@@ -195,22 +236,29 @@ class _RestTimerBottomBar extends StatelessWidget {
             child: Row(
               children: [
                 TextButton(
-                  onPressed: () => context.read<RestTimerBloc>().add(const AdjustRestTimer(-15)),
+                  onPressed: () => context.read<RestTimerBloc>().add(
+                    const AdjustRestTimer(-15),
+                  ),
                   child: const Text('- 15'),
                 ),
                 Expanded(
                   child: Text(
                     DateFormatters.elapsed(remaining),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.read<RestTimerBloc>().add(const AdjustRestTimer(15)),
+                  onPressed: () => context.read<RestTimerBloc>().add(
+                    const AdjustRestTimer(15),
+                  ),
                   child: const Text('+15'),
                 ),
                 TextButton(
-                  onPressed: () => context.read<RestTimerBloc>().add(const SkipRestTimer()),
+                  onPressed: () =>
+                      context.read<RestTimerBloc>().add(const SkipRestTimer()),
                   child: const Text('Skip'),
                 ),
               ],
@@ -264,7 +312,10 @@ class _WorkoutTimersBannerState extends State<_WorkoutTimersBanner> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _Stat(label: 'Duration', value: DateFormatters.elapsed(elapsed)),
-            _Stat(label: 'Volume', value: '${widget.volumeKg.toStringAsFixed(0)} kg'),
+            _Stat(
+              label: 'Volume',
+              value: '${widget.volumeKg.toStringAsFixed(0)} kg',
+            ),
             _Stat(label: 'Sets', value: '${widget.completedSets}'),
           ],
         ),
@@ -299,7 +350,9 @@ class _ExerciseBlock extends StatelessWidget {
                 Expanded(
                   child: Text(
                     detail.exercise.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.lightBlueAccent),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.lightBlueAccent,
+                    ),
                   ),
                 ),
                 PopupMenuButton<_ExerciseAction>(
@@ -336,7 +389,9 @@ class _ExerciseBlock extends StatelessWidget {
                 ),
               ],
             ),
-            TextField(decoration: const InputDecoration(hintText: 'Add notes here...')),
+            TextField(
+              decoration: const InputDecoration(hintText: 'Add notes here...'),
+            ),
             Text('Rest: ${detail.workoutExercise.restSeconds ?? 90}s'),
             const SizedBox(height: 8),
             const Row(
@@ -359,7 +414,9 @@ class _ExerciseBlock extends StatelessWidget {
               );
             }),
             TextButton.icon(
-              onPressed: () => context.read<ActiveWorkoutCubit>().addSet(detail.workoutExercise.id),
+              onPressed: () => context.read<ActiveWorkoutCubit>().addSet(
+                detail.workoutExercise.id,
+              ),
               icon: const Icon(Icons.add),
               label: const Text('Add Set'),
             ),
@@ -375,7 +432,12 @@ class _SetRow extends StatefulWidget {
   final WorkoutSet set;
   final String previous;
 
-  const _SetRow({super.key, required this.index, required this.set, required this.previous});
+  const _SetRow({
+    super.key,
+    required this.index,
+    required this.set,
+    required this.previous,
+  });
 
   @override
   State<_SetRow> createState() => _SetRowState();
@@ -479,7 +541,10 @@ class _SetRowState extends State<_SetRow> {
           children: [
             ...SetType.values.map(
               (type) => ListTile(
-                leading: _SetTypeBadge(type: type, fallbackNumber: widget.index + 1),
+                leading: _SetTypeBadge(
+                  type: type,
+                  fallbackNumber: widget.index + 1,
+                ),
                 title: Text(type.displayName),
                 onTap: () => Navigator.of(context).pop(type),
               ),
@@ -578,9 +643,9 @@ class _SetRowState extends State<_SetRow> {
       duration: MotionTokens.resolve(context, MotionTokens.base),
       curve: MotionTokens.standardCurve,
       color: set.isCompleted
-          ? Theme.of(context).colorScheme.primary.withOpacity(0.18)
+          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.18)
           : set.setType == SetType.warmUp
-          ? Colors.amber.withOpacity(0.12)
+          ? Colors.amber.withValues(alpha: 0.12)
           : null,
       child: Row(
         children: [
@@ -590,17 +655,24 @@ class _SetRowState extends State<_SetRow> {
               onTap: _showSetMenu,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: _SetTypeBadge(type: set.setType, fallbackNumber: widget.index + 1),
+                child: _SetTypeBadge(
+                  type: set.setType,
+                  fallbackNumber: widget.index + 1,
+                ),
               ),
             ),
           ),
-          Expanded(child: Text(widget.previous, overflow: TextOverflow.ellipsis)),
+          Expanded(
+            child: Text(widget.previous, overflow: TextOverflow.ellipsis),
+          ),
           SizedBox(
             width: 82,
             child: TextField(
               controller: _weightController,
               focusNode: _weightFocus,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(isDense: true),
             ),
           ),

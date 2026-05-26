@@ -119,11 +119,15 @@ class HomeDashboardScreen extends StatelessWidget {
                           key: ValueKey('home-loading'),
                           padding: EdgeInsets.only(top: 16),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.all(Radius.circular(999)),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(999),
+                            ),
                             child: LinearProgressIndicator(minHeight: 3),
                           ),
                         )
-                      : const SizedBox.shrink(key: ValueKey('home-loading-empty')),
+                      : const SizedBox.shrink(
+                          key: ValueKey('home-loading-empty'),
+                        ),
                 ),
                 AnimatedSwitcher(
                   duration: MotionTokens.resolve(context, MotionTokens.base),
@@ -272,7 +276,9 @@ class _QuickStartSection extends StatelessWidget {
                 child: TapScale(
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: HomeDashboardScreen._accent),
+                      side: const BorderSide(
+                        color: HomeDashboardScreen._accent,
+                      ),
                       foregroundColor: HomeDashboardScreen._accent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -655,12 +661,13 @@ class _RecoveryCard extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: source.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 2.55,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 2.55,
+                        ),
                     itemBuilder: (context, index) {
                       final item = source[index];
                       return Row(
@@ -690,7 +697,7 @@ class _RecoveryCard extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  _compactSince(item.sinceLabel),
+                                  _compactSince(item),
                                   style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: HomeDashboardScreen._mutedText,

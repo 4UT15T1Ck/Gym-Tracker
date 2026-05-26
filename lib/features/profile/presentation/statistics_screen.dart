@@ -16,44 +16,56 @@ class StatisticsScreen extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-                if (state.isLoading) const LinearProgressIndicator(),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _Reveal(
-                      delayMs: 20,
-                      child: _Counter(label: 'Workouts', value: '${state.totalWorkouts}'),
-                    ),
-                    _Reveal(
-                      delayMs: 50,
-                      child: _Counter(label: 'Sets', value: '${state.totalSets}'),
-                    ),
-                    _Reveal(
-                      delayMs: 80,
-                      child: _Counter(label: 'Reps', value: '${state.totalReps}'),
-                    ),
-                    _Reveal(
-                      delayMs: 110,
-                      child: _Counter(label: 'Volume', value: '${state.totalVolume.toStringAsFixed(0)} kg'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Text('Volume Over Time', style: Theme.of(context).textTheme.titleMedium),
-                _SimpleBars(values: state.volumeHistory),
-                const SizedBox(height: 24),
-                Text('Personal Records', style: Theme.of(context).textTheme.titleMedium),
-                if (state.prs.isEmpty) const Text('No PRs yet.'),
-                ...state.prs.indexed.map(
-                  (entry) => _Reveal(
-                    delayMs: 140 + (entry.$1 * 20),
-                    child: ListTile(
-                      leading: const Icon(Icons.emoji_events),
-                      title: Text(entry.$2),
+              if (state.isLoading) const LinearProgressIndicator(),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _Reveal(
+                    delayMs: 20,
+                    child: _Counter(
+                      label: 'Workouts',
+                      value: '${state.totalWorkouts}',
                     ),
                   ),
+                  _Reveal(
+                    delayMs: 50,
+                    child: _Counter(label: 'Sets', value: '${state.totalSets}'),
+                  ),
+                  _Reveal(
+                    delayMs: 80,
+                    child: _Counter(label: 'Reps', value: '${state.totalReps}'),
+                  ),
+                  _Reveal(
+                    delayMs: 110,
+                    child: _Counter(
+                      label: 'Volume',
+                      value: '${state.totalVolume.toStringAsFixed(0)} kg',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Volume Over Time',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              _SimpleBars(values: state.volumeHistory),
+              const SizedBox(height: 24),
+              Text(
+                'Personal Records',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              if (state.prs.isEmpty) const Text('No PRs yet.'),
+              ...state.prs.indexed.map(
+                (entry) => _Reveal(
+                  delayMs: 140 + (entry.$1 * 20),
+                  child: ListTile(
+                    leading: const Icon(Icons.emoji_events),
+                    title: Text(entry.$2),
+                  ),
                 ),
+              ),
             ],
           ),
         );
@@ -95,7 +107,10 @@ class _SimpleBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxValue = values.fold<double>(1, (max, value) => value.volume > max ? value.volume : max);
+    final maxValue = values.fold<double>(
+      1,
+      (max, value) => value.volume > max ? value.volume : max,
+    );
     return SizedBox(
       height: 210,
       child: Row(
@@ -108,7 +123,9 @@ class _SimpleBars extends StatelessWidget {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: Text(label),
-                  content: Text('Volume: ${value.volume.toStringAsFixed(0)} kg'),
+                  content: Text(
+                    'Volume: ${value.volume.toStringAsFixed(0)} kg',
+                  ),
                 ),
               ),
               child: Padding(
@@ -116,7 +133,11 @@ class _SimpleBars extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text('${value.volume.toStringAsFixed(0)}kg', maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      '${value.volume.toStringAsFixed(0)}kg',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     AnimatedMetricBar(
                       value: value.volume,
                       maxValue: maxValue,
@@ -125,7 +146,12 @@ class _SimpleBars extends StatelessWidget {
                       borderRadius: BorderRadius.circular(2),
                     ),
                     const SizedBox(height: 4),
-                    Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),

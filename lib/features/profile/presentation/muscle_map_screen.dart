@@ -58,7 +58,9 @@ class MuscleMapScreen extends StatelessWidget {
                     final item = entry.$2;
                     final count = item.value;
                     return TweenAnimationBuilder<double>(
-                      key: ValueKey<String>('muscle-chip-${item.key}-${state.days}'),
+                      key: ValueKey<String>(
+                        'muscle-chip-${item.key}-${state.days}',
+                      ),
                       tween: Tween(begin: 0, end: 1),
                       duration: MotionTokens.resolve(
                         context,
@@ -94,8 +96,9 @@ class MuscleMapScreen extends StatelessWidget {
               ),
               ...sortedEntries.map((entry) {
                 final count = entry.value;
-                final ratio =
-                    maxCount > 0 ? (count / maxCount).clamp(0.0, 1.0) : 0.0;
+                final ratio = maxCount > 0
+                    ? (count / maxCount).clamp(0.0, 1.0)
+                    : 0.0;
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundColor: _colorForCount(count),

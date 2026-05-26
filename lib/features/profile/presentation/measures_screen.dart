@@ -48,14 +48,14 @@ class _MeasuresScreenState extends State<MeasuresScreen> {
               FilledButton(
                 onPressed: () async {
                   await context.read<MeasuresCubit>().add(
-                        weight: double.tryParse(_weightController.text),
-                        bodyFat: double.tryParse(_bodyFatController.text),
-                      );
+                    weight: double.tryParse(_weightController.text),
+                    bodyFat: double.tryParse(_bodyFatController.text),
+                  );
                   _weightController.clear();
                   _bodyFatController.clear();
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   await AppHaptics.success(context);
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context)
                     ..hideCurrentSnackBar()
                     ..showSnackBar(
@@ -68,7 +68,10 @@ class _MeasuresScreenState extends State<MeasuresScreen> {
                 child: const Text('Add Entry'),
               ),
               const SizedBox(height: 24),
-              Text('Weight History', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Weight History',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               SizedBox(
                 height: 120,
                 child: Row(
@@ -93,7 +96,8 @@ class _MeasuresScreenState extends State<MeasuresScreen> {
                   }).toList(),
                 ),
               ),
-              if (state.entries.isEmpty) const Text('No body metrics logged yet.'),
+              if (state.entries.isEmpty)
+                const Text('No body metrics logged yet.'),
               ...state.entries.map(
                 (entry) => AnimatedOpacity(
                   key: ValueKey<String>(entry.id),
@@ -121,17 +125,19 @@ class _MeasuresScreenState extends State<MeasuresScreen> {
 
   Future<void> _deleteEntry(String id) async {
     if (_removingIds.contains(id)) return;
+    final cubit = context.read<MeasuresCubit>();
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _removingIds.add(id));
     await Future<void>.delayed(
       MotionTokens.resolve(context, MotionTokens.fast),
     );
     if (!mounted) return;
-    await context.read<MeasuresCubit>().delete(id);
+    await cubit.delete(id);
     if (!mounted) return;
     _removingIds.remove(id);
-    await AppHaptics.selection(context);
+    await AppHaptics.selection();
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
         const SnackBar(
