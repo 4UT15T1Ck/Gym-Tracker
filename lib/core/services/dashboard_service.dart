@@ -4,7 +4,9 @@ import 'package:gym_tracker/core/repositories/exercise_repository.dart';
 import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:gym_tracker/core/repositories/routine_repository.dart';
 import 'package:gym_tracker/core/repositories/workout_repository.dart';
+import 'package:injectable/injectable.dart';
 
+@lazySingleton
 class DashboardService {
   final WorkoutRepository _workoutRepository;
   final RoutineRepository _routineRepository;
@@ -39,7 +41,12 @@ class DashboardService {
           ),
         )
         .toList();
-    final recovery = await _recovery(recentRecoveryHistory, now, muscleIdToName, secondaryMap);
+    final recovery = await _recovery(
+      recentRecoveryHistory,
+      now,
+      muscleIdToName,
+      secondaryMap,
+    );
     // Single query — replaces the 20-exercise getExerciseDetail loop.
     final recentPrs = await _recentPrs();
     final suggestion = await _suggestion(
@@ -65,7 +72,9 @@ class DashboardService {
     Map<String, String> muscleIdToName,
   ) async {
     final tags = <String>{};
-    final muscleRows = await _workoutRepository.getWorkoutMuscleGroups([workoutId]);
+    final muscleRows = await _workoutRepository.getWorkoutMuscleGroups([
+      workoutId,
+    ]);
     for (final row in muscleRows) {
       final muscleName = muscleIdToName[row.primaryMuscleId];
       if (muscleName != null) {
@@ -77,10 +86,18 @@ class DashboardService {
   }
 
   List<bool> _thisWeekDays(List<WorkoutSummary> history, DateTime now) {
-    final start = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    final start = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
     final days = List<bool>.filled(7, false);
     for (final workout in history) {
-      final workoutDay = DateTime(workout.startTime.year, workout.startTime.month, workout.startTime.day);
+      final workoutDay = DateTime(
+        workout.startTime.year,
+        workout.startTime.month,
+        workout.startTime.day,
+      );
       final offset = workoutDay.difference(start).inDays;
       if (offset >= 0 && offset < 7) days[offset] = true;
     }
@@ -90,7 +107,11 @@ class DashboardService {
   int _streakDays(List<WorkoutSummary> history, DateTime now) {
     final trainedDays = {
       for (final workout in history)
-        DateTime(workout.startTime.year, workout.startTime.month, workout.startTime.day).millisecondsSinceEpoch,
+        DateTime(
+          workout.startTime.year,
+          workout.startTime.month,
+          workout.startTime.day,
+        ).millisecondsSinceEpoch,
     };
     var cursor = DateTime(now.year, now.month, now.day);
     var streak = 0;
@@ -182,7 +203,8 @@ class DashboardService {
       final groups = <String>{};
       for (final routineExercise in detail.exercises) {
         // Primary muscle — resolved from ID, no getExerciseDetail call.
-        final muscleName = muscleIdToName[routineExercise.exercise.primaryMuscleId];
+        final muscleName =
+            muscleIdToName[routineExercise.exercise.primaryMuscleId];
         if (muscleName != null) {
           final group = MuscleGroupUtils.groupForMuscleName(muscleName);
           if (group != null) groups.add(group);
@@ -190,7 +212,10 @@ class DashboardService {
       }
       final score = groups.fold<int>(
         0,
-        (sum, group) => sum + (recoveryByGroup[group]?.status.score ?? 0),
+        (sum, group) =>
+            sum +
+            (recoveryByGroup[group]?.status.score ??
+                RecoveryStatus.fresh.score),
       );
       if (score > bestScore) {
         bestScore = score;
@@ -204,7 +229,8 @@ class DashboardService {
           notes: detail.routine.notes,
           reason: readyGroups.isEmpty
               ? '${detail.routine.name} is the best available routine'
-              : '${detail.routine.name} - ${readyGroups.take(2).join(' and ')} are ready',
+              : '${detail.routine.name} - '
+                    '${readyGroups.take(2).join(' and ')} are ready',
         );
       }
     }
