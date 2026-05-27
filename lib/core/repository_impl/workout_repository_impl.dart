@@ -245,6 +245,13 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<List<({String workoutId, String exerciseId, String primaryMuscleId})>> getWorkoutMuscleGroups(
+    List<String> workoutIds,
+  ) async {
+    return await _workoutDao.getWorkoutMuscleGroups(workoutIds);
+  }
+
+  @override
   Future<Workout> updateWorkoutMeta({
     required String workoutId,
     String? name,

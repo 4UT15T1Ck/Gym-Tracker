@@ -318,21 +318,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     if (id == null) return;
     try {
       final detail = await _workoutRepository.getWorkoutDetail(id);
-      final previous = <String, String>{};
-      final previousPairs = await Future.wait(
-        detail.exercises.map((workoutExercise) async {
-          final exerciseDetail = await _exerciseRepository.getExerciseDetail(workoutExercise.exercise.id);
-          final recent = exerciseDetail.stats?.recentHistory.isNotEmpty == true ? exerciseDetail.stats!.recentHistory.first : null;
-          final firstSet = recent?.sets.isNotEmpty == true ? recent!.sets.first : null;
-          final label = firstSet == null
-              ? '-'
-              : '${firstSet.weight?.toStringAsFixed(1) ?? '-'} kg x ${firstSet.reps ?? '-'}';
-          return MapEntry(workoutExercise.exercise.id, label);
-        }),
+      final previous = await _exerciseRepository.getPreviousSetLabels(
+        detail.exercises.map((workoutExercise) => workoutExercise.exercise.id).toSet().toList(),
       );
-      for (final entry in previousPairs) {
-        previous[entry.key] = entry.value;
-      }
       emit(
         state.copyWith(
           isLoading: false,
