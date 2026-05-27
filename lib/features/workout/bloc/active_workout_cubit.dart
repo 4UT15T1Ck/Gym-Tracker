@@ -132,61 +132,85 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     bool clearWeight = false,
     bool clearReps = false,
   }) async {
+    final currentSet = _findSet(set.id) ?? set;
     final updated = WorkoutSet(
-      id: set.id,
-      workoutExerciseId: set.workoutExerciseId,
-      setType: set.setType,
-      weight: clearWeight ? null : weight ?? set.weight,
-      reps: clearReps ? null : reps ?? set.reps,
-      durationSeconds: set.durationSeconds,
-      distance: set.distance,
-      rpe: set.rpe,
-      completedAt: set.completedAt,
-      order: set.order,
-      isCompleted: set.isCompleted,
+      id: currentSet.id,
+      workoutExerciseId: currentSet.workoutExerciseId,
+      setType: currentSet.setType,
+      weight: clearWeight ? null : weight ?? currentSet.weight,
+      reps: clearReps ? null : reps ?? currentSet.reps,
+      durationSeconds: currentSet.durationSeconds,
+      distance: currentSet.distance,
+      rpe: currentSet.rpe,
+      completedAt: currentSet.completedAt,
+      order: currentSet.order,
+      isCompleted: currentSet.isCompleted,
     );
+    if (updated.isCompleted && !_hasValidWeightAndReps(updated)) {
+      emit(state.copyWith(errorMessage: _setValidationMessage(updated)));
+      return;
+    }
     await _workoutRepository.updateSet(updated);
     await _refreshImmediate();
   }
 
   Future<void> updateSetType(WorkoutSet set, SetType setType) async {
+    final currentSet = _findSet(set.id) ?? set;
     final updated = WorkoutSet(
-      id: set.id,
-      workoutExerciseId: set.workoutExerciseId,
+      id: currentSet.id,
+      workoutExerciseId: currentSet.workoutExerciseId,
       setType: setType,
-      weight: set.weight,
-      reps: set.reps,
-      durationSeconds: set.durationSeconds,
-      distance: set.distance,
-      rpe: set.rpe,
-      completedAt: set.completedAt,
-      order: set.order,
-      isCompleted: set.isCompleted,
+      weight: currentSet.weight,
+      reps: currentSet.reps,
+      durationSeconds: currentSet.durationSeconds,
+      distance: currentSet.distance,
+      rpe: currentSet.rpe,
+      completedAt: currentSet.completedAt,
+      order: currentSet.order,
+      isCompleted: currentSet.isCompleted,
     );
     await _workoutRepository.updateSet(updated);
     await _refreshImmediate();
   }
 
   Future<void> removeSet(WorkoutSet set) async {
-    final clearActiveRest = state.activeRestWorkoutExerciseId == set.workoutExerciseId;
+    final clearActiveRest =
+        state.activeRestWorkoutExerciseId == set.workoutExerciseId;
     if (clearActiveRest) getIt<RestTimerBloc>().add(const CancelRestTimer());
     await _workoutRepository.removeSet(set.id);
     await _refreshImmediate(clearRest: clearActiveRest);
   }
 
   Future<void> toggleSet(WorkoutSet set) async {
-    if (set.isCompleted) {
+    final currentSet = _findSet(set.id) ?? set;
+    if (currentSet.isCompleted) {
       getIt<RestTimerBloc>().add(const CancelRestTimer());
-      await _workoutRepository.uncompleteSet(set.id);
-      await _refreshImmediate(clearRest: state.activeRestWorkoutExerciseId == set.workoutExerciseId);
+      await _workoutRepository.uncompleteSet(currentSet.id);
+      final clearActiveRest =
+          state.activeRestWorkoutExerciseId == currentSet.workoutExerciseId;
+      await _refreshImmediate(
+        clearRest: clearActiveRest,
+      );
       return;
     }
 
-    await _workoutRepository.completeSet(set.id);
+    if (!_hasValidWeightAndReps(currentSet)) {
+      emit(state.copyWith(errorMessage: _setValidationMessage(currentSet)));
+      return;
+    }
+
+    try {
+      await _workoutRepository.completeSet(currentSet.id);
+    } on StateError {
+      emit(state.copyWith(errorMessage: _setValidationMessage(currentSet)));
+      return;
+    }
     final matchingExercises = state.detail?.exercises.where(
-      (item) => item.workoutExercise.id == set.workoutExerciseId,
+      (item) => item.workoutExercise.id == currentSet.workoutExerciseId,
     );
-    final exercise = matchingExercises == null || matchingExercises.isEmpty ? null : matchingExercises.first;
+    final exercise = matchingExercises == null || matchingExercises.isEmpty
+        ? null
+        : matchingExercises.first;
     final restSeconds = exercise?.workoutExercise.restSeconds ?? 90;
 
     await _refreshImmediate(clearRest: true);
@@ -196,7 +220,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     if (detail == null || workoutId == null) return;
 
     final now = DateTime.now();
-    final completedSnap = completedSetSnapshot(detail, set.workoutExerciseId, set.id, now);
+    final completedSnap = completedSetSnapshot(
+      detail,
+      currentSet.workoutExerciseId,
+      currentSet.id,
+      now,
+    );
     final next = nextIncompleteSet(detail);
 
     if (completedSnap != null && getIt.isRegistered<NotificationService>()) {
@@ -219,7 +248,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     getIt<RestTimerBloc>().add(
       StartRestTimer(
         workoutId: workoutId,
-        workoutExerciseId: set.workoutExerciseId,
+        workoutExerciseId: currentSet.workoutExerciseId,
         totalSeconds: restSeconds,
         nextExercise: next.exerciseName,
         nextSet: next.setNumber,
@@ -230,13 +259,32 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   Future<void> finish() async {
     final id = _workoutId;
     if (id == null) return;
+    final invalidCompletedSet = _firstInvalidCompletedSet();
+    if (invalidCompletedSet != null) {
+      emit(
+        state.copyWith(
+          errorMessage: _setValidationMessage(invalidCompletedSet),
+        ),
+      );
+      return;
+    }
     getIt<RestTimerBloc>().add(const CancelRestTimer());
     if (getIt.isRegistered<NotificationService>()) {
       await getIt<NotificationService>().cancelAllWorkoutNotifications();
     }
     _shownInitialProgressForWorkoutId = null;
-    emit(state.copyWith(isFinishing: true));
-    await _workoutRepository.completeWorkout(id);
+    emit(state.copyWith(isFinishing: true, clearError: true));
+    try {
+      await _workoutRepository.completeWorkout(id);
+    } on StateError catch (error) {
+      emit(
+        state.copyWith(
+          isFinishing: false,
+          errorMessage: error.message,
+        ),
+      );
+      return;
+    }
     emit(state.copyWith(isFinishing: false, didFinish: true));
   }
 
@@ -319,7 +367,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     try {
       final detail = await _workoutRepository.getWorkoutDetail(id);
       final previous = await _exerciseRepository.getPreviousSetLabels(
-        detail.exercises.map((workoutExercise) => workoutExercise.exercise.id).toSet().toList(),
+        detail.exercises
+            .map((workoutExercise) => workoutExercise.exercise.id)
+            .toSet()
+            .toList(),
       );
       emit(
         state.copyWith(
@@ -328,6 +379,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           previousByExerciseId: previous,
           restEndsAt: restEndsAt,
           activeRestWorkoutExerciseId: activeRestWorkoutExerciseId,
+          clearError: true,
           clearRest: clearRest,
         ),
       );
@@ -349,6 +401,52 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       }
     }
     return latest;
+  }
+
+  WorkoutSet? _findSet(String setId) {
+    final detail = state.detail;
+    if (detail == null) return null;
+    for (final exercise in detail.exercises) {
+      for (final set in exercise.sets) {
+        if (set.id == setId) return set;
+      }
+    }
+    return null;
+  }
+
+  WorkoutSet? _firstInvalidCompletedSet() {
+    final detail = state.detail;
+    if (detail == null) return null;
+    for (final exercise in detail.exercises) {
+      for (final set in exercise.sets) {
+        if (set.isCompleted && !_hasValidWeightAndReps(set)) {
+          return set;
+        }
+      }
+    }
+    return null;
+  }
+
+  String _setValidationMessage(WorkoutSet targetSet) {
+    final detail = state.detail;
+    if (detail == null) {
+      return 'Set needs weight and reps greater than 0';
+    }
+    for (final exercise in detail.exercises) {
+      final sets = [...exercise.sets]
+        ..sort((a, b) => a.order.compareTo(b.order));
+      final setIndex = sets.indexWhere((set) => set.id == targetSet.id);
+      if (setIndex >= 0) {
+        return '${exercise.exercise.name} set ${setIndex + 1} needs weight and reps greater than 0';
+      }
+    }
+    return 'Set needs weight and reps greater than 0';
+  }
+
+  static bool _hasValidWeightAndReps(WorkoutSet set) {
+    final weight = set.weight;
+    final reps = set.reps;
+    return weight != null && weight > 0 && reps != null && reps > 0;
   }
 
   String? _resolveRestExerciseName() {

@@ -50,6 +50,22 @@ class WorkoutSetDao {
     return WorkoutSet.fromMap(maps.first);
   }
 
+  Future<WorkoutSet?> getLastByWorkoutExerciseId(
+    String workoutExerciseId, [
+    DatabaseExecutor? db,
+  ]) async {
+    final executor = db ?? _db;
+    final maps = await executor.query(
+      WorkoutSet.tableName,
+      where: '${WorkoutSet.columnWorkoutExerciseId} = ?',
+      whereArgs: [workoutExerciseId],
+      orderBy: '"${WorkoutSet.columnOrder}" DESC',
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return WorkoutSet.fromMap(maps.first);
+  }
+
   Future<void> insert(WorkoutSet set, DatabaseExecutor db) async {
     await db.insert(
       WorkoutSet.tableName,
