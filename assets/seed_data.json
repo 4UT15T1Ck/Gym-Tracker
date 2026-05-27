@@ -1,0 +1,4011 @@
+{
+  "muscles": [
+    {
+      "id": "m0",
+      "name": "Core"
+    },
+    {
+      "id": "m1",
+      "name": "Chest"
+    },
+    {
+      "id": "m2",
+      "name": "Triceps"
+    },
+    {
+      "id": "m3",
+      "name": "Shoulders"
+    },
+    {
+      "id": "m4",
+      "name": "Upper Back"
+    },
+    {
+      "id": "m5",
+      "name": "Biceps"
+    },
+    {
+      "id": "m6",
+      "name": "Quadriceps"
+    },
+    {
+      "id": "m7",
+      "name": "Hamstrings"
+    },
+    {
+      "id": "m8",
+      "name": "Glutes"
+    },
+    {
+      "id": "m9",
+      "name": "Calves"
+    },
+    {
+      "id": "m10",
+      "name": "Forearms"
+    },
+    {
+      "id": "m11",
+      "name": "Lower Back"
+    },
+    {
+      "id": "m12",
+      "name": "Lats"
+    },
+    {
+      "id": "m13",
+      "name": "Traps"
+    },
+    {
+      "id": "m14",
+      "name": "Cardio"
+    }
+  ],
+  "equipments": [
+    {
+      "id": "e0",
+      "name": "None"
+    },
+    {
+      "id": "e1",
+      "name": "Barbell"
+    },
+    {
+      "id": "e2",
+      "name": "Bodyweight"
+    },
+    {
+      "id": "e3",
+      "name": "Dumbbell"
+    },
+    {
+      "id": "e4",
+      "name": "Kettlebell"
+    },
+    {
+      "id": "e5",
+      "name": "Machine"
+    },
+    {
+      "id": "e6",
+      "name": "Resistance Band"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "ex1",
+      "name": "Barbell Bench Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Foundational horizontal push for overall chest mass.",
+      "instructions": [
+        "Lie flat on a bench, grip barbell slightly wider than shoulder-width.",
+        "Unrack the bar and hold it directly above your chest with arms fully extended.",
+        "Lower the bar in a controlled arc to your mid-chest, elbows at ~45°.",
+        "Press forcefully back to the start, exhaling at the top."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex2",
+      "name": "Incline Barbell Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Targets upper chest with an inclined barbell press.",
+      "instructions": [
+        "Set bench to 30–45°, lie back and grip bar slightly wider than shoulders.",
+        "Unrack and hold bar over upper chest.",
+        "Lower bar to upper chest, keeping elbows at ~45°.",
+        "Press back up powerfully to full extension."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex3",
+      "name": "Barbell Decline Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Hits the lower chest with a declined angle.",
+      "instructions": [
+        "Set bench to -15° decline, secure feet under pads.",
+        "Grip barbell slightly wider than shoulders and unrack.",
+        "Lower bar to lower chest with control.",
+        "Press back up to lockout."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex4",
+      "name": "Dumbbell Bench Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Greater range of motion chest press for each side independently.",
+      "instructions": [
+        "Lie flat on bench, hold a dumbbell in each hand at chest level, palms forward.",
+        "Press dumbbells up until arms are fully extended over your chest.",
+        "Lower slowly with control, elbows at ~45° to body.",
+        "Stop when upper arms are parallel to floor, then press again."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex5",
+      "name": "Incline Dumbbell Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Emphasises upper chest with independent arm movement.",
+      "instructions": [
+        "Set bench to 30–45°, sit back with a dumbbell in each hand.",
+        "Bring dumbbells to shoulder level, palms facing forward.",
+        "Press both dumbbells up and slightly inward to meet at the top.",
+        "Lower with control back to start position."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex6",
+      "name": "Dumbbell Fly",
+      "tracking_type": "weight_reps",
+      "short_description": "Isolation fly for chest stretch and contraction.",
+      "instructions": [
+        "Lie flat on bench, hold dumbbells above chest with palms facing each other, slight elbow bend.",
+        "Open arms wide in an arc, lowering dumbbells until you feel a chest stretch.",
+        "Reverse the arc, squeezing chest as dumbbells return to the top.",
+        "Keep the elbow angle constant throughout."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex7",
+      "name": "Push-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Classic bodyweight chest and pushing exercise.",
+      "instructions": [
+        "Start in a high plank: hands slightly wider than shoulders, body in a straight line.",
+        "Lower chest toward the floor by bending elbows at ~45° to body.",
+        "Stop just before chest touches the floor.",
+        "Push back up to full arm extension, keeping core braced throughout."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex8",
+      "name": "Decline Push-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Elevates feet to shift emphasis to upper chest.",
+      "instructions": [
+        "Place feet on an elevated surface (bench or step), hands on floor.",
+        "Maintain a straight body line from head to heels.",
+        "Lower chest toward floor, elbows at ~45°.",
+        "Press back up to full extension."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex9",
+      "name": "Chest Dip",
+      "tracking_type": "reps_only",
+      "short_description": "Bodyweight dip leaning forward to target lower chest.",
+      "instructions": [
+        "Grip parallel bars and hoist yourself up to the start position, arms extended.",
+        "Lean your torso forward ~30° and cross your feet.",
+        "Bend elbows and lower until shoulders are slightly below elbow level.",
+        "Press back up to full extension, maintaining the forward lean."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex10",
+      "name": "Machine Chest Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Guided horizontal press for chest isolation.",
+      "instructions": [
+        "Adjust seat so handles are at mid-chest height.",
+        "Grip handles with palms facing down or forward.",
+        "Press handles away until arms are nearly extended.",
+        "Return slowly to start, keeping tension on chest."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex11",
+      "name": "Pec Deck Machine",
+      "tracking_type": "weight_reps",
+      "short_description": "Isolation fly movement on a fixed-arc machine.",
+      "instructions": [
+        "Sit with back flat against pad, forearms on the pads.",
+        "Start with arms open, elbows at shoulder height.",
+        "Bring pads together in front of chest, squeezing pecs.",
+        "Return slowly to start, maintaining control."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex12",
+      "name": "Resistance Band Push-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Push-up with added band resistance for progressive overload.",
+      "instructions": [
+        "Drape a resistance band across your upper back, holding ends under each hand.",
+        "Start in a high plank position.",
+        "Lower chest to floor as in a standard push-up.",
+        "Press back up against the band's resistance."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex13",
+      "name": "Resistance Band Chest Fly",
+      "tracking_type": "weight_reps",
+      "short_description": "Standing fly using band for constant chest tension.",
+      "instructions": [
+        "Anchor band at chest height behind you, one end in each hand.",
+        "Stand with arms outstretched to sides, slight elbow bend.",
+        "Bring hands together in front of chest in a hugging motion.",
+        "Slowly return to start, controlling band tension."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex14",
+      "name": "Kettlebell Floor Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Chest press performed on the floor with kettlebells.",
+      "instructions": [
+        "Lie on the floor, hold a kettlebell in each hand at chest level.",
+        "Press both kettlebells straight up until arms are extended.",
+        "Lower with control until triceps touch the floor.",
+        "Press again from the dead stop position."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex15",
+      "name": "Kettlebell Chest Press (Bench)",
+      "tracking_type": "weight_reps",
+      "short_description": "Flat bench press with kettlebells for extra wrist rotation.",
+      "instructions": [
+        "Lie on a flat bench, a kettlebell in each hand at chest level.",
+        "Press both up, rotating wrists so palms face each other at the top.",
+        "Lower slowly, rotating back to start position.",
+        "Keep core tight and feet flat on the floor."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex16",
+      "name": "Barbell Skull Crusher",
+      "tracking_type": "weight_reps",
+      "short_description": "Lying triceps extension targeting all three heads.",
+      "instructions": [
+        "Lie on a flat bench, hold barbell with a narrow grip directly above forehead.",
+        "Keep upper arms vertical and stationary throughout.",
+        "Bend elbows to lower bar toward forehead or behind head.",
+        "Extend elbows to return to start."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex17",
+      "name": "Close-Grip Barbell Bench Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Narrow-grip bench press shifting load to triceps.",
+      "instructions": [
+        "Lie on bench, grip bar with hands ~shoulder-width apart.",
+        "Unrack and hold bar over lower chest.",
+        "Lower bar to sternum keeping elbows tucked close to body.",
+        "Press back to full extension."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [
+        "m1",
+        "m3"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex18",
+      "name": "Dumbbell Overhead Triceps Extension",
+      "tracking_type": "weight_reps",
+      "short_description": "Overhead extension stretching the long head of the triceps.",
+      "instructions": [
+        "Stand or sit, hold one dumbbell with both hands overhead, arms extended.",
+        "Keep upper arms close to head and stationary.",
+        "Bend elbows to lower dumbbell behind head.",
+        "Extend elbows to return to start."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex19",
+      "name": "Dumbbell Kickback",
+      "tracking_type": "weight_reps",
+      "short_description": "Isolation kickback for the lateral triceps head.",
+      "instructions": [
+        "Hinge forward at hip, upper arm parallel to floor, elbow bent at 90°.",
+        "Keeping upper arm still, extend elbow until arm is straight.",
+        "Squeeze triceps at full extension.",
+        "Return slowly to 90° and repeat."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex20",
+      "name": "Diamond Push-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Close-hand push-up emphasising triceps.",
+      "instructions": [
+        "Place hands together under your chest, thumbs and forefingers touching to form a diamond.",
+        "Hold a straight plank position.",
+        "Lower chest toward hands, elbows track backward.",
+        "Push back to full extension."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [
+        "m1"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex21",
+      "name": "Bench Dip",
+      "tracking_type": "reps_only",
+      "short_description": "Bodyweight dip off a bench targeting the triceps.",
+      "instructions": [
+        "Sit on edge of bench, hands gripping edge beside hips, fingers forward.",
+        "Slide off bench and support weight on hands, legs extended.",
+        "Lower hips toward floor by bending elbows to ~90°.",
+        "Push back up to full arm extension."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex22",
+      "name": "Machine Triceps Pushdown",
+      "tracking_type": "weight_reps",
+      "short_description": "Cable pushdown for isolated triceps work.",
+      "instructions": [
+        "Stand at cable machine with a straight or rope attachment set at high pulley.",
+        "Grip attachment with overhand grip, elbows pinned at sides.",
+        "Push attachment down until arms are fully extended.",
+        "Slowly return to start, keeping elbows stationary."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex23",
+      "name": "Machine Overhead Triceps Extension",
+      "tracking_type": "weight_reps",
+      "short_description": "Overhead cable extension for triceps long head.",
+      "instructions": [
+        "Set cable pulley to low position, attach rope.",
+        "Face away from machine, hold rope overhead with both hands.",
+        "Keep upper arms next to ears, extend elbows fully.",
+        "Return slowly to 90° bend."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex24",
+      "name": "Resistance Band Triceps Pushdown",
+      "tracking_type": "weight_reps",
+      "short_description": "Band version of the cable pushdown, great for home training.",
+      "instructions": [
+        "Anchor band overhead at a door or rack.",
+        "Grip band with overhand grip, elbows at sides.",
+        "Extend elbows fully pushing band downward.",
+        "Return to 90° with control."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex25",
+      "name": "Kettlebell Overhead Triceps Extension",
+      "tracking_type": "weight_reps",
+      "short_description": "Single kettlebell held overhead to target triceps.",
+      "instructions": [
+        "Hold one kettlebell by the horns overhead, arms fully extended.",
+        "Keep upper arms stationary beside head.",
+        "Bend elbows to lower kettlebell behind head.",
+        "Extend arms back to start."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex26",
+      "name": "Barbell Overhead Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Standing or seated press for total shoulder development.",
+      "instructions": [
+        "Grip barbell just outside shoulder width, bar resting on upper chest.",
+        "Brace core, press bar directly overhead until arms lock out.",
+        "Move head slightly back to allow bar to pass, then reset under bar.",
+        "Lower bar back to upper chest with control."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m2",
+        "m13"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex27",
+      "name": "Barbell Upright Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Compound pull targeting lateral delts and traps.",
+      "instructions": [
+        "Hold barbell with overhand grip, hands ~shoulder-width apart.",
+        "Pull bar straight up, leading with elbows, until bar reaches chin.",
+        "Keep bar close to body throughout the movement.",
+        "Lower with control to the start."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m13",
+        "m5"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex28",
+      "name": "Dumbbell Shoulder Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated or standing press for all three deltoid heads.",
+      "instructions": [
+        "Sit on a bench with back support, hold dumbbells at shoulder level, palms forward.",
+        "Press dumbbells up and slightly inward until arms are fully extended.",
+        "Lower back to shoulder level with control.",
+        "Keep core braced, avoid arching lower back."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m2",
+        "m13"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex29",
+      "name": "Dumbbell Lateral Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Isolation raise for the lateral deltoid head.",
+      "instructions": [
+        "Stand holding dumbbells at sides, slight bend in elbows.",
+        "Raise arms out to the side until level with shoulders.",
+        "Tilt pinky slightly higher than thumb at the top (pouring motion).",
+        "Lower slowly with control."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex30",
+      "name": "Dumbbell Front Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Targets the anterior deltoid with a forward raise.",
+      "instructions": [
+        "Stand holding dumbbells in front of thighs, palms facing body.",
+        "Raise one or both arms forward to shoulder height.",
+        "Keep a slight elbow bend throughout.",
+        "Lower with control and repeat."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex31",
+      "name": "Pike Push-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Bodyweight shoulder press alternative in a pike position.",
+      "instructions": [
+        "Start in a downward-dog position, hips high, forming an inverted V.",
+        "Bend elbows to lower head toward floor between hands.",
+        "Push back up by extending arms fully.",
+        "Keep hips elevated throughout."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m2"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex32",
+      "name": "Handstand Push-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Advanced vertical press using full bodyweight.",
+      "instructions": [
+        "Kick up into a handstand against a wall, hands ~shoulder-width apart.",
+        "Lower head toward floor by bending elbows.",
+        "Stop just before head touches floor.",
+        "Press back up to full extension."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m2",
+        "m13"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex33",
+      "name": "Machine Shoulder Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Guided overhead press for beginners or high-volume work.",
+      "instructions": [
+        "Adjust seat so handles are at shoulder height.",
+        "Grip handles with palms facing forward.",
+        "Press handles overhead until arms are nearly extended.",
+        "Lower back to shoulder height with control."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m2"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex34",
+      "name": "Machine Lateral Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Guided lateral raise for lateral delt isolation.",
+      "instructions": [
+        "Sit at lateral raise machine, adjust arm pads to elbow level.",
+        "Press pads outward and upward to shoulder height.",
+        "Hold briefly at the top.",
+        "Lower slowly to start."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex35",
+      "name": "Resistance Band Lateral Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Band lateral raise for shoulder width.",
+      "instructions": [
+        "Stand on resistance band, hold one end in each hand at sides.",
+        "Raise arms out to sides to shoulder height.",
+        "Keep elbows slightly bent throughout.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex36",
+      "name": "Resistance Band Shoulder Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Standing overhead press with a resistance band.",
+      "instructions": [
+        "Stand on center of band, grip ends at shoulder height.",
+        "Press both hands overhead until arms are extended.",
+        "Lower back to shoulder level.",
+        "Keep core tight and avoid excessive back arch."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m2"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex37",
+      "name": "Kettlebell Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Single-arm press demanding core stability.",
+      "instructions": [
+        "Clean a kettlebell to the rack position at shoulder level.",
+        "Press kettlebell straight up until arm is locked out.",
+        "Lower under control back to rack position.",
+        "Keep wrist straight and elbow under the bell throughout."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m2",
+        "m0"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex38",
+      "name": "Kettlebell Upright Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Kettlebell version of upright row targeting delts and traps.",
+      "instructions": [
+        "Hold kettlebell with both hands, overhand grip, in front of thighs.",
+        "Pull kettlebell straight up, leading with elbows, to chin level.",
+        "Keep bell close to body.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m13"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex39",
+      "name": "Barbell Bent-Over Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Compound row for overall back thickness.",
+      "instructions": [
+        "Stand with hip-width stance, hinge at hips to ~45°, hold barbell with overhand grip.",
+        "Keep back flat and neutral spine throughout.",
+        "Pull bar to lower chest/upper abdomen, leading with elbows.",
+        "Lower with control to full arm extension."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m12",
+        "m5",
+        "m11"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex40",
+      "name": "Barbell Pendlay Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Strict row from a dead stop for explosive pulling power.",
+      "instructions": [
+        "Set up like a bent-over row but torso is parallel to the floor.",
+        "Bar rests on floor each rep.",
+        "Explosively pull bar to lower chest, keeping torso horizontal.",
+        "Lower bar completely to floor before the next rep."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m12",
+        "m5"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex41",
+      "name": "Dumbbell Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral row allowing greater range of motion.",
+      "instructions": [
+        "Place one knee and hand on a bench for support, hold a dumbbell in the other hand.",
+        "Start with arm hanging straight down.",
+        "Pull dumbbell up to hip level, leading with elbow.",
+        "Lower with full extension and repeat."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m12",
+        "m5"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex42",
+      "name": "Dumbbell Rear Delt Fly",
+      "tracking_type": "weight_reps",
+      "short_description": "Targets the posterior deltoid and upper back.",
+      "instructions": [
+        "Hinge forward at hips to ~90°, hold dumbbells below chest, palms facing each other.",
+        "Raise arms out to sides with a slight elbow bend.",
+        "Squeeze rear delts at the top.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m3"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex43",
+      "name": "Inverted Row",
+      "tracking_type": "reps_only",
+      "short_description": "Bodyweight horizontal pull targeting the upper back.",
+      "instructions": [
+        "Set a bar at hip height, lie underneath it and grip it with overhand grip.",
+        "Body forms a straight line from head to heels.",
+        "Pull chest up to bar by driving elbows back.",
+        "Lower with control until arms are extended."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m12",
+        "m5"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex44",
+      "name": "Face Pull",
+      "tracking_type": "weight_reps",
+      "short_description": "Cable or band pull targeting rear delts and rotator cuff.",
+      "instructions": [
+        "Set cable or attach band at face height.",
+        "Grip rope or band with overhand grip, step back.",
+        "Pull toward face, spreading hands apart at the end.",
+        "Externally rotate so thumbs point back, then return slowly."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m3"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex45",
+      "name": "Seated Cable Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Horizontal cable row for mid-back thickness.",
+      "instructions": [
+        "Sit at cable row station, feet on platform, slight knee bend.",
+        "Grip handle, sit tall with neutral spine.",
+        "Pull handle to lower abdomen, squeezing shoulder blades together.",
+        "Extend arms fully back to start."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m12",
+        "m5"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex46",
+      "name": "Resistance Band Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated or standing band row for upper back.",
+      "instructions": [
+        "Anchor band at chest height or sit and loop around feet.",
+        "Hold ends with overhand grip, sit tall.",
+        "Pull hands to sides of torso, squeezing shoulder blades.",
+        "Return to full extension."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m12",
+        "m5"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex47",
+      "name": "Resistance Band Rear Delt Fly",
+      "tracking_type": "weight_reps",
+      "short_description": "Band reverse fly for posterior deltoid and rhomboids.",
+      "instructions": [
+        "Anchor band at chest height, grip with both hands, arms extended forward.",
+        "Pull arms apart horizontally, keeping slight elbow bend.",
+        "Squeeze rear delts at full extension.",
+        "Return to start slowly."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m3"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex48",
+      "name": "Kettlebell Bent-Over Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral or bilateral kettlebell row for upper back.",
+      "instructions": [
+        "Hinge at hips, hold a kettlebell in one hand, opposite hand on knee for support.",
+        "Pull kettlebell to hip level, driving elbow back.",
+        "Lower to full extension.",
+        "Complete reps on one side before switching."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m12",
+        "m5"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex49",
+      "name": "Barbell Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Classic mass-builder for the biceps.",
+      "instructions": [
+        "Stand holding barbell with underhand grip at hip width.",
+        "Keep upper arms stationary at sides.",
+        "Curl bar up toward chin by flexing elbows.",
+        "Lower with control, fully extending arms at the bottom."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [
+        "m10"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex50",
+      "name": "Barbell Preacher Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Strict curl on a preacher bench isolating the biceps.",
+      "instructions": [
+        "Sit at preacher bench, rest upper arms on the angled pad.",
+        "Hold barbell with underhand grip.",
+        "Curl the bar up toward shoulders.",
+        "Lower slowly until arms are nearly extended."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex51",
+      "name": "Dumbbell Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Alternating or simultaneous curl for balanced biceps.",
+      "instructions": [
+        "Stand with a dumbbell in each hand, palms facing forward.",
+        "Keep upper arms still and curl both or alternate dumbbells toward shoulders.",
+        "Squeeze biceps at the top.",
+        "Lower with control to full extension."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [
+        "m10"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex52",
+      "name": "Hammer Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Neutral-grip curl targeting the brachialis for arm thickness.",
+      "instructions": [
+        "Hold dumbbells at sides with palms facing body (neutral grip).",
+        "Curl dumbbells to shoulder level without rotating wrist.",
+        "Squeeze at the top.",
+        "Lower slowly."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [
+        "m10"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex53",
+      "name": "Chin-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Underhand pull-up heavily engaging the biceps.",
+      "instructions": [
+        "Hang from a bar with underhand grip, hands ~shoulder-width apart.",
+        "Pull chest toward bar by driving elbows down and back.",
+        "Chin clears the bar at the top.",
+        "Lower with full control to a dead hang."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [
+        "m12",
+        "m4"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex54",
+      "name": "Bodyweight Curl (Underhand Inverted Row)",
+      "tracking_type": "reps_only",
+      "short_description": "Bodyweight underhand row emphasising biceps.",
+      "instructions": [
+        "Set bar at hip height, lie underneath with underhand grip.",
+        "Keep body straight, curl up pulling chest toward bar.",
+        "Lead with elbows, squeeze biceps at top.",
+        "Lower to full extension."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [
+        "m4"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex55",
+      "name": "Machine Preacher Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Guided preacher curl machine for strict bicep isolation.",
+      "instructions": [
+        "Adjust seat so upper arms rest fully on angled pad.",
+        "Grip handles with underhand grip.",
+        "Curl to full flexion.",
+        "Lower slowly to near-full extension."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex56",
+      "name": "Cable Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Low-pulley cable curl with constant tension.",
+      "instructions": [
+        "Stand at low cable pulley, grip bar or rope with underhand grip.",
+        "Keep upper arms stationary and curl toward shoulders.",
+        "Squeeze at top.",
+        "Lower under constant cable tension."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex57",
+      "name": "Resistance Band Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Band curl for biceps with constant resistance.",
+      "instructions": [
+        "Stand on resistance band, grip ends with underhand grip.",
+        "Keep upper arms at sides.",
+        "Curl hands toward shoulders.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex58",
+      "name": "Resistance Band Hammer Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Neutral-grip band curl for brachialis thickness.",
+      "instructions": [
+        "Stand on band, hold ends with palms facing each other.",
+        "Curl both hands toward shoulders maintaining neutral grip.",
+        "Squeeze at the top.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [
+        "m10"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex59",
+      "name": "Kettlebell Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Kettlebell bilateral or alternating curl.",
+      "instructions": [
+        "Hold kettlebells at sides with underhand grip on the handles.",
+        "Curl both or alternate to shoulder height.",
+        "Squeeze biceps at the top.",
+        "Lower slowly."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex60",
+      "name": "Barbell Back Squat",
+      "tracking_type": "weight_reps",
+      "short_description": "King of lower body exercises for quad and glute mass.",
+      "instructions": [
+        "Position barbell on upper traps (high bar) or rear delts (low bar).",
+        "Feet shoulder-width apart, toes slightly out.",
+        "Sit hips down and back, keeping chest up and knees tracking over toes.",
+        "Drive through heels to stand, fully extending hips and knees."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7",
+        "m11"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex61",
+      "name": "Barbell Front Squat",
+      "tracking_type": "weight_reps",
+      "short_description": "More upright squat pattern placing greater demand on quads.",
+      "instructions": [
+        "Rest barbell on front deltoids, elbows high and parallel to floor.",
+        "Feet shoulder-width apart, toes slightly out.",
+        "Squat deep, keeping elbows high and torso upright.",
+        "Stand back up by driving through the floor."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m0"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex62",
+      "name": "Dumbbell Goblet Squat",
+      "tracking_type": "weight_reps",
+      "short_description": "Beginner-friendly squat holding a dumbbell at chest.",
+      "instructions": [
+        "Hold one dumbbell vertically at chest height with both hands.",
+        "Stand feet shoulder-width apart, toes slightly out.",
+        "Squat down, keeping chest up and elbows inside knees.",
+        "Drive up to standing."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex63",
+      "name": "Dumbbell Lunge",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral leg exercise for quads, glutes, and balance.",
+      "instructions": [
+        "Stand with dumbbells at sides.",
+        "Step forward with one foot, lowering back knee toward the floor.",
+        "Front thigh reaches parallel to floor.",
+        "Push off front foot to return to standing and alternate legs."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex64",
+      "name": "Bodyweight Squat",
+      "tracking_type": "reps_only",
+      "short_description": "Fundamental movement pattern using only bodyweight.",
+      "instructions": [
+        "Stand feet shoulder-width apart, arms forward for balance.",
+        "Lower hips down and back until thighs are parallel to floor.",
+        "Keep chest up and knees tracking over toes.",
+        "Stand back up, fully extending hips."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex65",
+      "name": "Jump Squat",
+      "tracking_type": "reps_only",
+      "short_description": "Explosive squat jump for power and conditioning.",
+      "instructions": [
+        "Stand feet shoulder-width apart.",
+        "Lower into a squat, then explode upward as high as possible.",
+        "Land softly, bending knees to absorb impact.",
+        "Go straight into the next squat."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m9"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex66",
+      "name": "Leg Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Machine press targeting quads with reduced spinal load.",
+      "instructions": [
+        "Sit in leg press machine, place feet shoulder-width on platform.",
+        "Release safety handles and lower platform by bending knees to 90°.",
+        "Press platform away until legs are nearly straight.",
+        "Do not lock knees at the top."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex67",
+      "name": "Leg Extension",
+      "tracking_type": "weight_reps",
+      "short_description": "Isolation machine exercise for the quadriceps.",
+      "instructions": [
+        "Sit in leg extension machine, ankle pad just above feet.",
+        "Extend legs until nearly straight, squeezing quads.",
+        "Hold briefly at the top.",
+        "Lower with control to 90° and repeat."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex68",
+      "name": "Resistance Band Squat",
+      "tracking_type": "reps_only",
+      "short_description": "Squat with band above knees for glute activation.",
+      "instructions": [
+        "Place resistance band just above knees.",
+        "Stand feet shoulder-width, push knees out against band.",
+        "Squat down to parallel or below.",
+        "Drive up, maintaining knee-out tension."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex69",
+      "name": "Resistance Band Leg Extension",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated band extension for quad isolation at home.",
+      "instructions": [
+        "Sit on a chair, anchor band low, loop around ankle.",
+        "Extend knee from 90° to full extension.",
+        "Squeeze quad at the top.",
+        "Return slowly to 90°."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex70",
+      "name": "Kettlebell Goblet Squat",
+      "tracking_type": "weight_reps",
+      "short_description": "Front-loaded squat using a kettlebell for upright torso.",
+      "instructions": [
+        "Hold kettlebell by horns at chest height.",
+        "Stand feet shoulder-width, toes slightly out.",
+        "Squat deep, elbows track inside knees.",
+        "Stand up, fully extending hips."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex71",
+      "name": "Kettlebell Front Rack Squat",
+      "tracking_type": "weight_reps",
+      "short_description": "Double kettlebell front rack squat for strength and stability.",
+      "instructions": [
+        "Clean two kettlebells to the rack position at shoulder level.",
+        "Feet shoulder-width, toes slightly out.",
+        "Squat down keeping elbows up and torso upright.",
+        "Stand back up, maintaining rack position."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m0"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex72",
+      "name": "Barbell Romanian Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Hip hinge targeting hamstrings and glutes.",
+      "instructions": [
+        "Stand holding barbell at hips with overhand grip.",
+        "Push hips back and lower bar along legs, keeping back flat.",
+        "Feel deep hamstring stretch at the bottom.",
+        "Drive hips forward to return to standing."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8",
+        "m11"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex73",
+      "name": "Barbell Good Morning",
+      "tracking_type": "weight_reps",
+      "short_description": "Barbell on upper back hip hinge for hamstrings.",
+      "instructions": [
+        "Rest barbell on upper traps, feet hip-width.",
+        "Slight knee bend, hinge at hips pushing them back.",
+        "Lower torso until parallel to floor or hamstring limits.",
+        "Drive hips forward to return to upright."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8",
+        "m11"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex74",
+      "name": "Dumbbell Romanian Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Dumbbell hip hinge for hamstring stretch and strength.",
+      "instructions": [
+        "Hold dumbbells in front of thighs, feet hip-width.",
+        "Push hips back, lowering dumbbells along legs.",
+        "Keep back flat and feel hamstring stretch.",
+        "Drive hips forward to stand."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8",
+        "m11"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex75",
+      "name": "Dumbbell Stiff-Leg Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Straight-leg version emphasising hamstring stretch.",
+      "instructions": [
+        "Hold dumbbells at thighs, legs nearly straight with slight bend.",
+        "Hinge at hips, lowering dumbbells toward floor.",
+        "Keep back flat throughout.",
+        "Return to standing by squeezing glutes and driving hips."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex76",
+      "name": "Nordic Hamstring Curl",
+      "tracking_type": "reps_only",
+      "short_description": "Advanced eccentric bodyweight hamstring exercise.",
+      "instructions": [
+        "Kneel on a mat with ankles anchored under something sturdy.",
+        "Keeping hips extended, slowly lower torso toward floor by straightening knees.",
+        "Use hands to catch yourself and push back up.",
+        "Use hamstrings to control the descent as much as possible."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex77",
+      "name": "Lying Leg Curl Machine",
+      "tracking_type": "weight_reps",
+      "short_description": "Prone machine curl for hamstring isolation.",
+      "instructions": [
+        "Lie face down on machine, position ankle pad just above heels.",
+        "Curl legs toward glutes by flexing knees.",
+        "Squeeze hamstrings at full flexion.",
+        "Lower with control to full extension."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex78",
+      "name": "Seated Leg Curl Machine",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated machine curl for hamstring isolation.",
+      "instructions": [
+        "Sit in machine, position top pad on thighs and ankle pad above feet.",
+        "Flex knees pulling ankles back and down.",
+        "Squeeze at full flexion.",
+        "Return to start slowly."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex79",
+      "name": "Resistance Band Leg Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Prone band curl for hamstring isolation.",
+      "instructions": [
+        "Anchor band low, lie face down, loop band around ankles.",
+        "Curl ankles toward glutes against band resistance.",
+        "Squeeze hamstrings at top.",
+        "Lower slowly."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex80",
+      "name": "Resistance Band Romanian Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Band hip hinge for hamstring stretch.",
+      "instructions": [
+        "Stand on band, hold ends at thighs.",
+        "Hinge at hips, lowering hands along legs.",
+        "Feel the hamstring stretch.",
+        "Drive hips forward to stand."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex81",
+      "name": "Kettlebell Swing",
+      "tracking_type": "reps_only",
+      "short_description": "Ballistic hip hinge for hamstrings and explosive power.",
+      "instructions": [
+        "Stand feet hip-to-shoulder-width, hold kettlebell with both hands.",
+        "Hinge at hips and swing kettlebell back between legs.",
+        "Explosively drive hips forward, swinging kettlebell to chest height.",
+        "Let it swing back down and immediately hinge into the next rep."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8",
+        "m11"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex82",
+      "name": "Kettlebell Romanian Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Single or double kettlebell hip hinge.",
+      "instructions": [
+        "Hold kettlebell(s) at hips, feet hip-width.",
+        "Push hips back, lowering kettlebell(s) along legs.",
+        "Keep back flat and feel hamstring stretch.",
+        "Drive hips forward to stand."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8",
+        "m11"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex83",
+      "name": "Barbell Hip Thrust",
+      "tracking_type": "weight_reps",
+      "short_description": "Primary glute builder with a barbell across the hips.",
+      "instructions": [
+        "Sit on floor with upper back against bench, barbell across hip crease.",
+        "Plant feet flat on floor, hip-width apart.",
+        "Drive hips up until thighs are parallel to floor.",
+        "Squeeze glutes hard at the top, lower with control."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7",
+        "m6"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex84",
+      "name": "Barbell Sumo Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Wide-stance deadlift with greater glute engagement.",
+      "instructions": [
+        "Stand with wide stance, toes pointed out, grip barbell inside legs.",
+        "Push floor away and drive hips through as bar passes knees.",
+        "Stand tall at top, hips and knees fully extended.",
+        "Lower bar back to floor with control."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7",
+        "m6",
+        "m11"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex85",
+      "name": "Dumbbell Hip Thrust",
+      "tracking_type": "weight_reps",
+      "short_description": "Hip thrust with a dumbbell on the hips.",
+      "instructions": [
+        "Sit with upper back on bench, dumbbell on hip crease.",
+        "Feet flat, hip-width apart.",
+        "Drive hips up, squeezing glutes at the top.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex86",
+      "name": "Dumbbell Step-Up",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral step-up for glutes, quads, and balance.",
+      "instructions": [
+        "Hold dumbbells at sides, stand in front of a bench or box.",
+        "Step up with one foot, pressing through the heel to stand on the box.",
+        "Bring other foot up to stand on box.",
+        "Step back down and repeat, alternating lead leg."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m6",
+        "m7"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex87",
+      "name": "Glute Bridge",
+      "tracking_type": "reps_only",
+      "short_description": "Floor-based bodyweight glute isolation.",
+      "instructions": [
+        "Lie on back, knees bent, feet flat on floor hip-width apart.",
+        "Drive hips up by squeezing glutes.",
+        "Hold at top for 1–2 seconds.",
+        "Lower hips to floor and repeat."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex88",
+      "name": "Single-Leg Glute Bridge",
+      "tracking_type": "reps_only",
+      "short_description": "Unilateral bridge for glute strength and symmetry.",
+      "instructions": [
+        "Lie on back, one knee bent with foot on floor, other leg extended.",
+        "Drive hips up using the planted leg, squeezing glute.",
+        "Hold at top briefly.",
+        "Lower and repeat, then switch sides."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex89",
+      "name": "Cable Glute Kickback",
+      "tracking_type": "weight_reps",
+      "short_description": "Cable kickback for glute isolation.",
+      "instructions": [
+        "Attach ankle strap to low cable pulley.",
+        "Face the machine, hold for support.",
+        "Kick attached leg back and up, squeezing glute.",
+        "Lower with control and repeat."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex90",
+      "name": "Machine Hip Thrust",
+      "tracking_type": "weight_reps",
+      "short_description": "Guided hip thrust machine for glute loading.",
+      "instructions": [
+        "Sit in hip thrust machine, position pad across hip crease.",
+        "Plant feet on platform.",
+        "Drive hips up against the resistance.",
+        "Squeeze glutes at the top and lower with control."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex91",
+      "name": "Resistance Band Glute Bridge",
+      "tracking_type": "reps_only",
+      "short_description": "Glute bridge with band above knees for abduction activation.",
+      "instructions": [
+        "Lie on back, band just above knees, feet flat on floor.",
+        "Push knees out against band as you drive hips up.",
+        "Squeeze glutes and hold briefly.",
+        "Lower and repeat."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex92",
+      "name": "Resistance Band Kickback",
+      "tracking_type": "weight_reps",
+      "short_description": "Standing kickback with band for glute isolation.",
+      "instructions": [
+        "Anchor band low, loop around ankle, face anchor point.",
+        "Kick leg back and up, squeezing glute.",
+        "Hold briefly.",
+        "Return to start and repeat."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex93",
+      "name": "Kettlebell Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Hip hinge pattern with a kettlebell for posterior chain.",
+      "instructions": [
+        "Stand over kettlebell, feet hip-width, toes beside bell.",
+        "Hinge at hips and grip the handle.",
+        "Drive through heels, extending hips and knees to stand.",
+        "Lower the bell back to floor with a controlled hinge."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7",
+        "m11"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex94",
+      "name": "Kettlebell Sumo Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Wide-stance kettlebell deadlift for glutes and inner thighs.",
+      "instructions": [
+        "Stand with wide stance over kettlebell, toes pointed out.",
+        "Hinge and grip handle with both hands.",
+        "Drive hips through to stand, squeezing glutes.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7",
+        "m6"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex95",
+      "name": "Barbell Standing Calf Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Heavy calf raise with barbell across the back.",
+      "instructions": [
+        "Place barbell on upper traps, stand with balls of feet on edge of a step.",
+        "Lower heels below step level for a full stretch.",
+        "Rise up on tiptoes as high as possible.",
+        "Pause at top, lower slowly."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex96",
+      "name": "Barbell Seated Calf Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated version targeting the soleus.",
+      "instructions": [
+        "Sit on bench, barbell resting on thighs just above knees.",
+        "Balls of feet on a raised surface.",
+        "Lower heels for a stretch.",
+        "Press up onto tiptoes and hold, then lower."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex97",
+      "name": "Dumbbell Calf Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral or bilateral calf raise holding dumbbells.",
+      "instructions": [
+        "Hold dumbbells at sides, stand with balls of feet on a step edge.",
+        "Lower heels below step for a full stretch.",
+        "Rise onto tiptoes.",
+        "Pause and lower slowly."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex98",
+      "name": "Single-Leg Dumbbell Calf Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral calf raise for greater intensity per leg.",
+      "instructions": [
+        "Hold dumbbell in one hand, stand on that side foot on step edge.",
+        "Other hand holds wall for balance.",
+        "Lower heel below step.",
+        "Rise onto tiptoe, pause, lower slowly."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex99",
+      "name": "Bodyweight Calf Raise",
+      "tracking_type": "reps_only",
+      "short_description": "No-equipment calf raise on a step.",
+      "instructions": [
+        "Stand on edge of a step, heels off the edge.",
+        "Lower heels below step for a full stretch.",
+        "Rise onto tiptoes as high as possible.",
+        "Pause and lower slowly."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex100",
+      "name": "Single-Leg Bodyweight Calf Raise",
+      "tracking_type": "reps_only",
+      "short_description": "Harder unilateral version of the bodyweight calf raise.",
+      "instructions": [
+        "Stand on one foot on edge of a step.",
+        "Lower heel for a full stretch.",
+        "Rise onto tiptoe.",
+        "Pause and lower, complete all reps before switching."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex101",
+      "name": "Seated Calf Raise Machine",
+      "tracking_type": "weight_reps",
+      "short_description": "Machine version targeting the soleus (knee bent).",
+      "instructions": [
+        "Sit at machine, place knees under pads and balls of feet on platform.",
+        "Lower heels for a stretch.",
+        "Press up onto tiptoes.",
+        "Lower slowly."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex102",
+      "name": "Standing Calf Raise Machine",
+      "tracking_type": "weight_reps",
+      "short_description": "Machine standing calf raise for gastrocnemius.",
+      "instructions": [
+        "Stand in machine with shoulder pads in place, feet on platform.",
+        "Lower heels for full stretch.",
+        "Rise onto tiptoes.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex103",
+      "name": "Resistance Band Calf Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated band calf raise for home training.",
+      "instructions": [
+        "Sit on floor with legs extended, loop band around balls of feet.",
+        "Flex feet (plantarflex) against band resistance.",
+        "Hold at full flexion.",
+        "Return to dorsiflexion slowly."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex104",
+      "name": "Kettlebell Calf Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Calf raise holding a kettlebell for resistance.",
+      "instructions": [
+        "Hold a kettlebell in one or both hands.",
+        "Stand on edge of a step.",
+        "Lower heels for full stretch.",
+        "Rise onto tiptoes and pause."
+      ],
+      "primary_muscle_id": "m9",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex105",
+      "name": "Barbell Wrist Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated wrist flexion exercise for forearm flexors.",
+      "instructions": [
+        "Sit on bench, hold barbell with underhand grip, forearms on thighs.",
+        "Let wrists drop into extension.",
+        "Curl wrists up, flexing forearms.",
+        "Lower back to start slowly."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex106",
+      "name": "Barbell Reverse Wrist Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Overhand wrist extension for forearm extensors.",
+      "instructions": [
+        "Sit on bench, hold barbell with overhand grip, forearms on thighs.",
+        "Let wrists drop into flexion.",
+        "Extend wrists upward.",
+        "Lower back to start."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex107",
+      "name": "Dumbbell Wrist Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral forearm flexion exercise.",
+      "instructions": [
+        "Sit, rest forearm on thigh, hold dumbbell with underhand grip.",
+        "Let wrist drop into extension.",
+        "Curl wrist upward.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex108",
+      "name": "Dumbbell Reverse Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Overhand curl for forearms and brachioradialis.",
+      "instructions": [
+        "Stand holding dumbbells with overhand grip.",
+        "Keep upper arms still and curl toward shoulders.",
+        "Squeeze at top.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [
+        "m5"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex109",
+      "name": "Dead Hang",
+      "tracking_type": "duration",
+      "short_description": "Passive hang from a bar for grip and forearm endurance.",
+      "instructions": [
+        "Jump up and grab a pull-up bar with overhand grip.",
+        "Let body hang with arms fully extended.",
+        "Relax shoulders and breathe steadily.",
+        "Hold for the target duration."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [
+        "m12",
+        "m4"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex110",
+      "name": "Farmer's Carry",
+      "tracking_type": "duration_distance",
+      "short_description": "Loaded carry for grip, forearms, and total body stability.",
+      "instructions": [
+        "Pick up heavy dumbbells, kettlebells, or a trap bar at sides.",
+        "Stand tall, shoulders back, core braced.",
+        "Walk with controlled steps for the target distance or time.",
+        "Set weights down with a controlled hinge."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [
+        "m13",
+        "m0",
+        "m9"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex111",
+      "name": "Plate Pinch",
+      "tracking_type": "duration",
+      "short_description": "Pinch grip hold for finger and forearm strength.",
+      "instructions": [
+        "Hold a weight plate between thumb and fingers of one hand.",
+        "Stand tall and hold for target time.",
+        "Switch hands and repeat.",
+        "Increase plate weight as grip improves."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e0",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex112",
+      "name": "Cable Wrist Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Low cable wrist curl for forearm flexors.",
+      "instructions": [
+        "Kneel or sit at low cable, hold bar with underhand grip, forearms on thighs.",
+        "Let wrist drop, then curl upward.",
+        "Squeeze at top.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex113",
+      "name": "Resistance Band Wrist Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Band wrist flexion for forearm muscles.",
+      "instructions": [
+        "Anchor band low, sit with forearm on thigh, hold band with underhand grip.",
+        "Let wrist drop into extension.",
+        "Curl wrist upward.",
+        "Lower slowly."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex114",
+      "name": "Kettlebell Farmers Carry",
+      "tracking_type": "duration_distance",
+      "short_description": "Kettlebell carry for grip and loaded walking endurance.",
+      "instructions": [
+        "Pick up two heavy kettlebells at sides.",
+        "Walk with upright posture and braced core.",
+        "Keep shoulders pulled back and down.",
+        "Walk for target distance or time."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [
+        "m0",
+        "m13"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex115",
+      "name": "Barbell Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "The ultimate full-body strength lift.",
+      "instructions": [
+        "Stand with feet hip-width, barbell over mid-foot.",
+        "Hinge down and grip bar just outside legs, back flat.",
+        "Drive through floor and extend hips and knees simultaneously.",
+        "Lock out hips and knees at top, lower bar with a controlled hinge."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7",
+        "m6",
+        "m13"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex117",
+      "name": "Dumbbell Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Beginner-friendly deadlift variation with dumbbells.",
+      "instructions": [
+        "Stand over dumbbells, feet hip-width.",
+        "Hinge and grip dumbbells just outside legs.",
+        "Drive through floor to stand, extending hips fully.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7",
+        "m6"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex118",
+      "name": "Back Extension",
+      "tracking_type": "reps_only",
+      "short_description": "Bodyweight hyperextension for lower back endurance.",
+      "instructions": [
+        "Position yourself on a hyperextension bench, hips on pad, ankles under rollers.",
+        "Cross arms over chest or hold behind head.",
+        "Lower torso toward floor.",
+        "Raise torso until body is in a straight line — don't hyperextend."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex119",
+      "name": "Superman Hold",
+      "tracking_type": "duration",
+      "short_description": "Prone lower back isometric hold.",
+      "instructions": [
+        "Lie face down, arms extended overhead.",
+        "Simultaneously lift arms, chest, and legs off the floor.",
+        "Squeeze glutes and lower back.",
+        "Hold for target duration."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex120",
+      "name": "Back Extension Machine",
+      "tracking_type": "weight_reps",
+      "short_description": "Weighted machine hyperextension.",
+      "instructions": [
+        "Sit in machine, secure ankles and position pad at hip.",
+        "Hold weight plate to chest.",
+        "Hinge forward at hips, lowering torso.",
+        "Extend back to upright, squeezing lower back."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex121",
+      "name": "Cable Pull-Through",
+      "tracking_type": "weight_reps",
+      "short_description": "Cable hip hinge targeting lower back and glutes.",
+      "instructions": [
+        "Face away from cable machine, low pulley with rope attachment between legs.",
+        "Grip rope with both hands, hinge at hips walking feet out.",
+        "Drive hips forward to stand, squeezing glutes.",
+        "Hinge back to start."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex122",
+      "name": "Resistance Band Good Morning",
+      "tracking_type": "weight_reps",
+      "short_description": "Band hip hinge for lower back and hamstrings.",
+      "instructions": [
+        "Stand on band, loop over shoulders/neck.",
+        "Feet hip-width, slight knee bend.",
+        "Hinge forward at hips to near-parallel.",
+        "Drive hips through to return upright."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m7",
+        "m8"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex123",
+      "name": "Kettlebell Deadlift (Lower Back Focus)",
+      "tracking_type": "weight_reps",
+      "short_description": "Hip hinge with a single kettlebell emphasising spinal extension.",
+      "instructions": [
+        "Stand over kettlebell, feet hip-width.",
+        "Hinge, grip handle, maintain flat back.",
+        "Drive through heels to stand.",
+        "Lower with a controlled hinge, keeping lumbar neutral."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex124",
+      "name": "Pull-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Overhand pull-up for lat width.",
+      "instructions": [
+        "Hang from bar with overhand grip, hands wider than shoulders.",
+        "Pull chest toward bar driving elbows down and back.",
+        "Chin clears bar at top.",
+        "Lower with full control to dead hang."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m5",
+        "m4"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex125",
+      "name": "Wide-Grip Pull-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Wider grip pull-up to emphasise lat stretch.",
+      "instructions": [
+        "Hang from bar with grip wider than shoulder-width.",
+        "Pull until chin passes bar, focusing on lat contraction.",
+        "Lower with control.",
+        "Avoid kipping or swinging."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m4"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex126",
+      "name": "Barbell Deadlift (Lat Focus)",
+      "tracking_type": "weight_reps",
+      "short_description": "Engage lats by bracing against the bar during the pull.",
+      "instructions": [
+        "Set up for conventional deadlift, feet hip-width.",
+        "Before pulling, pull shoulder blades down and in to engage lats.",
+        "Maintain lat tension throughout the pull.",
+        "Lock out hips and knees at top."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m11",
+        "m8"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex127",
+      "name": "Barbell Bent-Over Row (Underhand)",
+      "tracking_type": "weight_reps",
+      "short_description": "Supinated row shifting emphasis to lats and biceps.",
+      "instructions": [
+        "Hinge at hips, hold barbell with underhand grip shoulder-width.",
+        "Pull bar to lower abdomen/belly button.",
+        "Drive elbows back and down toward hips.",
+        "Lower to full extension."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m5",
+        "m4"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex128",
+      "name": "Dumbbell Pullover",
+      "tracking_type": "weight_reps",
+      "short_description": "Overhead pull for lat stretch and expansion.",
+      "instructions": [
+        "Lie perpendicular on a bench, upper back on bench, hips low.",
+        "Hold one dumbbell with both hands above chest.",
+        "Lower dumbbell in an arc behind head, feeling lat stretch.",
+        "Pull back to start using lats."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m1"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex129",
+      "name": "Dumbbell Row (Elbow Flare)",
+      "tracking_type": "weight_reps",
+      "short_description": "Elbow-flared row to maximise lat engagement.",
+      "instructions": [
+        "Support one hand on bench, hinge forward.",
+        "Hold dumbbell and pull it up and out — elbow flares wide.",
+        "Squeeze lat at top.",
+        "Lower to full extension."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex130",
+      "name": "Lat Pulldown",
+      "tracking_type": "weight_reps",
+      "short_description": "Cable pulldown targeting lat width.",
+      "instructions": [
+        "Sit at lat pulldown machine, grip bar wider than shoulder-width.",
+        "Lean back slightly, pull bar to upper chest.",
+        "Drive elbows down and back.",
+        "Return to full arm extension with control."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m5",
+        "m4"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex131",
+      "name": "Close-Grip Lat Pulldown",
+      "tracking_type": "weight_reps",
+      "short_description": "Narrow grip to emphasise lower lat and biceps.",
+      "instructions": [
+        "Grip handle with neutral close grip.",
+        "Pull to upper chest, elbows track to sides.",
+        "Squeeze lats at the bottom.",
+        "Return to full extension."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m5"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex132",
+      "name": "Resistance Band Lat Pulldown",
+      "tracking_type": "weight_reps",
+      "short_description": "Band pulldown for lats at home.",
+      "instructions": [
+        "Anchor band overhead.",
+        "Kneel or sit, grip band with wide overhand grip.",
+        "Pull hands down to upper chest.",
+        "Return to full extension."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m5"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex133",
+      "name": "Resistance Band Pull-Apart",
+      "tracking_type": "reps_only",
+      "short_description": "Band pull-apart for lats, rear delts, and upper back.",
+      "instructions": [
+        "Hold band with overhand grip at shoulder height.",
+        "Pull band apart horizontally until it touches chest.",
+        "Squeeze lats and rear delts.",
+        "Return to start slowly."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m4",
+        "m3"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex134",
+      "name": "Kettlebell Pullover",
+      "tracking_type": "weight_reps",
+      "short_description": "Overhead pull with kettlebell for lat expansion.",
+      "instructions": [
+        "Lie on bench, hold kettlebell by horns above chest.",
+        "Lower kettlebell in arc behind head.",
+        "Feel lat stretch at the bottom.",
+        "Pull back to start using lats."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m1"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex135",
+      "name": "Kettlebell Single-Arm Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral kettlebell row for lats and upper back.",
+      "instructions": [
+        "Hinge forward, one hand on knee for support.",
+        "Hold kettlebell in other hand, arm hanging.",
+        "Pull kettlebell to hip, driving elbow back.",
+        "Lower to full extension."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m4",
+        "m5"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex136",
+      "name": "Barbell Shrug",
+      "tracking_type": "weight_reps",
+      "short_description": "Heavy shrug for trap mass.",
+      "instructions": [
+        "Hold barbell with overhand grip at hip level.",
+        "Shrug shoulders straight up toward ears.",
+        "Hold at the top for 1 second.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex137",
+      "name": "Barbell Power Clean",
+      "tracking_type": "weight_reps",
+      "short_description": "Olympic pull engaging traps explosively.",
+      "instructions": [
+        "Start in deadlift position, grip just outside hips.",
+        "Explosively extend hips, knees, and ankles (triple extension).",
+        "Shrug shoulders hard, then pull elbows high and outside.",
+        "Drop under bar into a front rack, stand to finish."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [
+        "m11",
+        "m8",
+        "m6"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex138",
+      "name": "Dumbbell Shrug",
+      "tracking_type": "weight_reps",
+      "short_description": "Dumbbell trap isolation with full range of motion.",
+      "instructions": [
+        "Hold dumbbells at sides, arms straight.",
+        "Shrug shoulders directly upward.",
+        "Hold at top briefly.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex139",
+      "name": "Dumbbell Upright Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Pull dumbbells up engaging traps and lateral delts.",
+      "instructions": [
+        "Hold dumbbells in front of thighs, overhand grip.",
+        "Pull elbows up and wide, raising dumbbells to chin.",
+        "Keep dumbbells close to body.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [
+        "m3"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex140",
+      "name": "Bodyweight Scapular Retraction",
+      "tracking_type": "reps_only",
+      "short_description": "Hanging retraction drill for trap activation.",
+      "instructions": [
+        "Hang from pull-up bar with overhand grip.",
+        "Without bending elbows, pull shoulder blades together and down.",
+        "Hold for 1–2 seconds.",
+        "Release and repeat."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [
+        "m4"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex141",
+      "name": "Shrug (Trap Bar)",
+      "tracking_type": "weight_reps",
+      "short_description": "Trap bar shrug for heavy trap loading.",
+      "instructions": [
+        "Step inside trap bar and grip handles.",
+        "Stand tall, then shrug shoulders directly upward.",
+        "Hold at top briefly.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex142",
+      "name": "Cable Shrug",
+      "tracking_type": "weight_reps",
+      "short_description": "Cable shrug for constant trap tension.",
+      "instructions": [
+        "Stand at cable machine with straight bar at low pulley.",
+        "Hold bar at sides, arms extended.",
+        "Shrug shoulders upward.",
+        "Lower slowly."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex143",
+      "name": "Resistance Band Shrug",
+      "tracking_type": "weight_reps",
+      "short_description": "Band shrug for trap endurance.",
+      "instructions": [
+        "Stand on band, hold ends at sides.",
+        "Shrug shoulders upward.",
+        "Hold briefly.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex144",
+      "name": "Resistance Band Face Pull",
+      "tracking_type": "weight_reps",
+      "short_description": "Band face pull for traps and rear delts.",
+      "instructions": [
+        "Anchor band at face height.",
+        "Grip with both hands, step back.",
+        "Pull toward face, spreading hands apart.",
+        "Return slowly to full extension."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [
+        "m4",
+        "m3"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex145",
+      "name": "Kettlebell Shrug",
+      "tracking_type": "weight_reps",
+      "short_description": "Shrug with kettlebells at sides.",
+      "instructions": [
+        "Hold a kettlebell in each hand at sides.",
+        "Shrug shoulders upward toward ears.",
+        "Hold for 1 second.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex146",
+      "name": "Kettlebell High Pull",
+      "tracking_type": "weight_reps",
+      "short_description": "Explosive kettlebell upright pull for traps and shoulders.",
+      "instructions": [
+        "Hold kettlebell with both hands, deadlift it off the floor.",
+        "Swing it up explosively, pulling elbows high.",
+        "Bell reaches chest height at the top.",
+        "Lower and swing back between legs for the next rep."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [
+        "m3",
+        "m7"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex147",
+      "name": "Barbell Rollout",
+      "tracking_type": "reps_only",
+      "short_description": "Extreme core anti-extension exercise with a barbell.",
+      "instructions": [
+        "Load barbell with small plates, kneel on mat.",
+        "Grip bar with overhand grip, shoulders over bar.",
+        "Roll bar forward, extending hips and keeping core braced.",
+        "Pull bar back to start using abs and lats."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [
+        "m12",
+        "m11"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex148",
+      "name": "Barbell Pallof Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Anti-rotation press for core stability.",
+      "instructions": [
+        "Attach band or cable to barbell at chest height, stand sideways.",
+        "Hold bar at chest, brace core.",
+        "Press bar straight out, resisting rotation.",
+        "Return to chest."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex149",
+      "name": "Plank",
+      "tracking_type": "duration",
+      "short_description": "Classic isometric core stability hold.",
+      "instructions": [
+        "Start in a forearm plank, elbows under shoulders.",
+        "Keep body in a straight line from head to heels.",
+        "Squeeze glutes, brace abs, breathe steadily.",
+        "Hold for target duration."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [
+        "m8",
+        "m11"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex150",
+      "name": "Side Plank",
+      "tracking_type": "duration",
+      "short_description": "Lateral isometric hold for obliques.",
+      "instructions": [
+        "Lie on side, prop up on forearm with elbow under shoulder.",
+        "Stack feet or stagger for balance.",
+        "Raise hips to create a straight line.",
+        "Hold for target duration, then switch sides."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex151",
+      "name": "Crunch",
+      "tracking_type": "reps_only",
+      "short_description": "Basic abdominal flexion exercise.",
+      "instructions": [
+        "Lie on back, knees bent, hands behind head.",
+        "Curl shoulders off floor, exhaling as you crunch up.",
+        "Feel abs contract at the top.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex152",
+      "name": "Hanging Knee Raise",
+      "tracking_type": "reps_only",
+      "short_description": "Hanging lower ab raise for core and hip flexors.",
+      "instructions": [
+        "Hang from a bar with overhand grip.",
+        "Keeping upper body still, raise knees toward chest.",
+        "Hold briefly at the top.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex153",
+      "name": "Hanging Leg Raise",
+      "tracking_type": "reps_only",
+      "short_description": "Advanced hanging raise with straight legs.",
+      "instructions": [
+        "Hang from bar, legs straight.",
+        "Raise legs to parallel or above, keeping them straight.",
+        "Control the descent, avoid swinging.",
+        "Lower slowly."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex154",
+      "name": "Cable Crunch",
+      "tracking_type": "weight_reps",
+      "short_description": "Weighted crunch using a cable for progressive overload.",
+      "instructions": [
+        "Kneel at cable machine with rope attachment at high pulley.",
+        "Hold rope beside head, elbows forward.",
+        "Crunch down, bringing elbows toward knees.",
+        "Return to upright with control."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex155",
+      "name": "Pallof Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Anti-rotation cable press for core stability.",
+      "instructions": [
+        "Set cable at chest height, stand sideways, grip with both hands.",
+        "Hold at chest, brace core.",
+        "Press straight out, resist rotation.",
+        "Return to chest and repeat."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex156",
+      "name": "Resistance Band Pallof Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Band anti-rotation press for core stability.",
+      "instructions": [
+        "Anchor band at chest height, stand sideways.",
+        "Hold band with both hands at chest.",
+        "Press straight out, resisting rotation.",
+        "Return to chest."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex157",
+      "name": "Resistance Band Dead Bug",
+      "tracking_type": "reps_only",
+      "short_description": "Banded dead bug for anti-extension core control.",
+      "instructions": [
+        "Lie on back, anchor band overhead, hold with both arms extended.",
+        "Raise knees to 90°.",
+        "Lower one leg toward floor while maintaining band tension.",
+        "Return and alternate sides."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex158",
+      "name": "Kettlebell Windmill",
+      "tracking_type": "weight_reps",
+      "short_description": "Lateral bend under a kettlebell for obliques and shoulder stability.",
+      "instructions": [
+        "Press kettlebell overhead with one arm, locked out.",
+        "Turn feet 45° away from pressing arm.",
+        "Push hip out in the direction of pressing arm, lean sideways.",
+        "Reach free hand toward floor, then return upright."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [
+        "m3",
+        "m11"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex159",
+      "name": "Kettlebell Turkish Get-Up",
+      "tracking_type": "weight_reps",
+      "short_description": "Full-body movement demanding core control.",
+      "instructions": [
+        "Lie on floor holding kettlebell above one shoulder, arm locked.",
+        "Roll to elbow, then hand, sweep leg through to kneeling.",
+        "Stand up while keeping kettlebell overhead throughout.",
+        "Reverse the sequence to return to lying."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [
+        "m3",
+        "m8",
+        "m6"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex160",
+      "name": "Dumbbell Russian Twist",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated rotational exercise for obliques.",
+      "instructions": [
+        "Sit on floor, knees bent, hold dumbbell with both hands.",
+        "Lean back slightly to engage core.",
+        "Rotate torso left and right, touching dumbbell to floor each side.",
+        "Keep feet off the floor for added difficulty."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex161",
+      "name": "Dumbbell Side Bend",
+      "tracking_type": "weight_reps",
+      "short_description": "Lateral flexion for obliques.",
+      "instructions": [
+        "Stand holding dumbbell in one hand at side.",
+        "Bend laterally toward the dumbbell side.",
+        "Return upright, feel oblique stretch on opposite side.",
+        "Complete all reps then switch sides."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex162",
+      "name": "Ab Wheel Rollout",
+      "tracking_type": "reps_only",
+      "short_description": "Ab wheel anti-extension for the entire core.",
+      "instructions": [
+        "Kneel holding ab wheel with both hands, arms extended.",
+        "Roll forward slowly, extending hips and keeping core tight.",
+        "Go as far as you can without hips sagging.",
+        "Pull back to start using abs and lats."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [
+        "m12",
+        "m11"
+      ],
+      "equipment_id": "e0",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex163",
+      "name": "V-Up",
+      "tracking_type": "reps_only",
+      "short_description": "Simultaneous upper and lower ab crunch.",
+      "instructions": [
+        "Lie flat, arms extended overhead, legs straight.",
+        "Simultaneously lift arms and legs toward each other.",
+        "Reach hands toward feet at the top.",
+        "Lower both back to floor with control."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e0",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex164",
+      "name": "Treadmill Run",
+      "tracking_type": "duration_distance",
+      "short_description": "Steady-state or interval running on a treadmill.",
+      "instructions": [
+        "Set desired speed and incline on the treadmill.",
+        "Start with a 2–3 minute warm-up walk.",
+        "Maintain target pace, keep shoulders relaxed and arms swinging.",
+        "Cool down with a 2–3 minute walk at the end."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m6",
+        "m7",
+        "m9"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex165",
+      "name": "Stationary Bike",
+      "tracking_type": "duration_distance",
+      "short_description": "Low-impact cardio on a stationary cycle.",
+      "instructions": [
+        "Adjust seat so leg has slight bend at full extension.",
+        "Set resistance level.",
+        "Pedal at a steady cadence, keeping back upright.",
+        "Maintain target pace for the session duration."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m6",
+        "m7"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex166",
+      "name": "Rowing Machine",
+      "tracking_type": "duration_distance",
+      "short_description": "Full-body cardio on the rowing ergometer.",
+      "instructions": [
+        "Sit on the erg, strap feet in, grip handle overhand.",
+        "Push through legs first, then lean back, then pull handle to lower chest.",
+        "Return by extending arms, leaning forward, then bending knees.",
+        "Maintain a smooth catch-drive-finish-recover rhythm."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m12",
+        "m4",
+        "m6"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex167",
+      "name": "Jump Rope",
+      "tracking_type": "duration",
+      "short_description": "High-intensity cardio with a skipping rope.",
+      "instructions": [
+        "Hold rope handles, jump rope behind feet.",
+        "Swing rope overhead and jump as it passes under feet.",
+        "Stay on balls of feet, keep jumps low and efficient.",
+        "Maintain rhythm for target duration."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m9",
+        "m3"
+      ],
+      "equipment_id": "e0",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex168",
+      "name": "Burpee",
+      "tracking_type": "reps_only",
+      "short_description": "Full-body conditioning exercise.",
+      "instructions": [
+        "Stand, then drop hands to floor and jump feet back to a push-up position.",
+        "Perform a push-up.",
+        "Jump feet forward, stand up, and jump with arms overhead.",
+        "Land softly and go straight into the next rep."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m1",
+        "m6",
+        "m0"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex169",
+      "name": "Mountain Climber",
+      "tracking_type": "duration",
+      "short_description": "Running-motion plank for cardio and core.",
+      "instructions": [
+        "Start in a high plank, hands under shoulders.",
+        "Drive one knee toward chest.",
+        "Quickly switch legs in a running motion.",
+        "Keep hips level and core braced throughout."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m0",
+        "m6"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex170",
+      "name": "Box Jump",
+      "tracking_type": "reps_only",
+      "short_description": "Plyometric jump onto a box for power and conditioning.",
+      "instructions": [
+        "Stand in front of a sturdy box, feet shoulder-width.",
+        "Drop into a quarter squat and swing arms back.",
+        "Explode upward, swinging arms forward and landing softly on box.",
+        "Step down carefully and reset."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m6",
+        "m8",
+        "m9"
+      ],
+      "equipment_id": "e0",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex171",
+      "name": "Kettlebell Snatch",
+      "tracking_type": "reps_only",
+      "short_description": "Full-body ballistic movement for power and cardio conditioning.",
+      "instructions": [
+        "Hold kettlebell in one hand, hinge at hips in a swing position.",
+        "Hike bell back between legs, then explosively drive hips forward.",
+        "Guide bell upward, punch through at the top to lock out overhead.",
+        "Lower bell back to swing position and repeat."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m7",
+        "m8",
+        "m3"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex172",
+      "name": "Sled Push",
+      "tracking_type": "duration_distance",
+      "short_description": "Pushing a weighted sled for power endurance.",
+      "instructions": [
+        "Load sled with desired weight.",
+        "Grip handles at hip height, lean forward at ~45°.",
+        "Drive hard with alternating leg strides, staying low.",
+        "Push for target distance."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m6",
+        "m8",
+        "m3"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex173",
+      "name": "Outdoor Run",
+      "tracking_type": "duration_distance",
+      "short_description": "Running outside at steady or variable pace.",
+      "instructions": [
+        "Warm up with a 3-minute walk or easy jog.",
+        "Run at your target pace, keeping posture upright.",
+        "Land midfoot, arms swinging at roughly 90°.",
+        "Cool down with a 3-minute walk."
+      ],
+      "primary_muscle_id": "m14",
+      "secondary_muscle_ids": [
+        "m6",
+        "m7",
+        "m9"
+      ],
+      "equipment_id": "e0",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex174",
+      "name": "Barbell Curl (Reverse Grip)",
+      "tracking_type": "weight_reps",
+      "short_description": "Overhand barbell curl for brachioradialis and forearms.",
+      "instructions": [
+        "Hold barbell with overhand grip at hip width.",
+        "Keep upper arms still and curl toward shoulders.",
+        "Squeeze at top.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [
+        "m5"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex175",
+      "name": "Trap Bar Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Neutral-grip deadlift for overall strength with reduced lower back strain.",
+      "instructions": [
+        "Stand inside trap bar, feet hip-width.",
+        "Grip handles, hinge to position: back flat, hips below shoulders.",
+        "Drive through floor, extending hips and knees together.",
+        "Lock out at top, then lower with a controlled hinge."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m11",
+        "m7"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex176",
+      "name": "Bulgarian Split Squat",
+      "tracking_type": "weight_reps",
+      "short_description": "Rear-foot elevated split squat for quads and glutes.",
+      "instructions": [
+        "Stand in front of a bench, hold dumbbells at sides.",
+        "Place rear foot on the bench, laces down.",
+        "Lower front knee toward floor, keeping torso upright.",
+        "Drive through front heel to stand."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex177",
+      "name": "Sissy Squat",
+      "tracking_type": "reps_only",
+      "short_description": "Advanced bodyweight quad isolation squat.",
+      "instructions": [
+        "Stand with feet hip-width, hold something for balance.",
+        "Rise onto tiptoes and lean back while bending knees.",
+        "Lower until shins are near parallel to floor.",
+        "Drive back up to start."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex178",
+      "name": "Hack Squat Machine",
+      "tracking_type": "weight_reps",
+      "short_description": "Angled machine squat for quad emphasis.",
+      "instructions": [
+        "Position shoulders under pads, feet on platform shoulder-width.",
+        "Release safety and lower by bending knees to 90°.",
+        "Press back up, knees tracking over toes.",
+        "Do not lock knees at the top."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex179",
+      "name": "Resistance Band Hip Thrust",
+      "tracking_type": "reps_only",
+      "short_description": "Hip thrust with band across hips for glute work.",
+      "instructions": [
+        "Sit with upper back on bench, band across hip crease, ends anchored.",
+        "Feet flat on floor hip-width apart.",
+        "Drive hips up against band resistance, squeezing glutes.",
+        "Lower hips with control."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [
+        "m7"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex180",
+      "name": "Single-Leg Romanian Deadlift (Bodyweight)",
+      "tracking_type": "reps_only",
+      "short_description": "Unilateral hip hinge for hamstrings and balance.",
+      "instructions": [
+        "Stand on one leg, slight knee bend.",
+        "Hinge forward at hip, extending free leg behind.",
+        "Lower torso toward parallel, feeling hamstring stretch.",
+        "Drive through planted heel to return upright."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex181",
+      "name": "Glute-Ham Raise",
+      "tracking_type": "reps_only",
+      "short_description": "Machine-assisted posterior chain compound exercise.",
+      "instructions": [
+        "Position yourself on the GHR machine, shins on roller pads.",
+        "Lower torso forward under control.",
+        "Use hamstrings and glutes to pull back to upright.",
+        "Keep hips extended throughout."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8",
+        "m11"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex182",
+      "name": "Single-Leg Romanian Deadlift (Dumbbell)",
+      "tracking_type": "weight_reps",
+      "short_description": "Loaded unilateral hip hinge for hamstrings and balance.",
+      "instructions": [
+        "Hold a dumbbell in the opposite hand to the working leg.",
+        "Stand on one leg with slight knee bend.",
+        "Hinge forward, lowering dumbbell along the leg.",
+        "Drive through heel to return upright."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex183",
+      "name": "Barbell Lunge",
+      "tracking_type": "weight_reps",
+      "short_description": "Heavy loaded lunge with a barbell on the back.",
+      "instructions": [
+        "Place barbell on upper traps, stand tall.",
+        "Step forward, lowering back knee toward floor.",
+        "Front thigh reaches parallel.",
+        "Push off front foot to return and alternate."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex184",
+      "name": "Kettlebell Lunge",
+      "tracking_type": "weight_reps",
+      "short_description": "Lunge holding kettlebells at sides.",
+      "instructions": [
+        "Hold kettlebells at sides.",
+        "Step forward, lower back knee toward floor.",
+        "Push off front foot to return.",
+        "Alternate legs."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex185",
+      "name": "Resistance Band Pull-Up Assist",
+      "tracking_type": "reps_only",
+      "short_description": "Band-assisted pull-up for building to full pull-up.",
+      "instructions": [
+        "Loop resistance band around bar and place knee or foot in loop.",
+        "Hang from bar with overhand grip.",
+        "Pull chest toward bar with band assisting.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m12",
+      "secondary_muscle_ids": [
+        "m5",
+        "m4"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex186",
+      "name": "Resistance Band Bicep Curl (Seated)",
+      "tracking_type": "weight_reps",
+      "short_description": "Seated band curl for strict bicep isolation.",
+      "instructions": [
+        "Sit on bench, stand on band, hold ends with underhand grip.",
+        "Keep upper arms still at sides.",
+        "Curl both hands toward shoulders.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex187",
+      "name": "Machine Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Chest-supported machine row for upper back.",
+      "instructions": [
+        "Set chest pad against sternum, grip handles.",
+        "Pull handles to sides of torso, squeezing shoulder blades.",
+        "Hold briefly.",
+        "Return to full arm extension."
+      ],
+      "primary_muscle_id": "m4",
+      "secondary_muscle_ids": [
+        "m12",
+        "m5"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex188",
+      "name": "Dip (Triceps)",
+      "tracking_type": "reps_only",
+      "short_description": "Upright bodyweight dip targeting triceps.",
+      "instructions": [
+        "Grip parallel bars, arms extended, body upright.",
+        "Lower by bending elbows, keeping torso vertical.",
+        "Upper arms reach parallel to floor.",
+        "Press back up to full extension."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [
+        "m1",
+        "m3"
+      ],
+      "equipment_id": "e2",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex189",
+      "name": "Arnold Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Rotating dumbbell press hitting all three delt heads.",
+      "instructions": [
+        "Sit with dumbbells at shoulder height, palms facing you.",
+        "As you press up, rotate palms outward.",
+        "Reach full extension with palms facing forward.",
+        "Reverse the rotation as you lower."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m2"
+      ],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex190",
+      "name": "Barbell Wrist Roller",
+      "tracking_type": "duration",
+      "short_description": "Forearm endurance using a wrist roller.",
+      "instructions": [
+        "Grip roller bar with both hands, arms extended forward.",
+        "Roll weight up by alternately flexing wrists.",
+        "Unwind back down slowly.",
+        "Keep arms parallel to floor throughout."
+      ],
+      "primary_muscle_id": "m10",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex191",
+      "name": "Landmine Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Angled barbell press for shoulder-friendly pressing.",
+      "instructions": [
+        "Fix one end of barbell in a landmine or corner.",
+        "Stand and hold the other end at shoulder level.",
+        "Press the bar forward and up at an angle.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m1",
+        "m2"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex192",
+      "name": "Kettlebell Clean",
+      "tracking_type": "reps_only",
+      "short_description": "Power clean with a kettlebell to build explosiveness.",
+      "instructions": [
+        "Hold kettlebell in one hand, hinge at hips.",
+        "Swing bell back, then explosively drive hips forward.",
+        "Guide bell upward and catch it in the rack position.",
+        "Lower to swing and repeat."
+      ],
+      "primary_muscle_id": "m13",
+      "secondary_muscle_ids": [
+        "m7",
+        "m8"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex193",
+      "name": "Resistance Band Triceps Overhead Extension",
+      "tracking_type": "weight_reps",
+      "short_description": "Band overhead extension for triceps long head.",
+      "instructions": [
+        "Anchor band low behind you, grip with both hands behind head.",
+        "Keep upper arms next to ears.",
+        "Extend elbows overhead.",
+        "Return to 90° with control."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex194",
+      "name": "Machine Triceps Dip",
+      "tracking_type": "weight_reps",
+      "short_description": "Assisted or weighted machine dip for triceps.",
+      "instructions": [
+        "Adjust machine weight, sit with hands on handles.",
+        "Press handles downward extending elbows.",
+        "Full extension at bottom.",
+        "Return with control."
+      ],
+      "primary_muscle_id": "m2",
+      "secondary_muscle_ids": [
+        "m1"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex195",
+      "name": "Dumbbell Incline Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Incline bench curl for maximum bicep stretch.",
+      "instructions": [
+        "Set bench to 45–60°, sit back with dumbbells hanging at sides.",
+        "Curl both dumbbells up, keeping upper arms back against pad.",
+        "Squeeze at top.",
+        "Lower to full extension, feeling the stretch."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex197",
+      "name": "Cable Lateral Raise",
+      "tracking_type": "weight_reps",
+      "short_description": "Single-arm cable raise for consistent lateral delt tension.",
+      "instructions": [
+        "Stand sideways at low cable, hold handle in far hand.",
+        "Raise arm out to shoulder height, slight elbow bend.",
+        "Hold briefly.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex198",
+      "name": "Kettlebell Goblet Squat (Pulse)",
+      "tracking_type": "duration",
+      "short_description": "Isometric hold at the bottom of goblet squat.",
+      "instructions": [
+        "Hold kettlebell at chest, lower into squat.",
+        "Hold position at parallel or below.",
+        "Small pulses up and down while holding position.",
+        "Maintain time under tension for target duration."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex199",
+      "name": "Resistance Band Clamshell",
+      "tracking_type": "reps_only",
+      "short_description": "Hip abductor activation for glutes and hip health.",
+      "instructions": [
+        "Lie on side, band just above knees, knees bent at 90°.",
+        "Keep feet together and rotate top knee upward.",
+        "Open as far as possible without rotating hips.",
+        "Lower and repeat, then switch sides."
+      ],
+      "primary_muscle_id": "m8",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex200",
+      "name": "Barbell Back Extension",
+      "tracking_type": "weight_reps",
+      "short_description": "Weighted hyperextension holding a barbell.",
+      "instructions": [
+        "Position on hyperextension bench, hold barbell across upper chest.",
+        "Hinge at hips, lowering torso.",
+        "Extend back to neutral — do not hyperextend.",
+        "Squeeze lower back and glutes at top."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex201",
+      "name": "Dumbbell Concentration Curl",
+      "tracking_type": "weight_reps",
+      "short_description": "Strict seated curl for peak bicep contraction.",
+      "instructions": [
+        "Sit on bench, elbow braced against inner thigh.",
+        "Hold dumbbell with underhand grip, arm hanging.",
+        "Curl toward shoulder, squeeze at peak.",
+        "Lower to full extension."
+      ],
+      "primary_muscle_id": "m5",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex202",
+      "name": "Resistance Band Upright Row",
+      "tracking_type": "weight_reps",
+      "short_description": "Band upright row for delts and traps.",
+      "instructions": [
+        "Stand on band, grip with overhand grip close together.",
+        "Pull upward, leading with elbows to chin level.",
+        "Keep band close to body.",
+        "Lower with control."
+      ],
+      "primary_muscle_id": "m3",
+      "secondary_muscle_ids": [
+        "m13"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex203",
+      "name": "Barbell Floor Press",
+      "tracking_type": "weight_reps",
+      "short_description": "Floor-based press limiting range of motion for elbow safety.",
+      "instructions": [
+        "Lie on floor with barbell in a rack above you.",
+        "Grip bar slightly wider than shoulder-width.",
+        "Lower bar until triceps touch floor.",
+        "Press back to lockout."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [
+        "m2",
+        "m3"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex204",
+      "name": "Dumbbell Bench Fly (Incline)",
+      "tracking_type": "weight_reps",
+      "short_description": "Incline fly for upper chest isolation.",
+      "instructions": [
+        "Set bench to 30–45°, hold dumbbells above chest, palms facing.",
+        "Open arms wide in an arc, lowering until chest stretch.",
+        "Reverse arc, squeezing upper chest.",
+        "Keep elbow bend constant."
+      ],
+      "primary_muscle_id": "m1",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e3",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex205",
+      "name": "Kettlebell Swing (Single Arm)",
+      "tracking_type": "reps_only",
+      "short_description": "Unilateral kettlebell swing for anti-rotation core work.",
+      "instructions": [
+        "Hold kettlebell in one hand, hinge at hips.",
+        "Hike bell back between legs.",
+        "Drive hips forward explosively, swinging bell to chest height.",
+        "Control the descent back into the hinge."
+      ],
+      "primary_muscle_id": "m7",
+      "secondary_muscle_ids": [
+        "m8",
+        "m0"
+      ],
+      "equipment_id": "e4",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex206",
+      "name": "Resistance Band Deadlift",
+      "tracking_type": "weight_reps",
+      "short_description": "Deadlift pattern with a resistance band.",
+      "instructions": [
+        "Stand on band, grip ends at sides.",
+        "Hinge at hips, back flat.",
+        "Drive through heels to stand, extending hips fully.",
+        "Lower with a controlled hinge."
+      ],
+      "primary_muscle_id": "m11",
+      "secondary_muscle_ids": [
+        "m8",
+        "m7"
+      ],
+      "equipment_id": "e6",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex207",
+      "name": "Hollow Body Hold",
+      "tracking_type": "duration",
+      "short_description": "Gymnastics core anti-extension isometric.",
+      "instructions": [
+        "Lie on back, press lower back into floor.",
+        "Extend arms overhead and legs out low.",
+        "Hold the position, lower back stays flat.",
+        "Breathe steadily throughout."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [],
+      "equipment_id": "e0",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex208",
+      "name": "L-Sit Hold",
+      "tracking_type": "duration",
+      "short_description": "Advanced isometric hold requiring core and hip flexor strength.",
+      "instructions": [
+        "Sit on floor with hands beside hips, palms flat.",
+        "Straighten arms and lift hips off floor.",
+        "Extend legs straight in front, parallel to floor.",
+        "Hold for target duration."
+      ],
+      "primary_muscle_id": "m0",
+      "secondary_muscle_ids": [
+        "m6"
+      ],
+      "equipment_id": "e0",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex209",
+      "name": "Barbell Zercher Squat",
+      "tracking_type": "weight_reps",
+      "short_description": "Bar held in the crook of elbows for an upright squat.",
+      "instructions": [
+        "Set barbell at hip height in a rack, position in the crook of elbows.",
+        "Stand tall, feet shoulder-width.",
+        "Squat deep keeping chest up and elbows up.",
+        "Stand back up, maintaining barbell position."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8",
+        "m0"
+      ],
+      "equipment_id": "e1",
+      "image_url": null,
+      "video_url": null
+    },
+    {
+      "id": "ex210",
+      "name": "Machine Leg Press (Single Leg)",
+      "tracking_type": "weight_reps",
+      "short_description": "Unilateral leg press for quad and glute strength.",
+      "instructions": [
+        "Sit in leg press, place one foot on center of platform.",
+        "Lower platform to 90°.",
+        "Press back to near extension.",
+        "Complete all reps then switch legs."
+      ],
+      "primary_muscle_id": "m6",
+      "secondary_muscle_ids": [
+        "m8"
+      ],
+      "equipment_id": "e5",
+      "image_url": null,
+      "video_url": null
+    }
+  ]
+}
