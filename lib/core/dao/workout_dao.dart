@@ -160,12 +160,17 @@ class WorkoutDao {
     required String id,
     String? name,
     String? notes,
+    bool clearNotes = false,
     DatabaseExecutor? db,
   }) async {
     final executor = db ?? _db;
     final updates = <String, dynamic>{};
     if (name != null) updates[Workout.columnName] = name;
-    if (notes != null) updates[Workout.columnNotes] = notes;
+    if (clearNotes) {
+      updates[Workout.columnNotes] = null;
+    } else if (notes != null) {
+      updates[Workout.columnNotes] = notes;
+    }
 
     if (updates.isNotEmpty) {
       await executor.update(

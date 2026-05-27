@@ -32,6 +32,7 @@ abstract class WorkoutRepository {
     required String workoutId,
     String? name,
     String? notes,
+    bool clearNotes = false,
   });
 
   Future<WorkoutExercise> addExerciseToWorkout({

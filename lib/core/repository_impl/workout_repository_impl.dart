@@ -17,6 +17,8 @@ import 'package:rxdart/rxdart.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
+const int _defaultWorkoutSetReps = 10;
+
 @LazySingleton(as: WorkoutRepository)
 class WorkoutRepositoryImpl implements WorkoutRepository {
   final WorkoutDao _workoutDao;
@@ -190,6 +192,24 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   @override
   Future<Workout> completeWorkout(String workoutId) async {
     final workout = await _db.transaction((txn) async {
+      final workoutExercises = await _workoutExerciseDao.getByWorkoutId(
+        workoutId,
+        txn,
+      );
+      final workoutExerciseIds = workoutExercises.map((we) => we.id).toList();
+      final sets = await _workoutSetDao.getByWorkoutExerciseIds(
+        workoutExerciseIds,
+        txn,
+      );
+      final hasInvalidCompletedSet = sets.any(
+        (set) => set.isCompleted && !_hasValidWeightAndReps(set),
+      );
+      if (hasInvalidCompletedSet) {
+        throw StateError(
+          'Completed sets must have weight and reps greater than 0.',
+        );
+      }
+
       final endTime = DateTime.now();
       await _workoutDao.updateStatus(workoutId, WorkoutStatus.completed, txn);
       await _workoutDao.updateEndTime(workoutId, endTime, txn);
@@ -256,11 +276,13 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     required String workoutId,
     String? name,
     String? notes,
+    bool clearNotes = false,
   }) async {
     await _workoutDao.updateMeta(
       id: workoutId,
       name: name,
       notes: notes,
+      clearNotes: clearNotes,
     );
     final workout = await _workoutDao.getById(workoutId);
     if (workout == null) {
@@ -330,23 +352,40 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     required String workoutExerciseId,
     SetType setType = SetType.working,
   }) async {
-    final result = await _db.transaction<({WorkoutSet set, String workoutId})>((txn) async {
-      final workoutExercise = await _workoutExerciseDao.getById(workoutExerciseId, txn);
-      if (workoutExercise == null) {
-        throw Exception('Workout exercise not found: $workoutExerciseId');
-      }
-      final maxOrder = await _workoutSetDao.getMaxOrder(workoutExerciseId, txn);
-      final wsId = _uuid.v4();
-      final workoutSet = WorkoutSet(
-        id: wsId,
-        workoutExerciseId: workoutExerciseId,
-        setType: setType,
-        order: maxOrder + 1,
-        isCompleted: false,
-      );
-      await _workoutSetDao.insert(workoutSet, txn);
-      return (set: workoutSet, workoutId: workoutExercise.workoutId);
-    });
+    final result = await _db.transaction<({WorkoutSet set, String workoutId})>(
+      (txn) async {
+        final workoutExercise = await _workoutExerciseDao.getById(
+          workoutExerciseId,
+          txn,
+        );
+        if (workoutExercise == null) {
+          throw Exception('Workout exercise not found: $workoutExerciseId');
+        }
+        final maxOrder = await _workoutSetDao.getMaxOrder(
+          workoutExerciseId,
+          txn,
+        );
+        final previousSet = await _workoutSetDao.getLastByWorkoutExerciseId(
+          workoutExerciseId,
+          txn,
+        );
+        final previousWeight = previousSet?.weight;
+        final wsId = _uuid.v4();
+        final workoutSet = WorkoutSet(
+          id: wsId,
+          workoutExerciseId: workoutExerciseId,
+          setType: setType,
+          weight: previousWeight != null && previousWeight > 0
+              ? previousWeight
+              : null,
+          reps: _defaultWorkoutSetReps,
+          order: maxOrder + 1,
+          isCompleted: false,
+        );
+        await _workoutSetDao.insert(workoutSet, txn);
+        return (set: workoutSet, workoutId: workoutExercise.workoutId);
+      },
+    );
     await _notifyActiveWorkoutChanged(result.workoutId);
     return result.set;
   }
@@ -376,6 +415,11 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       final set = await _workoutSetDao.getById(setId, txn);
       if (set == null) {
         throw Exception('Set not found: $setId');
+      }
+      if (!_hasValidWeightAndReps(set)) {
+        throw StateError(
+          'Weight and reps must be greater than 0 before completing a set.',
+        );
       }
 
       final updatedSet = WorkoutSet(
@@ -408,6 +452,12 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       await _notifyActiveWorkoutChanged(workoutId!);
     }
     return result;
+  }
+
+  static bool _hasValidWeightAndReps(WorkoutSet set) {
+    final weight = set.weight;
+    final reps = set.reps;
+    return weight != null && weight > 0 && reps != null && reps > 0;
   }
 
   @override
