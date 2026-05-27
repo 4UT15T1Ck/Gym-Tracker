@@ -42,7 +42,7 @@ class RoutineSetDao {
     await db.insert(
       RoutineSet.tableName,
       set.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 

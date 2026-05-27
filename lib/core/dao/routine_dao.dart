@@ -31,7 +31,7 @@ class RoutineDao {
     await db.insert(
       Routine.tableName,
       routine.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
     return routine.id;
   }

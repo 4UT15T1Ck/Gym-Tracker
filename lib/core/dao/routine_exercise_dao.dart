@@ -26,7 +26,7 @@ class RoutineExerciseDao {
     await db.insert(
       RoutineExercise.tableName,
       re.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 

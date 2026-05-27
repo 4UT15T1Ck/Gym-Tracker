@@ -49,7 +49,7 @@ class WorkoutExerciseDao {
     await db.insert(
       WorkoutExercise.tableName,
       we.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 

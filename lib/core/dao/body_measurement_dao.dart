@@ -30,7 +30,7 @@ class BodyMeasurementDao {
     await db.insert(
       BodyMeasureEntry.tableName,
       entry.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 

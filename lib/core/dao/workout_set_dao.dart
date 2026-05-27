@@ -70,7 +70,7 @@ class WorkoutSetDao {
     await db.insert(
       WorkoutSet.tableName,
       set.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 

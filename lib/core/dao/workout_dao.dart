@@ -134,7 +134,7 @@ class WorkoutDao {
     await db.insert(
       Workout.tableName,
       workout.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 
