@@ -2,7 +2,7 @@ import 'package:gym_tracker/core/models/routine_set_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 
-@injectable
+@lazySingleton
 class RoutineSetDao {
   final Database _db;
 

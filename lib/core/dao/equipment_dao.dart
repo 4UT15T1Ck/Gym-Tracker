@@ -2,7 +2,7 @@ import 'package:gym_tracker/core/models/equipment_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 
-@injectable
+@lazySingleton
 class EquipmentDao {
   final Database _db;
 
