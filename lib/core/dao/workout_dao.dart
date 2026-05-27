@@ -23,8 +23,9 @@ class WorkoutDao {
     return Workout.fromMap(maps.first);
   }
 
-  Future<Workout?> getActive() async {
-    final maps = await _db.query(
+  Future<Workout?> getActive([DatabaseExecutor? db]) async {
+    final executor = db ?? _db;
+    final maps = await executor.query(
       Workout.tableName,
       where: '${Workout.columnStatus} = ?',
       whereArgs: [WorkoutStatus.active.dbValue],

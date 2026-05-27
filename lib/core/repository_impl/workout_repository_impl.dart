@@ -46,6 +46,11 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   @override
   Future<WorkoutDetail> startWorkout({required String name, String? routineId}) async {
     final detail = await _db.transaction((txn) async {
+      final activeWorkout = await _workoutDao.getActive(txn);
+      if (activeWorkout != null) {
+        throw StateError('An active workout is already in progress.');
+      }
+
       final workoutId = _uuid.v4();
       final workout = Workout(
         id: workoutId,
