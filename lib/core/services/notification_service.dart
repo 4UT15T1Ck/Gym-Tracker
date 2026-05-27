@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:get_it/get_it.dart';
 import 'package:gym_tracker/common/routes/route_args.dart';
+import 'package:injectable/injectable.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -19,6 +19,7 @@ const String _workoutChannelId = 'workout_in_progress';
 const String _workoutChannelName = 'Workout';
 
 /// Local notifications for workout + rest timer. Countdown stays in-app; OS only fires at scheduled time.
+@lazySingleton
 class NotificationService {
   NotificationService();
 
@@ -236,12 +237,5 @@ class NotificationService {
   Future<void> cancelAllWorkoutNotifications() async {
     await cancelRestEnd();
     await cancelWorkoutInProgress();
-  }
-}
-
-Future<void> cancelWorkoutNotificationsFromGetIt() async {
-  final g = GetIt.instance;
-  if (g.isRegistered<NotificationService>()) {
-    await g<NotificationService>().cancelAllWorkoutNotifications();
   }
 }

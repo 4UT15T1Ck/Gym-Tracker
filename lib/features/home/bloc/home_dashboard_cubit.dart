@@ -1,8 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/core/data/preferences_store.dart';
-import 'package:gym_tracker/core/repositories/exercise_repository.dart';
-import 'package:gym_tracker/core/repositories/routine_repository.dart';
 import 'package:gym_tracker/core/repositories/workout_repository.dart';
 import 'package:gym_tracker/core/services/dashboard_service.dart';
 import 'package:injectable/injectable.dart';
@@ -14,14 +12,8 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
 
   HomeDashboardCubit(
     this._workoutRepository,
-    RoutineRepository routineRepository,
-    ExerciseRepository exerciseRepository,
-  )   : _dashboardService = DashboardService(
-          _workoutRepository,
-          routineRepository,
-          exerciseRepository,
-        ),
-        super(const HomeDashboardState());
+    this._dashboardService,
+  ) : super(const HomeDashboardState());
 
   Future<void> load() async {
     emit(state.copyWith(isLoading: true, clearError: true));
@@ -39,27 +31,37 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     }
   }
 
-  Future<String> startEmptyWorkout() async {
-    final detail = await _workoutRepository.startWorkout(name: 'Empty Workout');
-    await load();
-    return detail.workout.id;
+  Future<String?> startEmptyWorkout() async {
+    try {
+      final detail = await _workoutRepository.startWorkout(name: 'Empty Workout');
+      await load();
+      return detail.workout.id;
+    } catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+      return null;
+    }
   }
 
   Future<String?> startSuggestedRoutine() async {
-    final suggestion = state.summary?.suggestedRoutine;
-    if (suggestion == null) return null;
-    final detail = await _workoutRepository.startWorkout(
-      name: suggestion.name,
-      routineId: suggestion.routineId,
-    );
-    if (suggestion.notes?.trim().isNotEmpty == true) {
-      await _workoutRepository.updateWorkoutMeta(
-        workoutId: detail.workout.id,
-        notes: suggestion.notes!.trim(),
+    try {
+      final suggestion = state.summary?.suggestedRoutine;
+      if (suggestion == null) return null;
+      final detail = await _workoutRepository.startWorkout(
+        name: suggestion.name,
+        routineId: suggestion.routineId,
       );
+      if (suggestion.notes?.trim().isNotEmpty == true) {
+        await _workoutRepository.updateWorkoutMeta(
+          workoutId: detail.workout.id,
+          notes: suggestion.notes!.trim(),
+        );
+      }
+      await load();
+      return detail.workout.id;
+    } catch (error) {
+      emit(state.copyWith(errorMessage: error.toString()));
+      return null;
     }
-    await load();
-    return detail.workout.id;
   }
 }
 

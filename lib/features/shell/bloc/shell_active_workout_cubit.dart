@@ -4,12 +4,16 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:gym_tracker/core/repositories/workout_repository.dart';
-import 'package:gym_tracker/core/services/notification_service.dart' show cancelWorkoutNotificationsFromGetIt;
-import 'package:gym_tracker/features/workout/bloc/rest_timer_bloc.dart' show cancelRestTimerFromGetIt;
+import 'package:gym_tracker/core/services/notification_service.dart';
+import 'package:gym_tracker/features/workout/bloc/rest_timer_bloc.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
+@lazySingleton
 class ShellActiveWorkoutCubit extends Cubit<ShellActiveWorkoutState> {
   final WorkoutRepository _workoutRepository;
+  final RestTimerBloc _restTimerBloc;
+  final NotificationService _notificationService;
   StreamSubscription<WorkoutDetail?>? _activeWorkoutSubscription;
   Timer? _elapsedTicker;
 
@@ -20,7 +24,11 @@ class ShellActiveWorkoutCubit extends Cubit<ShellActiveWorkoutState> {
   /// After Skip on log screen: hide rest until the user completes another set.
   DateTime? _skippedRestAfterCompletedAt;
 
-  ShellActiveWorkoutCubit(this._workoutRepository) : super(ShellActiveWorkoutState.initial());
+  ShellActiveWorkoutCubit(
+    this._workoutRepository,
+    this._restTimerBloc,
+    this._notificationService,
+  ) : super(ShellActiveWorkoutState.initial());
 
   Future<void> load() async {
     _activeWorkoutSubscription ??= _workoutRepository.activeWorkoutChanges
@@ -40,8 +48,8 @@ class ShellActiveWorkoutCubit extends Cubit<ShellActiveWorkoutState> {
     final detail = state.detail;
     if (detail == null) return;
     _clearRestSessionOverrides();
-    cancelRestTimerFromGetIt();
-    await cancelWorkoutNotificationsFromGetIt();
+    _restTimerBloc.add(const CancelRestTimer());
+    await _notificationService.cancelAllWorkoutNotifications();
     await _workoutRepository.cancelWorkout(detail.workout.id);
     _applyActiveWorkout(null);
   }
