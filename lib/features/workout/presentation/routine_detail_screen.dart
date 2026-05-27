@@ -163,9 +163,9 @@ class RoutineDetailScreen extends StatelessWidget {
                             style: FilledButton.styleFrom(
                               backgroundColor: _accent,
                               foregroundColor: Colors.white,
-                              minimumSize: const Size.fromHeight(52),
+                              minimumSize: const Size.fromHeight(45),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               textStyle: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
@@ -220,7 +220,7 @@ class RoutineDetailScreen extends StatelessWidget {
                           'Exercises (${detail.exercises.length})',
                           style: theme.textTheme.titleLarge?.copyWith(
                             color: _mutedText,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -247,10 +247,10 @@ class RoutineDetailScreen extends StatelessWidget {
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
                                 color: _cardColor,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(10),
                                 child: Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
@@ -260,7 +260,7 @@ class RoutineDetailScreen extends StatelessWidget {
                                       style: theme.textTheme.titleLarge
                                           ?.copyWith(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.w700,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                     ),
                                     const SizedBox(height: 4),
