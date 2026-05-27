@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym_tracker/common/utils/getit_utils.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
 import 'package:gym_tracker/core/models/exercise_model.dart';
 import 'package:gym_tracker/core/models/workout_set_model.dart';
@@ -19,10 +18,22 @@ import 'package:injectable/injectable.dart';
 class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final WorkoutRepository _workoutRepository;
   final ExerciseRepository _exerciseRepository;
+  final RestTimerBloc _restTimerBloc;
+  final ShellActiveWorkoutCubit _shellCubit;
+  final NotificationService _notificationService;
+  late final StreamSubscription<RestTimerState> _restTimerSubscription;
   String? _workoutId;
   String? _shownInitialProgressForWorkoutId;
 
-  ActiveWorkoutCubit(this._workoutRepository, this._exerciseRepository) : super(const ActiveWorkoutState());
+  ActiveWorkoutCubit(
+    this._workoutRepository,
+    this._exerciseRepository,
+    this._restTimerBloc,
+    this._shellCubit,
+    this._notificationService,
+  ) : super(const ActiveWorkoutState()) {
+    _restTimerSubscription = _restTimerBloc.stream.listen(_onRestTimerState);
+  }
 
   String? get currentWorkoutId => _workoutId;
 
@@ -35,20 +46,27 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     final now = DateTime.now();
     final keepRest = sameWorkout && state.restEndsAt != null && state.restEndsAt!.isAfter(now);
     if (!keepRest) {
-      getIt<RestTimerBloc>().add(const CancelRestTimer());
+      _restTimerBloc.add(const CancelRestTimer());
     }
-    emit(state.copyWith(isLoading: true, isFinishing: false, didFinish: false, clearError: true, clearRest: !keepRest));
+    emit(
+      state.copyWith(
+        isLoading: true,
+        isFinishing: false,
+        didFinish: false,
+        clearError: true,
+        clearRest: !keepRest,
+      ),
+    );
     await _refreshImmediate();
     final detail = state.detail;
     if (detail != null &&
         _workoutId != null &&
-        _shownInitialProgressForWorkoutId != _workoutId &&
-        getIt.isRegistered<NotificationService>()) {
+        _shownInitialProgressForWorkoutId != _workoutId) {
       final snap = workoutInProgressSnapshot(detail, DateTime.now());
       if (snap != null) {
         _shownInitialProgressForWorkoutId = _workoutId;
         unawaited(
-          getIt<NotificationService>().showWorkoutInProgress(
+          _notificationService.showWorkoutInProgress(
             workoutId: _workoutId!,
             routineName: snap.routineName,
             exerciseName: snap.exerciseName,
@@ -64,13 +82,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         state.restEndsAt != null &&
         state.activeRestWorkoutExerciseId != null &&
         state.detail != null &&
-        getIt.isRegistered<RestTimerBloc>() &&
-        getIt<RestTimerBloc>().state is! RestTimerRunning) {
+        _restTimerBloc.state is! RestTimerRunning) {
       final rem = state.restEndsAt!.difference(DateTime.now()).inSeconds;
       if (rem > 0) {
         final next = nextIncompleteSet(state.detail!);
         if (next != null) {
-          getIt<RestTimerBloc>().add(
+          _restTimerBloc.add(
             StartRestTimer(
               workoutId: _workoutId!,
               workoutExerciseId: state.activeRestWorkoutExerciseId!,
@@ -85,44 +102,66 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   Future<void> addSet(String workoutExerciseId) async {
-    await _workoutRepository.addSet(workoutExerciseId: workoutExerciseId);
-    await _refreshImmediate();
+    try {
+      await _workoutRepository.addSet(workoutExerciseId: workoutExerciseId);
+      await _refreshImmediate();
+    } catch (error) {
+      _emitMutationError(error);
+    }
   }
 
   Future<void> moveExercise(String workoutExerciseId, int delta) async {
-    final detail = state.detail;
-    final workoutId = _workoutId;
-    if (detail == null || workoutId == null) return;
-    final exercises = [...detail.exercises]..sort((a, b) => a.workoutExercise.order.compareTo(b.workoutExercise.order));
-    final index = exercises.indexWhere((item) => item.workoutExercise.id == workoutExerciseId);
-    final target = index + delta;
-    if (index < 0 || target < 0 || target >= exercises.length) return;
-    final ids = exercises.map((item) => item.workoutExercise.id).toList();
-    final moved = ids.removeAt(index);
-    ids.insert(target, moved);
-    await _workoutRepository.reorderWorkoutExercises(workoutId: workoutId, orderedIds: ids);
-    await _refreshImmediate();
+    try {
+      final detail = state.detail;
+      final workoutId = _workoutId;
+      if (detail == null || workoutId == null) return;
+      final exercises = [...detail.exercises]
+        ..sort((a, b) => a.workoutExercise.order.compareTo(b.workoutExercise.order));
+      final index = exercises.indexWhere(
+        (item) => item.workoutExercise.id == workoutExerciseId,
+      );
+      final target = index + delta;
+      if (index < 0 || target < 0 || target >= exercises.length) return;
+      final ids = exercises.map((item) => item.workoutExercise.id).toList();
+      final moved = ids.removeAt(index);
+      ids.insert(target, moved);
+      await _workoutRepository.reorderWorkoutExercises(
+        workoutId: workoutId,
+        orderedIds: ids,
+      );
+      await _refreshImmediate();
+    } catch (error) {
+      _emitMutationError(error);
+    }
   }
 
   Future<void> removeExercise(String workoutExerciseId) async {
-    final clearActiveRest = state.activeRestWorkoutExerciseId == workoutExerciseId;
-    if (clearActiveRest) getIt<RestTimerBloc>().add(const CancelRestTimer());
-    await _workoutRepository.removeExerciseFromWorkout(workoutExerciseId);
-    await _refreshImmediate(clearRest: clearActiveRest);
+    try {
+      final clearActiveRest = state.activeRestWorkoutExerciseId == workoutExerciseId;
+      if (clearActiveRest) _restTimerBloc.add(const CancelRestTimer());
+      await _workoutRepository.removeExerciseFromWorkout(workoutExerciseId);
+      await _refreshImmediate(clearRest: clearActiveRest);
+    } catch (error) {
+      _emitMutationError(error);
+    }
   }
 
   Future<void> addExercises(List<Exercise> exercises) async {
-    final id = _workoutId;
-    if (id == null) return;
-    for (final exercise in exercises) {
-      final workoutExercise = await _workoutRepository.addExerciseToWorkout(
-        workoutId: id,
-        exerciseId: exercise.id,
-        restSeconds: 90,
-      );
-      await _workoutRepository.addSet(workoutExerciseId: workoutExercise.id);
+    try {
+      final id = _workoutId;
+      if (id == null) return;
+      for (final exercise in exercises) {
+        final workoutExercise = await _workoutRepository.addExerciseToWorkout(
+          workoutId: id,
+          exerciseId: exercise.id,
+          restSeconds: 90,
+        );
+        await _workoutRepository.addSet(workoutExerciseId: workoutExercise.id);
+      }
+      await _refreshImmediate();
+    } catch (error) {
+      _emitMutationError(error);
     }
-    await _refreshImmediate();
   }
 
   Future<void> updateSetValue(
@@ -132,149 +171,161 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     bool clearWeight = false,
     bool clearReps = false,
   }) async {
-    final currentSet = _findSet(set.id) ?? set;
-    final updated = WorkoutSet(
-      id: currentSet.id,
-      workoutExerciseId: currentSet.workoutExerciseId,
-      setType: currentSet.setType,
-      weight: clearWeight ? null : weight ?? currentSet.weight,
-      reps: clearReps ? null : reps ?? currentSet.reps,
-      durationSeconds: currentSet.durationSeconds,
-      distance: currentSet.distance,
-      rpe: currentSet.rpe,
-      completedAt: currentSet.completedAt,
-      order: currentSet.order,
-      isCompleted: currentSet.isCompleted,
-    );
-    if (updated.isCompleted && !_hasValidWeightAndReps(updated)) {
-      emit(state.copyWith(errorMessage: _setValidationMessage(updated)));
-      return;
+    try {
+      final currentSet = _findSet(set.id) ?? set;
+      final updated = WorkoutSet(
+        id: currentSet.id,
+        workoutExerciseId: currentSet.workoutExerciseId,
+        setType: currentSet.setType,
+        weight: clearWeight ? null : weight ?? currentSet.weight,
+        reps: clearReps ? null : reps ?? currentSet.reps,
+        durationSeconds: currentSet.durationSeconds,
+        distance: currentSet.distance,
+        rpe: currentSet.rpe,
+        completedAt: currentSet.completedAt,
+        order: currentSet.order,
+        isCompleted: currentSet.isCompleted,
+      );
+      if (updated.isCompleted && !_hasValidWeightAndReps(updated)) {
+        emit(state.copyWith(errorMessage: _setValidationMessage(updated)));
+        return;
+      }
+      await _workoutRepository.updateSet(updated);
+      await _refreshImmediate();
+    } catch (error) {
+      _emitMutationError(error);
     }
-    await _workoutRepository.updateSet(updated);
-    await _refreshImmediate();
   }
 
   Future<void> updateSetType(WorkoutSet set, SetType setType) async {
-    final currentSet = _findSet(set.id) ?? set;
-    final updated = WorkoutSet(
-      id: currentSet.id,
-      workoutExerciseId: currentSet.workoutExerciseId,
-      setType: setType,
-      weight: currentSet.weight,
-      reps: currentSet.reps,
-      durationSeconds: currentSet.durationSeconds,
-      distance: currentSet.distance,
-      rpe: currentSet.rpe,
-      completedAt: currentSet.completedAt,
-      order: currentSet.order,
-      isCompleted: currentSet.isCompleted,
-    );
-    await _workoutRepository.updateSet(updated);
-    await _refreshImmediate();
+    try {
+      final currentSet = _findSet(set.id) ?? set;
+      final updated = WorkoutSet(
+        id: currentSet.id,
+        workoutExerciseId: currentSet.workoutExerciseId,
+        setType: setType,
+        weight: currentSet.weight,
+        reps: currentSet.reps,
+        durationSeconds: currentSet.durationSeconds,
+        distance: currentSet.distance,
+        rpe: currentSet.rpe,
+        completedAt: currentSet.completedAt,
+        order: currentSet.order,
+        isCompleted: currentSet.isCompleted,
+      );
+      await _workoutRepository.updateSet(updated);
+      await _refreshImmediate();
+    } catch (error) {
+      _emitMutationError(error);
+    }
   }
 
   Future<void> removeSet(WorkoutSet set) async {
-    final clearActiveRest =
-        state.activeRestWorkoutExerciseId == set.workoutExerciseId;
-    if (clearActiveRest) getIt<RestTimerBloc>().add(const CancelRestTimer());
-    await _workoutRepository.removeSet(set.id);
-    await _refreshImmediate(clearRest: clearActiveRest);
+    try {
+      final clearActiveRest =
+          state.activeRestWorkoutExerciseId == set.workoutExerciseId;
+      if (clearActiveRest) _restTimerBloc.add(const CancelRestTimer());
+      await _workoutRepository.removeSet(set.id);
+      await _refreshImmediate(clearRest: clearActiveRest);
+    } catch (error) {
+      _emitMutationError(error);
+    }
   }
 
   Future<void> toggleSet(WorkoutSet set) async {
-    final currentSet = _findSet(set.id) ?? set;
-    if (currentSet.isCompleted) {
-      getIt<RestTimerBloc>().add(const CancelRestTimer());
-      await _workoutRepository.uncompleteSet(currentSet.id);
-      final clearActiveRest =
-          state.activeRestWorkoutExerciseId == currentSet.workoutExerciseId;
-      await _refreshImmediate(
-        clearRest: clearActiveRest,
-      );
-      return;
-    }
-
-    if (!_hasValidWeightAndReps(currentSet)) {
-      emit(state.copyWith(errorMessage: _setValidationMessage(currentSet)));
-      return;
-    }
-
     try {
+      final currentSet = _findSet(set.id) ?? set;
+      if (currentSet.isCompleted) {
+        _restTimerBloc.add(const CancelRestTimer());
+        await _workoutRepository.uncompleteSet(currentSet.id);
+        final clearActiveRest =
+            state.activeRestWorkoutExerciseId == currentSet.workoutExerciseId;
+        await _refreshImmediate(
+          clearRest: clearActiveRest,
+        );
+        return;
+      }
+
+      if (!_hasValidWeightAndReps(currentSet)) {
+        emit(state.copyWith(errorMessage: _setValidationMessage(currentSet)));
+        return;
+      }
+
       await _workoutRepository.completeSet(currentSet.id);
-    } on StateError {
-      emit(state.copyWith(errorMessage: _setValidationMessage(currentSet)));
-      return;
-    }
-    final matchingExercises = state.detail?.exercises.where(
-      (item) => item.workoutExercise.id == currentSet.workoutExerciseId,
-    );
-    final exercise = matchingExercises == null || matchingExercises.isEmpty
-        ? null
-        : matchingExercises.first;
-    final restSeconds = exercise?.workoutExercise.restSeconds ?? 90;
+      final matchingExercises = state.detail?.exercises.where(
+        (item) => item.workoutExercise.id == currentSet.workoutExerciseId,
+      );
+      final exercise = matchingExercises == null || matchingExercises.isEmpty
+          ? null
+          : matchingExercises.first;
+      final restSeconds = exercise?.workoutExercise.restSeconds ?? 90;
 
-    await _refreshImmediate(clearRest: true);
+      await _refreshImmediate(clearRest: true);
 
-    final detail = state.detail;
-    final workoutId = _workoutId;
-    if (detail == null || workoutId == null) return;
+      final detail = state.detail;
+      final workoutId = _workoutId;
+      if (detail == null || workoutId == null) return;
 
-    final now = DateTime.now();
-    final completedSnap = completedSetSnapshot(
-      detail,
-      currentSet.workoutExerciseId,
-      currentSet.id,
-      now,
-    );
-    final next = nextIncompleteSet(detail);
+      final now = DateTime.now();
+      final completedSnap = completedSetSnapshot(
+        detail,
+        currentSet.workoutExerciseId,
+        currentSet.id,
+        now,
+      );
+      final next = nextIncompleteSet(detail);
 
-    if (completedSnap != null && getIt.isRegistered<NotificationService>()) {
-      unawaited(
-        getIt<NotificationService>().showWorkoutInProgress(
+      if (completedSnap != null) {
+        unawaited(
+          _notificationService.showWorkoutInProgress(
+            workoutId: workoutId,
+            routineName: completedSnap.routineName,
+            exerciseName: completedSnap.exerciseName,
+            setNumber: completedSnap.setNumber,
+            totalSets: completedSnap.totalSets,
+            elapsed: completedSnap.elapsed,
+          ),
+        );
+      }
+
+      if (restSeconds <= 0 || next == null) {
+        return;
+      }
+
+      _restTimerBloc.add(
+        StartRestTimer(
           workoutId: workoutId,
-          routineName: completedSnap.routineName,
-          exerciseName: completedSnap.exerciseName,
-          setNumber: completedSnap.setNumber,
-          totalSets: completedSnap.totalSets,
-          elapsed: completedSnap.elapsed,
+          workoutExerciseId: currentSet.workoutExerciseId,
+          totalSeconds: restSeconds,
+          nextExercise: next.exerciseName,
+          nextSet: next.setNumber,
         ),
       );
+    } on StateError {
+      final currentSet = _findSet(set.id) ?? set;
+      emit(state.copyWith(errorMessage: _setValidationMessage(currentSet)));
+    } catch (error) {
+      _emitMutationError(error);
     }
-
-    if (restSeconds <= 0 || next == null) {
-      return;
-    }
-
-    getIt<RestTimerBloc>().add(
-      StartRestTimer(
-        workoutId: workoutId,
-        workoutExerciseId: currentSet.workoutExerciseId,
-        totalSeconds: restSeconds,
-        nextExercise: next.exerciseName,
-        nextSet: next.setNumber,
-      ),
-    );
   }
 
   Future<void> finish() async {
     final id = _workoutId;
     if (id == null) return;
-    final invalidCompletedSet = _firstInvalidCompletedSet();
-    if (invalidCompletedSet != null) {
-      emit(
-        state.copyWith(
-          errorMessage: _setValidationMessage(invalidCompletedSet),
-        ),
-      );
-      return;
-    }
-    getIt<RestTimerBloc>().add(const CancelRestTimer());
-    if (getIt.isRegistered<NotificationService>()) {
-      await getIt<NotificationService>().cancelAllWorkoutNotifications();
-    }
-    _shownInitialProgressForWorkoutId = null;
-    emit(state.copyWith(isFinishing: true, clearError: true));
     try {
+      final invalidCompletedSet = _firstInvalidCompletedSet();
+      if (invalidCompletedSet != null) {
+        emit(
+          state.copyWith(
+            errorMessage: _setValidationMessage(invalidCompletedSet),
+          ),
+        );
+        return;
+      }
+      _restTimerBloc.add(const CancelRestTimer());
+      await _notificationService.cancelAllWorkoutNotifications();
+      _shownInitialProgressForWorkoutId = null;
+      emit(state.copyWith(isFinishing: true, clearError: true));
       await _workoutRepository.completeWorkout(id);
     } on StateError catch (error) {
       emit(
@@ -284,6 +335,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ),
       );
       return;
+    } catch (error) {
+      _emitMutationError(error);
+      return;
     }
     emit(state.copyWith(isFinishing: false, didFinish: true));
   }
@@ -291,26 +345,28 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   Future<void> cancel() async {
     final id = _workoutId;
     if (id == null) return;
-    getIt<RestTimerBloc>().add(const CancelRestTimer());
-    if (getIt.isRegistered<NotificationService>()) {
-      await getIt<NotificationService>().cancelAllWorkoutNotifications();
+    try {
+      _restTimerBloc.add(const CancelRestTimer());
+      await _notificationService.cancelAllWorkoutNotifications();
+      _shownInitialProgressForWorkoutId = null;
+      await _workoutRepository.cancelWorkout(id);
+    } catch (error) {
+      _emitMutationError(error);
     }
-    _shownInitialProgressForWorkoutId = null;
-    await _workoutRepository.cancelWorkout(id);
   }
 
   void addRestSeconds(int seconds) {
     if (seconds <= 0) return;
-    getIt<RestTimerBloc>().add(AdjustRestTimer(seconds));
+    _restTimerBloc.add(AdjustRestTimer(seconds));
   }
 
   void subtractRestSeconds(int seconds) {
     if (seconds <= 0) return;
-    getIt<RestTimerBloc>().add(AdjustRestTimer(-seconds));
+    _restTimerBloc.add(AdjustRestTimer(-seconds));
   }
 
   void skipRest() {
-    getIt<RestTimerBloc>().add(const SkipRestTimer());
+    _restTimerBloc.add(const SkipRestTimer());
   }
 
   void applyRestFromTimer(DateTime restEndsAt, String workoutExerciseId) {
@@ -327,22 +383,50 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   void completeRestTimerSkipped() {
     final baseline = _latestCompletedAt(state.detail);
     emit(state.copyWith(clearRest: true));
-    unawaited(getIt<ShellActiveWorkoutCubit>().onSkippedRestAfterCompletion(baseline));
+    unawaited(_shellCubit.onSkippedRestAfterCompletion(baseline));
     _syncShellRest();
   }
 
   void completeRestTimerNaturally() {
     final baseline = _latestCompletedAt(state.detail);
     emit(state.copyWith(clearRest: true));
-    unawaited(getIt<ShellActiveWorkoutCubit>().onSkippedRestAfterCompletion(baseline));
+    unawaited(_shellCubit.onSkippedRestAfterCompletion(baseline));
     _syncShellRest();
   }
 
   void clearRestFromTimerWithoutSkip() {
     emit(state.copyWith(clearRest: true));
-    getIt<ShellActiveWorkoutCubit>().clearRestOverride();
-    unawaited(getIt<ShellActiveWorkoutCubit>().refreshNow());
+    _shellCubit.clearRestOverride();
+    unawaited(_shellCubit.refreshNow());
     _syncShellRest();
+  }
+
+  void _onRestTimerState(RestTimerState timerState) {
+    if (timerState is RestTimerRunning) {
+      final alreadySynced =
+          state.restEndsAt == timerState.restEndsAt &&
+          state.activeRestWorkoutExerciseId == timerState.workoutExerciseId;
+      if (!alreadySynced) {
+        applyRestFromTimer(
+          timerState.restEndsAt,
+          timerState.workoutExerciseId,
+        );
+      }
+      return;
+    }
+
+    if (timerState is RestTimerFinished) {
+      if (timerState.reason == RestTimerFinishReason.skipped) {
+        completeRestTimerSkipped();
+      } else {
+        completeRestTimerNaturally();
+      }
+      return;
+    }
+
+    if (timerState is RestTimerCancelled) {
+      clearRestFromTimerWithoutSkip();
+    }
   }
 
   Future<void> _refreshImmediate({
@@ -449,6 +533,22 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     return weight != null && weight > 0 && reps != null && reps > 0;
   }
 
+  void _emitMutationError(Object error) {
+    emit(
+      state.copyWith(
+        isFinishing: false,
+        errorMessage: _errorMessage(error),
+      ),
+    );
+  }
+
+  static String _errorMessage(Object error) {
+    if (error is StateError) {
+      return error.message;
+    }
+    return error.toString();
+  }
+
   String? _resolveRestExerciseName() {
     final id = state.activeRestWorkoutExerciseId;
     final detail = state.detail;
@@ -462,14 +562,19 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   void _syncShellRest() {
-    final shell = getIt<ShellActiveWorkoutCubit>();
     final ends = state.restEndsAt;
     final label = _resolveRestExerciseName();
     if (ends != null && ends.isAfter(DateTime.now())) {
-      shell.syncRestOverride(ends, label ?? '');
+      _shellCubit.syncRestOverride(ends, label ?? '');
       return;
     }
-    shell.clearRestOverride();
+    _shellCubit.clearRestOverride();
+  }
+
+  @override
+  Future<void> close() async {
+    await _restTimerSubscription.cancel();
+    return super.close();
   }
 }
 
