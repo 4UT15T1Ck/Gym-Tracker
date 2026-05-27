@@ -6,12 +6,12 @@ import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:gym_tracker/core/repositories/workout_repository.dart';
 import 'package:gym_tracker/core/services/notification_service.dart' show cancelWorkoutNotificationsFromGetIt;
 import 'package:gym_tracker/features/workout/bloc/rest_timer_bloc.dart' show cancelRestTimerFromGetIt;
+import 'package:rxdart/rxdart.dart';
 
 class ShellActiveWorkoutCubit extends Cubit<ShellActiveWorkoutState> {
   final WorkoutRepository _workoutRepository;
-  Timer? _ticker;
-  bool _isRefreshing = false;
-  int _ticksSinceRefresh = 0;
+  StreamSubscription<WorkoutDetail?>? _activeWorkoutSubscription;
+  Timer? _elapsedTicker;
 
   /// From Log Workout (+15 / −15): overrides DB-derived rest until expiry.
   DateTime? _restOverrideEndsAt;
@@ -23,14 +23,17 @@ class ShellActiveWorkoutCubit extends Cubit<ShellActiveWorkoutState> {
   ShellActiveWorkoutCubit(this._workoutRepository) : super(ShellActiveWorkoutState.initial());
 
   Future<void> load() async {
+    _activeWorkoutSubscription ??= _workoutRepository.activeWorkoutChanges
+        .skip(1)
+        .distinct()
+        .debounceTime(const Duration(milliseconds: 50))
+        .listen(_applyActiveWorkout);
     await refreshNow();
-    _ticker ??= Timer.periodic(const Duration(seconds: 1), (_) {
-      _onTick();
-    });
   }
 
   Future<void> refreshNow() async {
-    await _refreshActiveWorkout();
+    final active = await _workoutRepository.getActiveWorkout();
+    _applyActiveWorkout(active);
   }
 
   Future<void> discardActiveWorkout() async {
@@ -40,7 +43,7 @@ class ShellActiveWorkoutCubit extends Cubit<ShellActiveWorkoutState> {
     cancelRestTimerFromGetIt();
     await cancelWorkoutNotificationsFromGetIt();
     await _workoutRepository.cancelWorkout(detail.workout.id);
-    await _refreshActiveWorkout();
+    _applyActiveWorkout(null);
   }
 
   /// Keeps FAB aligned with [ActiveWorkoutCubit] rest timer (+15 / −15 / new rest after a set).
@@ -73,75 +76,67 @@ class ShellActiveWorkoutCubit extends Cubit<ShellActiveWorkoutState> {
     _skippedRestAfterCompletedAt = null;
   }
 
-  Future<void> _onTick() async {
-    final now = DateTime.now();
-    _ticksSinceRefresh++;
+  void _startElapsedTicker() {
+    _elapsedTicker ??= Timer.periodic(const Duration(seconds: 1), (_) {
+      _applyActiveWorkout(state.detail, now: DateTime.now());
+    });
+  }
 
-    final shouldSyncFromDb = _ticksSinceRefresh >= 3;
-    if (!shouldSyncFromDb) {
-      emit(state.copyWith(now: now));
+  void _stopElapsedTicker() {
+    _elapsedTicker?.cancel();
+    _elapsedTicker = null;
+  }
+
+  void _applyActiveWorkout(WorkoutDetail? active, {DateTime? now}) {
+    final clockNow = now ?? DateTime.now();
+    if (active == null) {
+      _clearRestSessionOverrides();
+      _stopElapsedTicker();
+      emit(ShellActiveWorkoutState.initial(now: clockNow));
       return;
     }
 
-    _ticksSinceRefresh = 0;
-    await _refreshActiveWorkout(now: now);
-  }
+    _startElapsedTicker();
+    final tLatest = _maxCompletedAt(active);
 
-  Future<void> _refreshActiveWorkout({DateTime? now}) async {
-    if (_isRefreshing) return;
-    _isRefreshing = true;
-    try {
-      final active = await _workoutRepository.getActiveWorkout();
-      final clockNow = now ?? DateTime.now();
-      if (active == null) {
-        _clearRestSessionOverrides();
-        emit(ShellActiveWorkoutState.initial(now: clockNow));
-        return;
-      }
-
-      final tLatest = _maxCompletedAt(active);
-
-      if (_restOverrideEndsAt != null && !_restOverrideEndsAt!.isAfter(clockNow)) {
-        clearRestOverride();
-        _skippedRestAfterCompletedAt = tLatest;
-      }
-
-      if (_skippedRestAfterCompletedAt != null &&
-          tLatest != null &&
-          !_sameCompletionInstant(tLatest, _skippedRestAfterCompletedAt!)) {
-        _skippedRestAfterCompletedAt = null;
-      }
-
-      final computed = _latestRestInfo(active, clockNow);
-
-      final DateTime? effectiveRestEnd;
-      final String exerciseName;
-
-      if (_restOverrideEndsAt != null && _restOverrideEndsAt!.isAfter(clockNow)) {
-        effectiveRestEnd = _restOverrideEndsAt;
-        exerciseName =
-            _nonEmptyOr(_restOverrideExerciseName, computed?.exerciseName) ?? _resolveCurrentExerciseName(active);
-      } else if (_skippedRestAfterCompletedAt != null &&
-          tLatest != null &&
-          _sameCompletionInstant(tLatest, _skippedRestAfterCompletedAt!)) {
-        effectiveRestEnd = null;
-        exerciseName = _resolveCurrentExerciseName(active);
-      } else {
-        effectiveRestEnd = computed?.restEndsAt;
-        exerciseName = computed?.exerciseName ?? _resolveCurrentExerciseName(active);
-      }
-
-      emit(
-        ShellActiveWorkoutState(
-          detail: active,
-          now: clockNow,
-          restEndsAt: effectiveRestEnd,
-          currentExerciseName: exerciseName,
-        ),
-      );
-    } finally {
-      _isRefreshing = false;
+    if (_restOverrideEndsAt != null && !_restOverrideEndsAt!.isAfter(clockNow)) {
+      clearRestOverride();
+      _skippedRestAfterCompletedAt = tLatest;
     }
+
+    if (_skippedRestAfterCompletedAt != null &&
+        tLatest != null &&
+        !_sameCompletionInstant(tLatest, _skippedRestAfterCompletedAt!)) {
+      _skippedRestAfterCompletedAt = null;
+    }
+
+    final computed = _latestRestInfo(active, clockNow);
+
+    final DateTime? effectiveRestEnd;
+    final String exerciseName;
+
+    if (_restOverrideEndsAt != null && _restOverrideEndsAt!.isAfter(clockNow)) {
+      effectiveRestEnd = _restOverrideEndsAt;
+      exerciseName =
+          _nonEmptyOr(_restOverrideExerciseName, computed?.exerciseName) ?? _resolveCurrentExerciseName(active);
+    } else if (_skippedRestAfterCompletedAt != null &&
+        tLatest != null &&
+        _sameCompletionInstant(tLatest, _skippedRestAfterCompletedAt!)) {
+      effectiveRestEnd = null;
+      exerciseName = _resolveCurrentExerciseName(active);
+    } else {
+      effectiveRestEnd = computed?.restEndsAt;
+      exerciseName = computed?.exerciseName ?? _resolveCurrentExerciseName(active);
+    }
+
+    emit(
+      ShellActiveWorkoutState(
+        detail: active,
+        now: clockNow,
+        restEndsAt: effectiveRestEnd,
+        currentExerciseName: exerciseName,
+      ),
+    );
   }
 
   static bool _sameCompletionInstant(DateTime a, DateTime b) => (a.difference(b).inMilliseconds).abs() < 750;
@@ -200,7 +195,8 @@ class ShellActiveWorkoutCubit extends Cubit<ShellActiveWorkoutState> {
 
   @override
   Future<void> close() async {
-    _ticker?.cancel();
+    await _activeWorkoutSubscription?.cancel();
+    _stopElapsedTicker();
     return super.close();
   }
 }

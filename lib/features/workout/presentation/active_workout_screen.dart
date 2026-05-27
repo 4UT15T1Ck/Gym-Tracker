@@ -37,7 +37,7 @@ class ActiveWorkoutScreen extends StatelessWidget {
             );
           }
           if (!context.mounted) return;
-          context.read<ShellActiveWorkoutCubit>().refreshNow();
+          await context.read<ShellActiveWorkoutCubit>().refreshNow();
           context.read<HomeDashboardCubit>().load();
           context.read<WorkoutHomeCubit>().load();
           context.read<ProfileCubit>().load();
@@ -168,18 +168,18 @@ class ActiveWorkoutScreen extends StatelessWidget {
                             ),
                           );
                           if (shouldDiscard == true && context.mounted) {
-                            await context.read<ActiveWorkoutCubit>().cancel();
-                            if (context.mounted) {
-                              context
-                                  .read<ShellActiveWorkoutCubit>()
-                                  .refreshNow();
-                              context.read<HomeDashboardCubit>().load();
-                              context.read<WorkoutHomeCubit>().load();
-                              context.read<ProfileCubit>().load();
-                            }
-                            if (context.mounted) {
-                              Navigator.of(context).pop(false);
-                            }
+                            final activeCubit =
+                                context.read<ActiveWorkoutCubit>();
+                            final shellCubit =
+                                context.read<ShellActiveWorkoutCubit>();
+                            await activeCubit.cancel();
+                            if (!context.mounted) return;
+                            await shellCubit.refreshNow();
+                            if (!context.mounted) return;
+                            context.read<HomeDashboardCubit>().load();
+                            context.read<WorkoutHomeCubit>().load();
+                            context.read<ProfileCubit>().load();
+                            Navigator.of(context).pop(false);
                           }
                         },
                         style: OutlinedButton.styleFrom(
