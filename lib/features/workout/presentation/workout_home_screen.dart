@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
+import 'package:gym_tracker/common/utils/workout_start_guard.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
 import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/common/widgets/tap_scale.dart';
-import 'package:gym_tracker/features/shell/bloc/shell_active_workout_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_home_cubit.dart';
 
 class WorkoutHomeScreen extends StatelessWidget {
@@ -20,13 +20,12 @@ class WorkoutHomeScreen extends StatelessWidget {
             TapScale(
               child: FilledButton.icon(
                 onPressed: () async {
-                  final id = await context
-                      .read<WorkoutHomeCubit>()
-                      .startEmptyWorkout();
-                  if (context.mounted) {
-                    context.read<ShellActiveWorkoutCubit>().refreshNow();
-                  }
-                  if (!context.mounted) return;
+                  final id = await guardedStartWorkout(
+                    context,
+                    onStart: () =>
+                        context.read<WorkoutHomeCubit>().startEmptyWorkout(),
+                  );
+                  if (!context.mounted || id == null) return;
                   Navigator.of(context).pushNamed(
                     Routes.activeWorkout,
                     arguments: ActiveWorkoutRouteArgs(workoutId: id),
@@ -246,15 +245,13 @@ class WorkoutHomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(12),
                         child: FilledButton(
                           onPressed: () async {
-                            final id = await context
-                                .read<WorkoutHomeCubit>()
-                                .startRoutine(routine);
-                            if (context.mounted) {
-                              context
-                                  .read<ShellActiveWorkoutCubit>()
-                                  .refreshNow();
-                            }
-                            if (!context.mounted) return;
+                            final id = await guardedStartWorkout(
+                              context,
+                              onStart: () => context
+                                  .read<WorkoutHomeCubit>()
+                                  .startRoutine(routine),
+                            );
+                            if (!context.mounted || id == null) return;
                             Navigator.of(context).pushNamed(
                               Routes.activeWorkout,
                               arguments: ActiveWorkoutRouteArgs(workoutId: id),

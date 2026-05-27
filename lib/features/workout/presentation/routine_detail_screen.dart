@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
+import 'package:gym_tracker/common/utils/workout_start_guard.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
 import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
-import 'package:gym_tracker/features/shell/bloc/shell_active_workout_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/routine_detail_cubit.dart';
 
 class RoutineDetailScreen extends StatelessWidget {
@@ -116,14 +116,12 @@ class RoutineDetailScreen extends StatelessWidget {
                           onPressed: state.isLoading
                               ? null
                               : () async {
-                                  final id = await context
-                                      .read<RoutineDetailCubit>()
-                                      .startWorkoutFromCurrentRoutine();
-                                  if (context.mounted) {
-                                    context
-                                        .read<ShellActiveWorkoutCubit>()
-                                        .refreshNow();
-                                  }
+                                  final id = await guardedStartWorkout(
+                                    context,
+                                    onStart: () => context
+                                        .read<RoutineDetailCubit>()
+                                        .startWorkoutFromCurrentRoutine(),
+                                  );
                                   if (!context.mounted || id == null) {
                                     return;
                                   }

@@ -3,13 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
 import 'package:gym_tracker/common/utils/date_formatters.dart';
 import 'package:gym_tracker/common/utils/muscle_group_utils.dart';
+import 'package:gym_tracker/common/utils/workout_start_guard.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
 import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:gym_tracker/core/services/dashboard_service.dart';
 import 'package:gym_tracker/features/home/bloc/home_dashboard_cubit.dart';
-import 'package:gym_tracker/features/shell/bloc/shell_active_workout_cubit.dart';
 
 class HomeDashboardScreen extends StatelessWidget {
   static const _bgColor = Color(0xFF080A0F);
@@ -49,13 +49,12 @@ class HomeDashboardScreen extends StatelessWidget {
                     suggestedRoutineName: summary?.suggestedRoutine?.name,
                     suggestedRoutineReason: summary?.suggestedRoutine?.reason,
                     onStartEmptyWorkout: () async {
-                      final id = await context
-                          .read<HomeDashboardCubit>()
-                          .startEmptyWorkout();
-                      if (context.mounted) {
-                        context.read<ShellActiveWorkoutCubit>().refreshNow();
-                      }
-                      if (!context.mounted) return;
+                      final id = await guardedStartWorkout(
+                        context,
+                        onStart: () =>
+                            context.read<HomeDashboardCubit>().startEmptyWorkout(),
+                      );
+                      if (!context.mounted || id == null) return;
                       Navigator.of(context).pushNamed(
                         Routes.activeWorkout,
                         arguments: ActiveWorkoutRouteArgs(workoutId: id),
@@ -64,14 +63,12 @@ class HomeDashboardScreen extends StatelessWidget {
                     onPickRoutine: summary?.suggestedRoutine == null
                         ? onOpenWorkoutTab
                         : () async {
-                            final id = await context
-                                .read<HomeDashboardCubit>()
-                                .startSuggestedRoutine();
-                            if (context.mounted) {
-                              context
-                                  .read<ShellActiveWorkoutCubit>()
-                                  .refreshNow();
-                            }
+                            final id = await guardedStartWorkout(
+                              context,
+                              onStart: () => context
+                                  .read<HomeDashboardCubit>()
+                                  .startSuggestedRoutine(),
+                            );
                             if (!context.mounted || id == null) return;
                             Navigator.of(context).pushNamed(
                               Routes.activeWorkout,
