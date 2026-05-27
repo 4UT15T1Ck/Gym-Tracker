@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
 
-class RoutineSet {
+class RoutineSet extends Equatable {
   static const String tableName = 'routine_sets';
   static const String columnId = 'id';
   static const String columnRoutineExerciseId = 'routine_exercise_id';
@@ -22,7 +23,7 @@ class RoutineSet {
   final double? targetRpe;
   final int order;
 
-  RoutineSet({
+  const RoutineSet({
     required this.id,
     required this.routineExerciseId,
     required this.setType,
@@ -69,4 +70,17 @@ class RoutineSet {
 
     return double.tryParse(value.toString());
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        routineExerciseId,
+        setType,
+        targetWeight,
+        targetReps,
+        targetDurationSeconds,
+        targetDistance,
+        targetRpe,
+        order,
+      ];
 }

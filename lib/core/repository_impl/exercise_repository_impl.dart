@@ -156,4 +156,8 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
     }).toList();
   }
 
+  @override
+  Future<Map<String, String>> getPreviousSetLabels(List<String> exerciseIds) async {
+    return await _exerciseStatsDao.getPreviousSetLabels(exerciseIds);
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
 import 'package:gym_tracker/common/widgets/motion_tokens.dart';
@@ -7,6 +8,15 @@ import 'package:gym_tracker/common/widgets/success_pulse_overlay.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
 import 'package:gym_tracker/core/models/exercise_model.dart';
 import 'package:gym_tracker/features/workout/bloc/create_routine_cubit.dart';
+
+final TextInputFormatter _routineWeightInputFormatter =
+    TextInputFormatter.withFunction((oldValue, newValue) {
+  final text = newValue.text;
+  if (text.isEmpty || RegExp(r'^\d{1,3}(\.\d{0,1})?$').hasMatch(text)) {
+    return newValue;
+  }
+  return oldValue;
+});
 
 class CreateRoutineScreen extends StatelessWidget {
   const CreateRoutineScreen({super.key});
@@ -164,13 +174,25 @@ class CreateRoutineScreen extends StatelessWidget {
                                     key: ValueKey('weight-${item.exercise.id}-$setIndex'),
                                     initialValue: set.targetWeight?.toString() ?? '',
                                     decoration: const InputDecoration(labelText: 'Kg'),
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) => context.read<CreateRoutineCubit>().updateSet(
-                                          exerciseIndex: exerciseIndex,
-                                          setIndex: setIndex,
-                                          targetWeight: double.tryParse(value),
-                                          clearWeight: value.trim().isEmpty,
-                                        ),
+                                    keyboardType: const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                    inputFormatters: [
+                                      _routineWeightInputFormatter,
+                                      LengthLimitingTextInputFormatter(5),
+                                    ],
+                                    onChanged: (value) {
+                                      final parsedWeight = double.tryParse(value);
+                                      context.read<CreateRoutineCubit>().updateSet(
+                                            exerciseIndex: exerciseIndex,
+                                            setIndex: setIndex,
+                                            targetWeight: parsedWeight
+                                                ?.clamp(0, 999.9)
+                                                .toDouble(),
+                                            clearWeight: value.trim().isEmpty ||
+                                                parsedWeight == null,
+                                          );
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -181,16 +203,28 @@ class CreateRoutineScreen extends StatelessWidget {
                                     initialValue: set.targetReps?.toString() ?? '',
                                     decoration: const InputDecoration(labelText: 'Reps'),
                                     keyboardType: TextInputType.number,
-                                    onChanged: (value) => context.read<CreateRoutineCubit>().updateSet(
-                                          exerciseIndex: exerciseIndex,
-                                          setIndex: setIndex,
-                                          targetReps: int.tryParse(value),
-                                          clearReps: value.trim().isEmpty,
-                                        ),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                      LengthLimitingTextInputFormatter(3),
+                                    ],
+                                    onChanged: (value) {
+                                      final parsedReps = int.tryParse(value);
+                                      context.read<CreateRoutineCubit>().updateSet(
+                                            exerciseIndex: exerciseIndex,
+                                            setIndex: setIndex,
+                                            targetReps: parsedReps
+                                                ?.clamp(0, 999)
+                                                .toInt(),
+                                            clearReps: value.trim().isEmpty ||
+                                                parsedReps == null,
+                                          );
+                                    },
                                   ),
                                 ),
                                 IconButton(
-                                  onPressed: () => context.read<CreateRoutineCubit>().removeSet(exerciseIndex, setIndex),
+                                  onPressed: () => context
+                                      .read<CreateRoutineCubit>()
+                                      .removeSet(exerciseIndex, setIndex),
                                   icon: const Icon(Icons.close),
                                 ),
                               ],

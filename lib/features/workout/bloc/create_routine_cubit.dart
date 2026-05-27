@@ -7,6 +7,16 @@ import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:gym_tracker/core/repositories/routine_repository.dart';
 import 'package:injectable/injectable.dart';
 
+const int _defaultRoutineSetReps = 10;
+
+DraftRoutineSet _newWorkingSet({double? targetWeight}) {
+  return DraftRoutineSet(
+    setType: SetType.working,
+    targetWeight: targetWeight,
+    targetReps: _defaultRoutineSetReps,
+  );
+}
+
 @injectable
 class CreateRoutineCubit extends Cubit<CreateRoutineState> {
   final RoutineRepository _routineRepository;
@@ -21,9 +31,13 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
     emit(CreateRoutineState.fromRoutineDetail(detail));
   }
 
-  void updateTitle(String title) => emit(state.copyWith(title: title));
+  void updateTitle(String title) {
+    emit(state.copyWith(title: title, clearError: true));
+  }
 
-  void updateNotes(String notes) => emit(state.copyWith(notes: notes));
+  void updateNotes(String notes) {
+    emit(state.copyWith(notes: notes, clearError: true));
+  }
 
   void addExercises(List<Exercise> exercises) {
     final existingIds = state.exercises.map((item) => item.exercise.id).toSet();
@@ -33,16 +47,21 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
           (exercise) => DraftRoutineExercise(
             exercise: exercise,
             restSeconds: 90,
-            sets: const [DraftRoutineSet(setType: SetType.working, targetReps: 10)],
+            sets: [_newWorkingSet()],
           ),
         )
         .toList();
-    emit(state.copyWith(exercises: [...state.exercises, ...additions]));
+    emit(
+      state.copyWith(
+        exercises: [...state.exercises, ...additions],
+        clearError: true,
+      ),
+    );
   }
 
   void removeExercise(int index) {
     final items = [...state.exercises]..removeAt(index);
-    emit(state.copyWith(exercises: items));
+    emit(state.copyWith(exercises: items, clearError: true));
   }
 
   void moveExercise(int index, int delta) {
@@ -51,22 +70,31 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
     final items = [...state.exercises];
     final item = items.removeAt(index);
     items.insert(target, item);
-    emit(state.copyWith(exercises: items));
+    emit(state.copyWith(exercises: items, clearError: true));
   }
 
   void updateRestSeconds(int exerciseIndex, int? seconds) {
     final items = [...state.exercises];
-    items[exerciseIndex] = items[exerciseIndex].copyWith(restSeconds: seconds, updateRestSeconds: true);
-    emit(state.copyWith(exercises: items));
+    items[exerciseIndex] = items[exerciseIndex].copyWith(
+      restSeconds: seconds,
+      updateRestSeconds: true,
+    );
+    emit(state.copyWith(exercises: items, clearError: true));
   }
 
   void addSet(int exerciseIndex) {
     final items = [...state.exercises];
     final exercise = items[exerciseIndex];
+    final previousWeight = exercise.sets.isEmpty
+        ? null
+        : exercise.sets.last.targetWeight;
+    final inheritedWeight = previousWeight != null && previousWeight > 0
+        ? previousWeight
+        : null;
     items[exerciseIndex] = exercise.copyWith(
-      sets: [...exercise.sets, const DraftRoutineSet(setType: SetType.working, targetReps: 10)],
+      sets: [...exercise.sets, _newWorkingSet(targetWeight: inheritedWeight)],
     );
-    emit(state.copyWith(exercises: items));
+    emit(state.copyWith(exercises: items, clearError: true));
   }
 
   void removeSet(int exerciseIndex, int setIndex) {
@@ -74,7 +102,7 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
     final exercise = items[exerciseIndex];
     final sets = [...exercise.sets]..removeAt(setIndex);
     items[exerciseIndex] = exercise.copyWith(sets: sets);
-    emit(state.copyWith(exercises: items));
+    emit(state.copyWith(exercises: items, clearError: true));
   }
 
   void updateSet({
@@ -97,12 +125,13 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
       clearReps: clearReps,
     );
     items[exerciseIndex] = exercise.copyWith(sets: sets);
-    emit(state.copyWith(exercises: items));
+    emit(state.copyWith(exercises: items, clearError: true));
   }
 
   Future<void> save() async {
-    if (state.title.trim().isEmpty) {
-      emit(state.copyWith(errorMessage: 'Routine title is required'));
+    final validationError = _validateDraft();
+    if (validationError != null) {
+      emit(state.copyWith(errorMessage: validationError));
       return;
     }
     emit(state.copyWith(isSaving: true, clearError: true));
@@ -118,6 +147,26 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
     } catch (error) {
       emit(state.copyWith(isSaving: false, errorMessage: error.toString()));
     }
+  }
+
+  String? _validateDraft() {
+    if (state.title.trim().isEmpty) {
+      return 'Routine title is required';
+    }
+    for (final exerciseEntry in state.exercises.indexed) {
+      final item = exerciseEntry.$2;
+      if (item.sets.isEmpty) {
+        return '${item.exercise.name} needs at least one set';
+      }
+      for (final setEntry in item.sets.indexed) {
+        final setNumber = setEntry.$1 + 1;
+        final set = setEntry.$2;
+        if (!set.hasValidTargets) {
+          return '${item.exercise.name} set $setNumber needs weight and reps greater than 0';
+        }
+      }
+    }
+    return null;
   }
 
   RoutineInput _buildRoutineInput() {
@@ -253,6 +302,12 @@ class DraftRoutineSet extends Equatable {
     this.targetWeight,
     this.targetReps,
   });
+
+  bool get hasValidTargets {
+    final weight = targetWeight;
+    final reps = targetReps;
+    return weight != null && weight > 0 && reps != null && reps > 0;
+  }
 
   DraftRoutineSet copyWith({
     SetType? setType,

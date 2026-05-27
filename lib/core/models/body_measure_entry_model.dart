@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-class BodyMeasureEntry {
+import 'package:equatable/equatable.dart';
+
+class BodyMeasureEntry extends Equatable {
   static const String tableName = 'body_measure_entries';
   static const String columnId = 'id';
   static const String columnDate = 'date';
@@ -60,4 +62,13 @@ class BodyMeasureEntry {
     if (value is num) return value.toDouble();
     return double.tryParse(value.toString());
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        date,
+        weight,
+        bodyFatPercent,
+        customMeasurements,
+      ];
 }

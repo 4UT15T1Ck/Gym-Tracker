@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
 import 'package:gym_tracker/core/models/equipment_model.dart';
 import 'package:gym_tracker/core/models/exercise_model.dart';
@@ -9,14 +10,17 @@ import 'package:gym_tracker/core/models/workout_exercise_model.dart';
 import 'package:gym_tracker/core/models/workout_model.dart';
 import 'package:gym_tracker/core/models/workout_set_model.dart';
 
-class RoutineDetail {
+class RoutineDetail extends Equatable {
   final Routine routine;
   final List<RoutineExerciseDetail> exercises;
 
   const RoutineDetail({required this.routine, required this.exercises});
+
+  @override
+  List<Object?> get props => [routine, exercises];
 }
 
-class RoutineExerciseDetail {
+class RoutineExerciseDetail extends Equatable {
   final RoutineExercise routineExercise;
   final Exercise exercise;
   final List<RoutineSet> sets;
@@ -26,16 +30,22 @@ class RoutineExerciseDetail {
     required this.exercise,
     required this.sets,
   });
+
+  @override
+  List<Object?> get props => [routineExercise, exercise, sets];
 }
 
-class WorkoutDetail {
+class WorkoutDetail extends Equatable {
   final Workout workout;
   final List<WorkoutExerciseDetail> exercises;
 
   const WorkoutDetail({required this.workout, required this.exercises});
+
+  @override
+  List<Object?> get props => [workout, exercises];
 }
 
-class WorkoutExerciseDetail {
+class WorkoutExerciseDetail extends Equatable {
   final WorkoutExercise workoutExercise;
   final Exercise exercise;
   final List<WorkoutSet> sets;
@@ -45,9 +55,12 @@ class WorkoutExerciseDetail {
     required this.exercise,
     required this.sets,
   });
+
+  @override
+  List<Object?> get props => [workoutExercise, exercise, sets];
 }
 
-class WorkoutSummary {
+class WorkoutSummary extends Equatable {
   final String id;
   final String name;
   final DateTime startTime;
@@ -67,6 +80,18 @@ class WorkoutSummary {
     required this.totalExercises,
     required this.exerciseNames,
   });
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        startTime,
+        endTime,
+        volume,
+        totalSets,
+        totalExercises,
+        exerciseNames,
+      ];
 }
 
 class RoutineInput {
@@ -113,7 +138,7 @@ class RoutineSetInput {
   });
 }
 
-class ExerciseDetail {
+class ExerciseDetail extends Equatable {
   final Exercise exercise;
   final Muscle primaryMuscle;
   final List<Muscle> secondaryMuscles;
@@ -127,9 +152,18 @@ class ExerciseDetail {
     this.equipment,
     this.stats,
   });
+
+  @override
+  List<Object?> get props => [
+        exercise,
+        primaryMuscle,
+        secondaryMuscles,
+        equipment,
+        stats,
+      ];
 }
 
-class ExerciseStats {
+class ExerciseStats extends Equatable {
   final WorkoutSet? personalBest;
   final List<ExerciseHistoryEntry> recentHistory;
   final List<({DateTime date, double maxWeight})> weightOverTime;
@@ -143,9 +177,18 @@ class ExerciseStats {
     required this.volumeOverTime,
     required this.totalSessions,
   });
+
+  @override
+  List<Object?> get props => [
+        personalBest,
+        recentHistory,
+        weightOverTime,
+        volumeOverTime,
+        totalSessions,
+      ];
 }
 
-class ExerciseHistoryEntry {
+class ExerciseHistoryEntry extends Equatable {
   final String workoutId;
   final String workoutName;
   final DateTime performedAt;
@@ -157,9 +200,12 @@ class ExerciseHistoryEntry {
     required this.performedAt,
     required this.sets,
   });
+
+  @override
+  List<Object?> get props => [workoutId, workoutName, performedAt, sets];
 }
 
-class PersonalRecordSummary {
+class PersonalRecordSummary extends Equatable {
   final String exerciseName;
   final double? weight;
   final int? reps;
@@ -171,4 +217,7 @@ class PersonalRecordSummary {
     this.reps,
     this.achievedAt,
   });
+
+  @override
+  List<Object?> get props => [exerciseName, weight, reps, achievedAt];
 }

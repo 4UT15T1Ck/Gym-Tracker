@@ -7,7 +7,7 @@ import 'package:gym_tracker/core/models/workout_set_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 
-@injectable
+@lazySingleton
 class AnalyticsDao {
   final Database _db;
 

@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'package:gym_tracker/core/enums/workout_status_enum.dart';
 
-class Workout {
+class Workout extends Equatable {
   static const String tableName = 'workouts';
   static const String columnId = 'id';
   static const String columnRoutineId = 'routine_id';
@@ -20,7 +21,7 @@ class Workout {
   final String? notes;
   final double volume;
 
-  Workout({
+  const Workout({
     required this.id,
     this.routineId,
     required this.name,
@@ -66,4 +67,16 @@ class Workout {
 
     return double.tryParse(value.toString());
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        routineId,
+        name,
+        startTime,
+        endTime,
+        status,
+        notes,
+        volume,
+      ];
 }

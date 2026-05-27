@@ -18,8 +18,10 @@ void main() async {
     await notificationService.init();
     await notificationService.requestPermission();
   }
-  getIt<HomeDashboardCubit>().load();
-  getIt<WorkoutHomeCubit>().load();
-  getIt<ProfileCubit>().load();
   runApp(const MainApp());
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    getIt<HomeDashboardCubit>().load();
+    getIt<WorkoutHomeCubit>().load();
+    getIt<ProfileCubit>().load();
+  });
 }

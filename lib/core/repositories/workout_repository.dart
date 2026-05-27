@@ -24,10 +24,15 @@ abstract class WorkoutRepository {
     DateTime? to,
   });
 
+  Future<List<({String workoutId, String exerciseId, String primaryMuscleId})>> getWorkoutMuscleGroups(
+    List<String> workoutIds,
+  );
+
   Future<Workout> updateWorkoutMeta({
     required String workoutId,
     String? name,
     String? notes,
+    bool clearNotes = false,
   });
 
   Future<WorkoutExercise> addExerciseToWorkout({

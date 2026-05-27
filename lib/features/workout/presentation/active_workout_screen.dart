@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
 import 'package:gym_tracker/common/utils/date_formatters.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
@@ -18,6 +19,16 @@ import 'package:gym_tracker/features/workout/bloc/active_workout_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/rest_timer_bloc.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_home_cubit.dart';
 
+final TextInputFormatter _weightInputFormatter = TextInputFormatter.withFunction(
+  (oldValue, newValue) {
+    final text = newValue.text;
+    if (text.isEmpty || RegExp(r'^\d{1,3}(\.\d{0,1})?$').hasMatch(text)) {
+      return newValue;
+    }
+    return oldValue;
+  },
+);
+
 class ActiveWorkoutScreen extends StatelessWidget {
   const ActiveWorkoutScreen({super.key});
 
@@ -25,8 +36,15 @@ class ActiveWorkoutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<ActiveWorkoutCubit, ActiveWorkoutState>(
       listenWhen: (previous, current) =>
-          previous.didFinish != current.didFinish,
+          previous.didFinish != current.didFinish ||
+          previous.errorMessage != current.errorMessage,
       listener: (context, state) async {
+        final errorMessage = state.errorMessage;
+        if (errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+          );
+        }
         if (state.didFinish) {
           await AppHaptics.success(context);
           if (context.mounted) {
@@ -389,9 +407,6 @@ class _ExerciseBlock extends StatelessWidget {
                 ),
               ],
             ),
-            TextField(
-              decoration: const InputDecoration(hintText: 'Add notes here...'),
-            ),
             Text('Rest: ${detail.workoutExercise.restSeconds ?? 90}s'),
             const SizedBox(height: 8),
             const Row(
@@ -501,27 +516,35 @@ class _SetRowState extends State<_SetRow> {
 
   Future<void> _commitWeight() async {
     if (_sameWeightAsPersisted()) return;
-    final value = _weightController.text;
+    final text = _weightController.text.trim();
+    final weight = double.tryParse(text);
     final cubit = _cubit ?? context.read<ActiveWorkoutCubit>();
     await cubit.updateSetValue(
       widget.set,
-      weight: double.tryParse(value.trim()),
-      clearWeight: value.trim().isEmpty,
+      weight: weight == null ? null : weight.clamp(0, 999.9).toDouble(),
+      clearWeight: text.isEmpty || weight == null,
     );
   }
 
   Future<void> _commitReps() async {
     if (_sameRepsAsPersisted()) return;
-    final value = _repsController.text;
+    final text = _repsController.text.trim();
+    final reps = int.tryParse(text);
     final cubit = _cubit ?? context.read<ActiveWorkoutCubit>();
     await cubit.updateSetValue(
       widget.set,
-      reps: int.tryParse(value.trim()),
-      clearReps: value.trim().isEmpty,
+      reps: reps == null ? null : reps.clamp(0, 999).toInt(),
+      clearReps: text.isEmpty || reps == null,
     );
   }
 
   Future<void> _commitEditsThenToggle() async {
+    if (widget.set.isCompleted) {
+      await (_cubit ?? context.read<ActiveWorkoutCubit>()).toggleSet(
+        widget.set,
+      );
+      return;
+    }
     await _commitWeight();
     await _commitReps();
     if (!mounted) return;
@@ -572,22 +595,24 @@ class _SetRowState extends State<_SetRow> {
     final cubit = _cubit;
     if (cubit == null) return;
     if (!_sameWeightAsPersisted()) {
-      final value = _weightController.text;
+      final text = _weightController.text.trim();
+      final weight = double.tryParse(text);
       unawaited(
         cubit.updateSetValue(
           widget.set,
-          weight: double.tryParse(value.trim()),
-          clearWeight: value.trim().isEmpty,
+          weight: weight == null ? null : weight.clamp(0, 999.9).toDouble(),
+          clearWeight: text.isEmpty || weight == null,
         ),
       );
     }
     if (!_sameRepsAsPersisted()) {
-      final value = _repsController.text;
+      final text = _repsController.text.trim();
+      final reps = int.tryParse(text);
       unawaited(
         cubit.updateSetValue(
           widget.set,
-          reps: int.tryParse(value.trim()),
-          clearReps: value.trim().isEmpty,
+          reps: reps == null ? null : reps.clamp(0, 999).toInt(),
+          clearReps: text.isEmpty || reps == null,
         ),
       );
     }
@@ -673,6 +698,10 @@ class _SetRowState extends State<_SetRow> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [
+                _weightInputFormatter,
+                LengthLimitingTextInputFormatter(5),
+              ],
               decoration: const InputDecoration(isDense: true),
             ),
           ),
@@ -683,6 +712,10 @@ class _SetRowState extends State<_SetRow> {
               controller: _repsController,
               focusNode: _repsFocus,
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(3),
+              ],
               decoration: const InputDecoration(isDense: true),
             ),
           ),

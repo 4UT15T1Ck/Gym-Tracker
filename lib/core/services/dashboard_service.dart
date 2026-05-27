@@ -64,10 +64,10 @@ class DashboardService {
     String workoutId,
     Map<String, String> muscleIdToName,
   ) async {
-    final detail = await _workoutRepository.getWorkoutDetail(workoutId);
     final tags = <String>{};
-    for (final exerciseDetail in detail.exercises) {
-      final muscleName = muscleIdToName[exerciseDetail.exercise.primaryMuscleId];
+    final muscleRows = await _workoutRepository.getWorkoutMuscleGroups([workoutId]);
+    for (final row in muscleRows) {
+      final muscleName = muscleIdToName[row.primaryMuscleId];
       if (muscleName != null) {
         final group = MuscleGroupUtils.groupForMuscleName(muscleName);
         if (group != null) tags.add(group);
@@ -108,29 +108,36 @@ class DashboardService {
     Map<String, List<String>> secondaryMap,
   ) async {
     final lastTrainedByGroup = <String, DateTime>{};
-    for (final workout in history) {
-      final detail = await _workoutRepository.getWorkoutDetail(workout.id);
-      for (final workoutExercise in detail.exercises) {
-        final groups = <String>{};
-        // Primary muscle — resolved from ID.
-        final primaryName = muscleIdToName[workoutExercise.exercise.primaryMuscleId];
-        if (primaryName != null) {
-          final g = MuscleGroupUtils.groupForMuscleName(primaryName);
+    final workoutStartById = {
+      for (final workout in history) workout.id: workout.startTime,
+    };
+    final muscleRows = await _workoutRepository.getWorkoutMuscleGroups(
+      history.map((workout) => workout.id).toList(),
+    );
+
+    for (final row in muscleRows) {
+      final workoutStartTime = workoutStartById[row.workoutId];
+      if (workoutStartTime == null) continue;
+
+      final groups = <String>{};
+      final primaryName = muscleIdToName[row.primaryMuscleId];
+      if (primaryName != null) {
+        final g = MuscleGroupUtils.groupForMuscleName(primaryName);
+        if (g != null) groups.add(g);
+      }
+
+      for (final muscleId in secondaryMap[row.exerciseId] ?? <String>[]) {
+        final name = muscleIdToName[muscleId];
+        if (name != null) {
+          final g = MuscleGroupUtils.groupForMuscleName(name);
           if (g != null) groups.add(g);
         }
-        // Secondary muscles — resolved from pre-fetched map.
-        for (final muscleId in secondaryMap[workoutExercise.exercise.id] ?? <String>[]) {
-          final name = muscleIdToName[muscleId];
-          if (name != null) {
-            final g = MuscleGroupUtils.groupForMuscleName(name);
-            if (g != null) groups.add(g);
-          }
-        }
-        for (final group in groups) {
-          final current = lastTrainedByGroup[group];
-          if (current == null || workout.startTime.isAfter(current)) {
-            lastTrainedByGroup[group] = workout.startTime;
-          }
+      }
+
+      for (final group in groups) {
+        final current = lastTrainedByGroup[group];
+        if (current == null || workoutStartTime.isAfter(current)) {
+          lastTrainedByGroup[group] = workoutStartTime;
         }
       }
     }

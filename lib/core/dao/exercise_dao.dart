@@ -4,7 +4,7 @@ import 'package:gym_tracker/core/models/exercise_second_muscle_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 
-@injectable
+@lazySingleton
 class ExerciseDao {
   final Database _db;
 

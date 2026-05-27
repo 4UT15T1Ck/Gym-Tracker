@@ -6,7 +6,7 @@ import 'package:gym_tracker/core/models/workout_set_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 
-@injectable
+@lazySingleton
 class WorkoutDao {
   final Database _db;
 
@@ -103,11 +103,38 @@ class WorkoutDao {
     return result;
   }
 
+  Future<List<({String workoutId, String exerciseId, String primaryMuscleId})>> getWorkoutMuscleGroups(
+    List<String> workoutIds,
+  ) async {
+    if (workoutIds.isEmpty) return [];
+    final placeholders = List.filled(workoutIds.length, '?').join(',');
+    final maps = await _db.rawQuery('''
+      SELECT
+        we.${WorkoutExercise.columnWorkoutId} as workout_id,
+        we.${WorkoutExercise.columnExerciseId} as exercise_id,
+        e.${Exercise.columnPrimaryMuscleId} as primary_muscle_id
+      FROM ${WorkoutExercise.tableName} we
+      JOIN ${Exercise.tableName} e ON e.${Exercise.columnId} = we.${WorkoutExercise.columnExerciseId}
+      WHERE we.${WorkoutExercise.columnWorkoutId} IN ($placeholders)
+      ORDER BY we.${WorkoutExercise.columnWorkoutId}, we."${WorkoutExercise.columnOrder}" ASC
+    ''', workoutIds);
+
+    return maps
+        .map(
+          (map) => (
+            workoutId: map['workout_id'] as String,
+            exerciseId: map['exercise_id'] as String,
+            primaryMuscleId: map['primary_muscle_id'] as String,
+          ),
+        )
+        .toList();
+  }
+
   Future<void> insert(Workout workout, DatabaseExecutor db) async {
     await db.insert(
       Workout.tableName,
       workout.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 
@@ -133,12 +160,17 @@ class WorkoutDao {
     required String id,
     String? name,
     String? notes,
+    bool clearNotes = false,
     DatabaseExecutor? db,
   }) async {
     final executor = db ?? _db;
     final updates = <String, dynamic>{};
     if (name != null) updates[Workout.columnName] = name;
-    if (notes != null) updates[Workout.columnNotes] = notes;
+    if (clearNotes) {
+      updates[Workout.columnNotes] = null;
+    } else if (notes != null) {
+      updates[Workout.columnNotes] = notes;
+    }
 
     if (updates.isNotEmpty) {
       await executor.update(
