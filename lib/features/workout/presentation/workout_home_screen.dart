@@ -18,6 +18,29 @@ class WorkoutHomeScreen extends StatelessWidget {
   static const _accentTextDark = Color(0xFF0E335A);
   static const _outline = Color(0xFF7A8393);
 
+  static AlertDialog _styledDialog({
+    required String title,
+    required String content,
+    required List<Widget> actions,
+  }) {
+    return AlertDialog(
+      backgroundColor: _cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: _outline),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      content: Text(content, style: const TextStyle(color: _mutedText)),
+      actions: actions,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<WorkoutHomeCubit, WorkoutHomeState>(
@@ -287,15 +310,16 @@ class WorkoutHomeScreen extends StatelessWidget {
                                           } else if (value == 'delete') {
                                             final confirm = await showDialog<bool>(
                                               context: context,
-                                              builder: (context) => AlertDialog(
-                                                title: const Text(
-                                                  'Delete Routine?',
-                                                ),
-                                                content: const Text(
-                                                  'This action cannot be undone.',
-                                                ),
+                                              builder: (context) => _styledDialog(
+                                                title: 'Delete Routine?',
+                                                content:
+                                                    'This action cannot be undone.',
                                                 actions: [
                                                   TextButton(
+                                                    style: TextButton.styleFrom(
+                                                      foregroundColor:
+                                                          _mutedText,
+                                                    ),
                                                     onPressed: () =>
                                                         Navigator.of(
                                                           context,
@@ -307,6 +331,8 @@ class WorkoutHomeScreen extends StatelessWidget {
                                                         FilledButton.styleFrom(
                                                           backgroundColor:
                                                               Colors.red,
+                                                          foregroundColor:
+                                                              Colors.white,
                                                         ),
                                                     onPressed: () =>
                                                         Navigator.of(
