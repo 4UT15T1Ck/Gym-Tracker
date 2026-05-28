@@ -23,6 +23,29 @@ class _MainShellScreenState extends State<MainShellScreen> {
   static const _active = Color(0xFF4A8DFF);
   static const _activeBorder = Color(0xFF7A7F89);
 
+  static AlertDialog _styledDialog({
+    required String title,
+    required String content,
+    required List<Widget> actions,
+  }) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF151A23),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFF283041)),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      content: Text(content, style: const TextStyle(color: Color(0xFF8C94A5))),
+      actions: actions,
+    );
+  }
+
   int _selectedIndex = 0;
   late final List<Widget> _screens;
 
@@ -96,12 +119,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: BlocBuilder<ShellActiveWorkoutCubit, ShellActiveWorkoutState>(
-        builder: (context, state) {
-          if (!state.hasActiveWorkout) return const SizedBox.shrink();
-          return _ActiveWorkoutFab(state: state);
-        },
-      ),
+      floatingActionButton:
+          BlocBuilder<ShellActiveWorkoutCubit, ShellActiveWorkoutState>(
+            builder: (context, state) {
+              if (!state.hasActiveWorkout) return const SizedBox.shrink();
+              return _ActiveWorkoutFab(state: state);
+            },
+          ),
     );
   }
 }
@@ -196,7 +220,11 @@ class _ActiveWorkoutFab extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(primaryText, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(
+                          primaryText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         Text(
                           state.currentExerciseName,
                           maxLines: 1,
@@ -211,17 +239,33 @@ class _ActiveWorkoutFab extends StatelessWidget {
                     onPressed: () async {
                       final shouldDiscard = await showDialog<bool>(
                         context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Discard workout?'),
-                          content: const Text('This will discard the current workout and nothing will be saved.'),
+                        builder: (context) => _MainShellScreenState._styledDialog(
+                          title: 'Discard workout?',
+                          content:
+                              'This will discard the current workout and nothing will be saved.',
                           actions: [
-                            TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Keep')),
-                            FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Discard')),
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF8C94A5),
+                              ),
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('Keep'),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                              ),
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('Discard'),
+                            ),
                           ],
                         ),
                       );
                       if (shouldDiscard == true && context.mounted) {
-                        await context.read<ShellActiveWorkoutCubit>().discardActiveWorkout();
+                        await context
+                            .read<ShellActiveWorkoutCubit>()
+                            .discardActiveWorkout();
                       }
                     },
                     icon: const Icon(Icons.delete_outline),

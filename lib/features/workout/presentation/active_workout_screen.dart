@@ -20,15 +20,14 @@ import 'package:gym_tracker/features/workout/bloc/active_workout_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/rest_timer_bloc.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_home_cubit.dart';
 
-final TextInputFormatter _weightInputFormatter = TextInputFormatter.withFunction(
-  (oldValue, newValue) {
-    final text = newValue.text;
-    if (text.isEmpty || RegExp(r'^\d{1,3}(\.\d{0,1})?$').hasMatch(text)) {
-      return newValue;
-    }
-    return oldValue;
-  },
-);
+final TextInputFormatter _weightInputFormatter =
+    TextInputFormatter.withFunction((oldValue, newValue) {
+      final text = newValue.text;
+      if (text.isEmpty || RegExp(r'^\d{1,3}(\.\d{0,1})?$').hasMatch(text)) {
+        return newValue;
+      }
+      return oldValue;
+    });
 
 class ActiveWorkoutScreen extends StatelessWidget {
   const ActiveWorkoutScreen({super.key});
@@ -37,6 +36,29 @@ class ActiveWorkoutScreen extends StatelessWidget {
   static const _mutedText = Color(0xFF8C94A5);
   static const _accent = Color(0xFF4A8DFF);
   static const _outline = Color(0xFF283041);
+
+  static AlertDialog _styledDialog({
+    required String title,
+    required String content,
+    required List<Widget> actions,
+  }) {
+    return AlertDialog(
+      backgroundColor: _cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: _outline),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      content: Text(content, style: const TextStyle(color: _mutedText)),
+      actions: actions,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +69,9 @@ class ActiveWorkoutScreen extends StatelessWidget {
       listener: (context, state) async {
         final errorMessage = state.errorMessage;
         if (errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(errorMessage)));
         }
         if (state.didFinish) {
           await AppHaptics.success(context);
@@ -84,18 +106,24 @@ class ActiveWorkoutScreen extends StatelessWidget {
                       : () async {
                           final shouldFinish = await showDialog<bool>(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Finish workout?'),
-                              content: const Text(
-                                'Completed sets will be saved to history.',
-                              ),
+                            builder: (context) => _styledDialog(
+                              title: 'Finish workout?',
+                              content:
+                                  'Completed sets will be saved to history.',
                               actions: [
                                 TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: _mutedText,
+                                  ),
                                   onPressed: () =>
                                       Navigator.of(context).pop(false),
                                   child: const Text('Cancel'),
                                 ),
                                 FilledButton(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: _accent,
+                                    foregroundColor: Colors.white,
+                                  ),
                                   onPressed: () =>
                                       Navigator.of(context).pop(true),
                                   child: const Text('Finish'),
@@ -193,18 +221,24 @@ class ActiveWorkoutScreen extends StatelessWidget {
                         onPressed: () async {
                           final shouldDiscard = await showDialog<bool>(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Discard workout?'),
-                              content: const Text(
-                                'This will discard the current workout and nothing will be saved.',
-                              ),
+                            builder: (context) => _styledDialog(
+                              title: 'Discard workout?',
+                              content:
+                                  'This will discard the current workout and nothing will be saved.',
                               actions: [
                                 TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: _mutedText,
+                                  ),
                                   onPressed: () =>
                                       Navigator.of(context).pop(false),
                                   child: const Text('Keep'),
                                 ),
                                 FilledButton(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                  ),
                                   onPressed: () =>
                                       Navigator.of(context).pop(true),
                                   child: const Text('Discard'),
@@ -213,10 +247,10 @@ class ActiveWorkoutScreen extends StatelessWidget {
                             ),
                           );
                           if (shouldDiscard == true && context.mounted) {
-                            final activeCubit =
-                                context.read<ActiveWorkoutCubit>();
-                            final shellCubit =
-                                context.read<ShellActiveWorkoutCubit>();
+                            final activeCubit = context
+                                .read<ActiveWorkoutCubit>();
+                            final shellCubit = context
+                                .read<ShellActiveWorkoutCubit>();
                             await activeCubit.cancel();
                             if (!context.mounted) return;
                             await shellCubit.refreshNow();
@@ -459,11 +493,15 @@ class _ExerciseBlock extends StatelessWidget {
             ...detail.sets.indexed.map((entry) {
               final index = entry.$1;
               final set = entry.$2;
-              return _SetRow(
-                key: ValueKey(set.id),
-                index: index,
-                set: set,
-                previous: state.previousByExerciseId[detail.exercise.id] ?? '-',
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: _SetRow(
+                  key: ValueKey(set.id),
+                  index: index,
+                  set: set,
+                  previous:
+                      state.previousByExerciseId[detail.exercise.id] ?? '-',
+                ),
               );
             }),
             TextButton.icon(

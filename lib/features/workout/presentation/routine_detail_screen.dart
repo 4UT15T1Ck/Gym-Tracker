@@ -16,6 +16,29 @@ class RoutineDetailScreen extends StatelessWidget {
   static const _mutedText = Color(0xFF8C94A5);
   static const _accent = Color(0xFF4A8DFF);
 
+  static AlertDialog _styledDialog({
+    required String title,
+    required String content,
+    required List<Widget> actions,
+  }) {
+    return AlertDialog(
+      backgroundColor: _cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFF283041)),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      content: Text(content, style: const TextStyle(color: _mutedText)),
+      actions: actions,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<RoutineDetailCubit, RoutineDetailState>(
@@ -98,13 +121,14 @@ class RoutineDetailScreen extends StatelessWidget {
                                 } else if (value == 'delete') {
                                   final confirm = await showDialog<bool>(
                                     context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Delete Routine?'),
-                                      content: const Text(
-                                        'This action cannot be undone.',
-                                      ),
+                                    builder: (context) => _styledDialog(
+                                      title: 'Delete Routine?',
+                                      content: 'This action cannot be undone.',
                                       actions: [
                                         TextButton(
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: _mutedText,
+                                          ),
                                           onPressed: () =>
                                               Navigator.of(context).pop(false),
                                           child: const Text('Cancel'),
@@ -112,6 +136,7 @@ class RoutineDetailScreen extends StatelessWidget {
                                         FilledButton(
                                           style: FilledButton.styleFrom(
                                             backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
                                           ),
                                           onPressed: () =>
                                               Navigator.of(context).pop(true),
