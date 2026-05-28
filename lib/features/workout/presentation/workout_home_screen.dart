@@ -7,8 +7,15 @@ import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_home_cubit.dart';
 
-class WorkoutHomeScreen extends StatelessWidget {
+class WorkoutHomeScreen extends StatefulWidget {
   const WorkoutHomeScreen({super.key});
+
+  @override
+  State<WorkoutHomeScreen> createState() => _WorkoutHomeScreenState();
+}
+
+class _WorkoutHomeScreenState extends State<WorkoutHomeScreen> {
+  bool _showRoutines = true;
 
   static const _bgColor = Color(0xFF080A0F);
   static const _cardColor = Color(0xFF151A23);
@@ -59,7 +66,6 @@ class WorkoutHomeScreen extends StatelessWidget {
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
-                    fontSize: 34,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -68,13 +74,12 @@ class WorkoutHomeScreen extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       backgroundColor: _cardColor,
                       foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(45),
+                      minimumSize: const Size.fromHeight(42),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       textStyle: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
-                        fontSize: 16,
                       ),
                     ),
                     onPressed: () async {
@@ -90,7 +95,7 @@ class WorkoutHomeScreen extends StatelessWidget {
                         arguments: ActiveWorkoutRouteArgs(workoutId: id),
                       );
                     },
-                    icon: const Icon(Icons.add, size: 22),
+                    icon: const Icon(Icons.add, size: 20),
                     label: const Text('Start Empty Workout'),
                   ),
                 ),
@@ -103,31 +108,10 @@ class WorkoutHomeScreen extends StatelessWidget {
                         style: theme.textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
-                          fontSize: 20,
                         ),
                       ),
                     ),
-                    TapScale(
-                      child: IconButton.filled(
-                        style: IconButton.styleFrom(
-                          backgroundColor: _accent,
-                          foregroundColor: _accentTextDark,
-                          fixedSize: const Size(30, 30),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () async {
-                          await Navigator.of(
-                            context,
-                          ).pushNamed(Routes.createRoutine);
-                          if (context.mounted) {
-                            context.read<WorkoutHomeCubit>().load();
-                          }
-                        },
-                        icon: const Icon(Icons.add, size: 22),
-                      ),
-                    ),
+                    Spacer(),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -145,7 +129,6 @@ class WorkoutHomeScreen extends StatelessWidget {
                             ),
                             textStyle: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              fontSize: 14,
                             ),
                           ),
                           onPressed: () async {
@@ -174,7 +157,6 @@ class WorkoutHomeScreen extends StatelessWidget {
                             ),
                             textStyle: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              fontSize: 14,
                             ),
                           ),
                           onPressed: () => Navigator.of(
@@ -196,24 +178,65 @@ class WorkoutHomeScreen extends StatelessWidget {
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: _mutedText,
                           fontWeight: FontWeight.w700,
-                          fontSize: 20,
                         ),
                       ),
                     ),
-                    const Icon(Icons.keyboard_arrow_up, color: _mutedText),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () =>
+                          setState(() => _showRoutines = !_showRoutines),
+                      icon: Icon(
+                        _showRoutines
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        color: _mutedText,
+                        size: 20,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                if (state.isLoading) const LinearProgressIndicator(),
-                if (state.routines.isEmpty && !state.isLoading)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Text(
-                      'No routines yet. Create one to start faster.',
-                      style: TextStyle(color: _mutedText),
+                AnimatedCrossFade(
+                  firstChild: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: _mutedText,
+                          size: 18,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Routines hidden · tap arrow to expand',
+                            style: TextStyle(
+                              color: _mutedText,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ...state.routines.indexed.map((entry) {
+                  secondChild: Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      if (state.isLoading) const LinearProgressIndicator(),
+                      if (state.routines.isEmpty && !state.isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Text(
+                            'No routines yet. Create one to start faster.',
+                            style: TextStyle(color: _mutedText),
+                          ),
+                        ),
+                      ...state.routines.indexed.map((entry) {
                   final index = entry.$1;
                   final routine = entry.$2;
                   return TweenAnimationBuilder<double>(
@@ -265,7 +288,6 @@ class WorkoutHomeScreen extends StatelessWidget {
                                               ?.copyWith(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.w700,
-                                                fontSize: 20,
                                               ),
                                         ),
                                       ),
@@ -396,7 +418,6 @@ class WorkoutHomeScreen extends StatelessWidget {
                                     style: theme.textTheme.bodyLarge?.copyWith(
                                       color: _mutedText,
                                       height: 1.35,
-                                      fontSize: 16,
                                     ),
                                   ),
                                 ],
@@ -414,8 +435,8 @@ class WorkoutHomeScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 textStyle: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 17,
                                 ),
                               ),
                               onPressed: () async {
@@ -443,7 +464,14 @@ class WorkoutHomeScreen extends StatelessWidget {
                       ),
                     ),
                   );
-                }),
+                      }),
+                    ],
+                  ),
+                  crossFadeState: _showRoutines
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  duration: MotionTokens.resolve(context, MotionTokens.fast),
+                ),
                 if (state.errorMessage != null) Text(state.errorMessage!),
               ],
             ),

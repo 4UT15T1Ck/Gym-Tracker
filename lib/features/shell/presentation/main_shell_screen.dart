@@ -21,7 +21,6 @@ class _MainShellScreenState extends State<MainShellScreen> {
   static const _barBg = Color(0xFF12151D);
   static const _inactive = Color(0xFF5E646F);
   static const _active = Color(0xFF4A8DFF);
-  static const _activeBorder = Color(0xFF7A7F89);
 
   static AlertDialog _styledDialog({
     required String title,
@@ -85,7 +84,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: Container(
         color: _barBg,
-        padding: const EdgeInsets.fromLTRB(4, 2, 4, 6),
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 2),
         child: SafeArea(
           top: false,
           child: Row(
@@ -151,12 +150,7 @@ class _TabItem extends StatelessWidget {
       duration: const Duration(milliseconds: 170),
       margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        border: active
-            ? Border.all(color: _MainShellScreenState._activeBorder, width: 1.2)
-            : null,
-        borderRadius: BorderRadius.circular(8),
-      ),
+      decoration: const BoxDecoration(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

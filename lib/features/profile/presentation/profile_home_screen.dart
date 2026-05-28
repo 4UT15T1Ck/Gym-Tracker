@@ -50,7 +50,6 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
-                    fontSize: 34,
                   ),
                 ),
                 const SizedBox(height: 12),
