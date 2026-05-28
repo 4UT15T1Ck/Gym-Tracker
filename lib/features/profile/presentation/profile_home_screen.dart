@@ -46,67 +46,56 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
               ),
               children: [
                 Text(
-                  'Profile',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
+                  'PROFILE',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: _mutedText,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.1,
                   ),
                 ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: _cardColor,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: _outline),
+                const SizedBox(height: 10),
+                Center(
+                  child: TweenAnimationBuilder<double>(
+                    key: ValueKey<int>(_avatarPulseSeed),
+                    tween: Tween(begin: 0.93, end: 1),
+                    duration: MotionTokens.resolve(
+                      context,
+                      MotionTokens.emphasis,
+                    ),
+                    curve: Curves.easeOutBack,
+                    builder: (context, value, child) =>
+                        Transform.scale(scale: value, child: child),
+                    child: CircleAvatar(
+                      radius: 58,
+                      backgroundColor: _accent,
+                      child: Text(
+                        state.initials,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 28,
+                        ),
+                      ),
+                    ),
                   ),
+                ),
+                const SizedBox(height: 14),
+                Center(
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      TweenAnimationBuilder<double>(
-                        key: ValueKey<int>(_avatarPulseSeed),
-                        tween: Tween(begin: 0.93, end: 1),
-                        duration: MotionTokens.resolve(
-                          context,
-                          MotionTokens.emphasis,
-                        ),
-                        curve: Curves.easeOutBack,
-                        builder: (context, value, child) =>
-                            Transform.scale(scale: value, child: child),
-                        child: CircleAvatar(
-                          radius: 30,
-                          backgroundColor: _accent,
-                          child: Text(
-                            state.initials,
-                            style: const TextStyle(
-                              color: _accentTextDark,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                      Text(
+                        state.username,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              state.username,
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              '${state.totalWorkouts} workouts',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: _mutedText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      const SizedBox(width: 6),
                       IconButton(
-                        icon: const Icon(Icons.edit, color: _mutedText),
+                        visualDensity: VisualDensity.compact,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(Icons.edit, color: _mutedText, size: 18),
                         onPressed: () async {
                           final controller = TextEditingController(
                             text: state.username,
@@ -151,14 +140,22 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                _MainChart(state: state),
-                const SizedBox(height: 24),
+                const SizedBox(height: 2),
+                Center(
+                  child: Text(
+                    '${state.totalWorkouts} workouts',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: _mutedText,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 Text(
-                  'Dashboard',
+                  'DASHBOARD',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
+                    color: _mutedText,
                     fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -196,6 +193,17 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 14),
+                Text(
+                  'THIS WEEK',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: _mutedText,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _MainChart(state: state),
                 if (state.isLoading) const LinearProgressIndicator(),
               ],
             ),
@@ -213,68 +221,58 @@ class _MainChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ProfileCubit>();
     final theme = Theme.of(context);
+    final total = state.chartBars.fold<double>(0, (sum, b) => sum + b.value);
+    final unit = _unitLabel(state.chartMetric);
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
         color: _ProfileHomeScreenState._cardColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: _ProfileHomeScreenState._outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const SizedBox(height: 4),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(
+              Text(
+                total.toStringAsFixed(1),
+                style: theme.textTheme.displaySmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
                 child: Text(
-                  'Progress',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
+                  unit,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: _ProfileHomeScreenState._mutedText,
                   ),
                 ),
               ),
-              SegmentedButton<ProfileChartRange>(
-                segments: const [
-                  ButtonSegment(
-                    value: ProfileChartRange.week,
-                    label: Text('Week'),
-                  ),
-                  ButtonSegment(
-                    value: ProfileChartRange.month,
-                    label: Text('Month'),
-                  ),
-                ],
-                selected: {state.chartRange},
-                onSelectionChanged: (value) =>
-                    cubit.updateChart(state.chartMetric, value.first),
-              ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           _LabeledBarChart(bars: state.chartBars, metric: state.chartMetric),
-          const SizedBox(height: 12),
-          SegmentedButton<ProfileChartMetric>(
-            segments: const [
-              ButtonSegment(
-                value: ProfileChartMetric.duration,
-                label: Text('Duration'),
-              ),
-              ButtonSegment(
-                value: ProfileChartMetric.volume,
-                label: Text('Volume'),
-              ),
-              ButtonSegment(value: ProfileChartMetric.reps, label: Text('Reps')),
-            ],
-            selected: {state.chartMetric},
-            onSelectionChanged: (value) =>
-                cubit.updateChart(value.first, state.chartRange),
-          ),
         ],
       ),
     );
+  }
+
+  String _unitLabel(ProfileChartMetric metric) {
+    switch (metric) {
+      case ProfileChartMetric.duration:
+        return 'hrs';
+      case ProfileChartMetric.volume:
+        return 'kg';
+      case ProfileChartMetric.reps:
+        return 'reps';
+    }
   }
 }
 
@@ -315,9 +313,9 @@ class _LabeledBarChart extends StatelessWidget {
                       _valueLabel(metric, bar.value),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.white),
                     ),
                     AnimatedMetricBar(
                       value: bar.value,
