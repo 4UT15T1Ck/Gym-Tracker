@@ -29,6 +29,7 @@ abstract class DatabaseModule {
       version: _databaseVersion,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
+        await db.rawQuery('PRAGMA journal_mode = WAL');
       },
       onCreate: (db, version) async {
         await _createTables(db);
@@ -249,6 +250,9 @@ Future<void> _createIndexes(DatabaseExecutor db) async {
   );
   await db.execute(
     'CREATE INDEX IF NOT EXISTS idx_${Workout.tableName}_${Workout.columnRoutineId} ON ${Workout.tableName}(${Workout.columnRoutineId})',
+  );
+  await db.execute(
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_${Workout.tableName}_single_active ON ${Workout.tableName}(${Workout.columnStatus}) WHERE ${Workout.columnStatus} = 'active'",
   );
   await db.execute(
     'CREATE INDEX IF NOT EXISTS idx_${WorkoutExercise.tableName}_${WorkoutExercise.columnWorkoutId} ON ${WorkoutExercise.tableName}(${WorkoutExercise.columnWorkoutId})',

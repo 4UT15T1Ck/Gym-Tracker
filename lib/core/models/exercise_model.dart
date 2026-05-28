@@ -1,8 +1,9 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
 import 'package:gym_tracker/core/enums/tracking_type_enum.dart';
 
-class Exercise {
+class Exercise extends Equatable {
   static const String tableName = 'exercises';
   static const String columnId = 'id';
   static const String columnName = 'name';
@@ -24,7 +25,7 @@ class Exercise {
   final String? imageUrl;
   final String? videoUrl;
 
-  Exercise({
+  const Exercise({
     required this.id,
     required this.name,
     required this.trackingType,
@@ -94,4 +95,17 @@ class Exercise {
 
     return const [];
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        trackingType,
+        shortDescription,
+        instructions,
+        primaryMuscleId,
+        equipmentId,
+        imageUrl,
+        videoUrl,
+      ];
 }

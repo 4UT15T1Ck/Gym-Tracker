@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
+import 'package:gym_tracker/common/utils/workout_start_guard.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
 import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/common/widgets/tap_scale.dart';
-import 'package:gym_tracker/features/shell/bloc/shell_active_workout_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_home_cubit.dart';
 
 class WorkoutHomeScreen extends StatelessWidget {
   const WorkoutHomeScreen({super.key});
+
   static const _bgColor = Color(0xFF080A0F);
   static const _cardColor = Color(0xFF151A23);
   static const _mutedText = Color(0xFF8C94A5);
@@ -54,13 +55,13 @@ class WorkoutHomeScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () async {
-                      final id = await context
-                          .read<WorkoutHomeCubit>()
-                          .startEmptyWorkout();
-                      if (context.mounted) {
-                        context.read<ShellActiveWorkoutCubit>().refreshNow();
-                      }
-                      if (!context.mounted) return;
+                      final id = await guardedStartWorkout(
+                        context,
+                        onStart: () => context
+                            .read<WorkoutHomeCubit>()
+                            .startEmptyWorkout(),
+                      );
+                      if (!context.mounted || id == null) return;
                       Navigator.of(context).pushNamed(
                         Routes.activeWorkout,
                         arguments: ActiveWorkoutRouteArgs(workoutId: id),
@@ -97,8 +98,9 @@ class WorkoutHomeScreen extends StatelessWidget {
                           await Navigator.of(
                             context,
                           ).pushNamed(Routes.createRoutine);
-                          if (context.mounted)
+                          if (context.mounted) {
                             context.read<WorkoutHomeCubit>().load();
+                          }
                         },
                         icon: const Icon(Icons.add, size: 22),
                       ),
@@ -127,8 +129,9 @@ class WorkoutHomeScreen extends StatelessWidget {
                             await Navigator.of(
                               context,
                             ).pushNamed(Routes.createRoutine);
-                            if (context.mounted)
+                            if (context.mounted) {
                               context.read<WorkoutHomeCubit>().load();
+                            }
                           },
                           icon: const Icon(Icons.edit_note, size: 22),
                           label: const Text('New Routine'),
@@ -390,15 +393,13 @@ class WorkoutHomeScreen extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () async {
-                                final id = await context
-                                    .read<WorkoutHomeCubit>()
-                                    .startRoutine(routine);
-                                if (context.mounted) {
-                                  context
-                                      .read<ShellActiveWorkoutCubit>()
-                                      .refreshNow();
-                                }
-                                if (!context.mounted) return;
+                                final id = await guardedStartWorkout(
+                                  context,
+                                  onStart: () => context
+                                      .read<WorkoutHomeCubit>()
+                                      .startRoutine(routine),
+                                );
+                                if (!context.mounted || id == null) return;
                                 Navigator.of(context).pushNamed(
                                   Routes.activeWorkout,
                                   arguments: ActiveWorkoutRouteArgs(

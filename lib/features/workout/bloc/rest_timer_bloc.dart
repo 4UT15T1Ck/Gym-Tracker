@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/core/services/notification_service.dart';
+import 'package:injectable/injectable.dart';
 import 'package:vibration/vibration.dart';
 
 // --- Events ---
@@ -32,7 +32,13 @@ class StartRestTimer extends RestTimerEvent {
   });
 
   @override
-  List<Object?> get props => [workoutId, workoutExerciseId, totalSeconds, nextExercise, nextSet];
+  List<Object?> get props => [
+        workoutId,
+        workoutExerciseId,
+        totalSeconds,
+        nextExercise,
+        nextSet,
+      ];
 }
 
 class TickRestTimer extends RestTimerEvent {
@@ -76,6 +82,7 @@ class RestTimerRunning extends RestTimerState {
   final int nextSet;
   final String workoutId;
   final String workoutExerciseId;
+  final DateTime restEndsAt;
 
   const RestTimerRunning({
     required this.secondsRemaining,
@@ -84,38 +91,45 @@ class RestTimerRunning extends RestTimerState {
     required this.nextSet,
     required this.workoutId,
     required this.workoutExerciseId,
+    required this.restEndsAt,
   });
 
   @override
-  List<Object?> get props =>
-      [secondsRemaining, totalSeconds, nextExercise, nextSet, workoutId, workoutExerciseId];
+  List<Object?> get props => [
+        secondsRemaining,
+        totalSeconds,
+        nextExercise,
+        nextSet,
+        workoutId,
+        workoutExerciseId,
+        restEndsAt,
+      ];
 }
+
+enum RestTimerFinishReason { natural, skipped }
 
 class RestTimerFinished extends RestTimerState {
-  const RestTimerFinished();
+  final RestTimerFinishReason reason;
+
+  const RestTimerFinished(this.reason);
+
+  @override
+  List<Object?> get props => [reason];
 }
 
-/// Cancels in-app rest ticker + scheduled rest notification (for shell discard, etc.) without importing GetIt in shell.
-void cancelRestTimerFromGetIt() {
-  final g = GetIt.instance;
-  if (g.isRegistered<RestTimerBloc>()) {
-    g<RestTimerBloc>().add(const CancelRestTimer());
-  }
+class RestTimerCancelled extends RestTimerState {
+  const RestTimerCancelled();
 }
 
 /// In-app rest countdown; OS notification fires at scheduled end only.
+@lazySingleton
 class RestTimerBloc extends Bloc<RestTimerEvent, RestTimerState> {
-  RestTimerBloc(
-    this._notifications, {
-    required void Function(DateTime restEndsAt, String workoutExerciseId) onApplyRest,
-    required void Function() onCompleteSkipped,
-    required void Function() onCompleteNaturally,
-    required void Function() onClearWithoutSkip,
-  })  : _onApplyRest = onApplyRest,
-        _onCompleteSkipped = onCompleteSkipped,
-        _onCompleteNaturally = onCompleteNaturally,
-        _onClearWithoutSkip = onClearWithoutSkip,
-        super(const RestTimerIdle()) {
+  final NotificationService _notifications;
+  Timer? _ticker;
+
+  static const int _minRemainingSeconds = 5;
+
+  RestTimerBloc(this._notifications) : super(const RestTimerIdle()) {
     on<StartRestTimer>(_onStart);
     on<TickRestTimer>(_onTick);
     on<SkipRestTimer>(_onSkip);
@@ -123,22 +137,15 @@ class RestTimerBloc extends Bloc<RestTimerEvent, RestTimerState> {
     on<CancelRestTimer>(_onCancel);
   }
 
-  final NotificationService _notifications;
-  final void Function(DateTime restEndsAt, String workoutExerciseId) _onApplyRest;
-  final void Function() _onCompleteSkipped;
-  final void Function() _onCompleteNaturally;
-  final void Function() _onClearWithoutSkip;
-
-  Timer? _ticker;
-
-  static const int _minRemainingSeconds = 5;
-
   void _cancelTicker() {
     _ticker?.cancel();
     _ticker = null;
   }
 
-  Future<void> _onStart(StartRestTimer event, Emitter<RestTimerState> emit) async {
+  Future<void> _onStart(
+    StartRestTimer event,
+    Emitter<RestTimerState> emit,
+  ) async {
     _cancelTicker();
     await _notifications.cancelRestEnd();
 
@@ -155,8 +162,6 @@ class RestTimerBloc extends Bloc<RestTimerEvent, RestTimerState> {
     );
 
     final endsAt = DateTime.now().add(Duration(seconds: event.totalSeconds));
-    _onApplyRest(endsAt, event.workoutExerciseId);
-
     emit(
       RestTimerRunning(
         secondsRemaining: event.totalSeconds,
@@ -165,13 +170,20 @@ class RestTimerBloc extends Bloc<RestTimerEvent, RestTimerState> {
         nextSet: event.nextSet,
         workoutId: event.workoutId,
         workoutExerciseId: event.workoutExerciseId,
+        restEndsAt: endsAt,
       ),
     );
 
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => add(const TickRestTimer()));
+    _ticker = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => add(const TickRestTimer()),
+    );
   }
 
-  Future<void> _onTick(TickRestTimer event, Emitter<RestTimerState> emit) async {
+  Future<void> _onTick(
+    TickRestTimer event,
+    Emitter<RestTimerState> emit,
+  ) async {
     final current = state;
     if (current is! RestTimerRunning) return;
 
@@ -179,10 +191,9 @@ class RestTimerBloc extends Bloc<RestTimerEvent, RestTimerState> {
     if (next <= 0) {
       _cancelTicker();
       await _notifications.cancelRestEnd();
-      _onCompleteNaturally();
       await _notifications.showRestEnded(workoutId: current.workoutId);
       await _playRestEndedFeedback();
-      emit(const RestTimerFinished());
+      emit(const RestTimerFinished(RestTimerFinishReason.natural));
       emit(const RestTimerIdle());
       return;
     }
@@ -195,22 +206,34 @@ class RestTimerBloc extends Bloc<RestTimerEvent, RestTimerState> {
         nextSet: current.nextSet,
         workoutId: current.workoutId,
         workoutExerciseId: current.workoutExerciseId,
+        restEndsAt: current.restEndsAt,
       ),
     );
   }
 
-  Future<void> _onSkip(SkipRestTimer event, Emitter<RestTimerState> emit) async {
+  Future<void> _onSkip(
+    SkipRestTimer event,
+    Emitter<RestTimerState> emit,
+  ) async {
+    final wasRunning = state is RestTimerRunning;
     _cancelTicker();
     await _notifications.cancelRestEnd();
-    _onCompleteSkipped();
+    if (wasRunning) {
+      emit(const RestTimerFinished(RestTimerFinishReason.skipped));
+    }
     emit(const RestTimerIdle());
   }
 
-  Future<void> _onAdjust(AdjustRestTimer event, Emitter<RestTimerState> emit) async {
+  Future<void> _onAdjust(
+    AdjustRestTimer event,
+    Emitter<RestTimerState> emit,
+  ) async {
     final current = state;
     if (current is! RestTimerRunning) return;
 
-    final adjusted = (current.secondsRemaining + event.deltaSeconds).clamp(_minRemainingSeconds, 86400);
+    final adjusted = (current.secondsRemaining + event.deltaSeconds)
+        .clamp(_minRemainingSeconds, 86400)
+        .toInt();
     if (adjusted == current.secondsRemaining) return;
 
     await _notifications.cancelRestEnd();
@@ -222,8 +245,6 @@ class RestTimerBloc extends Bloc<RestTimerEvent, RestTimerState> {
     );
 
     final endsAt = DateTime.now().add(Duration(seconds: adjusted));
-    _onApplyRest(endsAt, current.workoutExerciseId);
-
     emit(
       RestTimerRunning(
         secondsRemaining: adjusted,
@@ -232,14 +253,18 @@ class RestTimerBloc extends Bloc<RestTimerEvent, RestTimerState> {
         nextSet: current.nextSet,
         workoutId: current.workoutId,
         workoutExerciseId: current.workoutExerciseId,
+        restEndsAt: endsAt,
       ),
     );
   }
 
-  Future<void> _onCancel(CancelRestTimer event, Emitter<RestTimerState> emit) async {
+  Future<void> _onCancel(
+    CancelRestTimer event,
+    Emitter<RestTimerState> emit,
+  ) async {
     _cancelTicker();
     await _notifications.cancelRestEnd();
-    _onClearWithoutSkip();
+    emit(const RestTimerCancelled());
     emit(const RestTimerIdle());
   }
 

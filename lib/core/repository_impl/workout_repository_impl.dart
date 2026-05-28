@@ -13,8 +13,11 @@ import 'package:gym_tracker/core/models/workout_set_model.dart';
 import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:gym_tracker/core/repositories/workout_repository.dart';
 import 'package:injectable/injectable.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
+
+const int _defaultWorkoutSetReps = 10;
 
 @LazySingleton(as: WorkoutRepository)
 class WorkoutRepositoryImpl implements WorkoutRepository {
@@ -26,6 +29,7 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   final ExerciseDao _exerciseDao;
   final Database _db;
   final Uuid _uuid;
+  final BehaviorSubject<WorkoutDetail?> _activeWorkoutSubject;
 
   WorkoutRepositoryImpl(
     this._workoutDao,
@@ -36,11 +40,19 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     this._exerciseDao,
     this._db,
     this._uuid,
-  );
+  ) : _activeWorkoutSubject = BehaviorSubject<WorkoutDetail?>.seeded(null);
+
+  @override
+  Stream<WorkoutDetail?> get activeWorkoutChanges => _activeWorkoutSubject.stream;
 
   @override
   Future<WorkoutDetail> startWorkout({required String name, String? routineId}) async {
-    return await _db.transaction((txn) async {
+    final detail = await _db.transaction((txn) async {
+      final activeWorkout = await _workoutDao.getActive(txn);
+      if (activeWorkout != null) {
+        throw StateError('An active workout is already in progress.');
+      }
+
       final workoutId = _uuid.v4();
       final workout = Workout(
         id: workoutId,
@@ -126,6 +138,8 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         exercises: exerciseDetails,
       );
     });
+    _activeWorkoutSubject.add(detail);
+    return detail;
   }
 
   @override
@@ -177,7 +191,25 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
 
   @override
   Future<Workout> completeWorkout(String workoutId) async {
-    return await _db.transaction((txn) async {
+    final workout = await _db.transaction((txn) async {
+      final workoutExercises = await _workoutExerciseDao.getByWorkoutId(
+        workoutId,
+        txn,
+      );
+      final workoutExerciseIds = workoutExercises.map((we) => we.id).toList();
+      final sets = await _workoutSetDao.getByWorkoutExerciseIds(
+        workoutExerciseIds,
+        txn,
+      );
+      final hasInvalidCompletedSet = sets.any(
+        (set) => set.isCompleted && !_hasValidWeightAndReps(set),
+      );
+      if (hasInvalidCompletedSet) {
+        throw StateError(
+          'Completed sets must have weight and reps greater than 0.',
+        );
+      }
+
       final endTime = DateTime.now();
       await _workoutDao.updateStatus(workoutId, WorkoutStatus.completed, txn);
       await _workoutDao.updateEndTime(workoutId, endTime, txn);
@@ -187,6 +219,8 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       }
       return workout;
     });
+    _activeWorkoutSubject.add(null);
+    return workout;
   }
 
   @override
@@ -195,6 +229,7 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       await _workoutDao.updateStatus(workoutId, WorkoutStatus.cancelled, txn);
       await _workoutDao.updateEndTime(workoutId, DateTime.now(), txn);
     });
+    _activeWorkoutSubject.add(null);
   }
 
   @override
@@ -230,16 +265,30 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<List<({String workoutId, String exerciseId, String primaryMuscleId})>> getWorkoutMuscleGroups(
+    List<String> workoutIds,
+  ) async {
+    return await _workoutDao.getWorkoutMuscleGroups(workoutIds);
+  }
+
+  @override
   Future<Workout> updateWorkoutMeta({
     required String workoutId,
     String? name,
     String? notes,
+    bool clearNotes = false,
   }) async {
-    await _workoutDao.updateMeta(id: workoutId, name: name, notes: notes);
+    await _workoutDao.updateMeta(
+      id: workoutId,
+      name: name,
+      notes: notes,
+      clearNotes: clearNotes,
+    );
     final workout = await _workoutDao.getById(workoutId);
     if (workout == null) {
       throw Exception('Workout not found: $workoutId');
     }
+    await _notifyActiveWorkoutChanged(workoutId);
     return workout;
   }
 
@@ -249,7 +298,7 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     required String exerciseId,
     int? restSeconds,
   }) async {
-    return await _db.transaction((txn) async {
+    final workoutExercise = await _db.transaction((txn) async {
       final maxOrder = await _workoutExerciseDao.getMaxOrder(workoutId, txn);
       final weId = _uuid.v4();
       final workoutExercise = WorkoutExercise(
@@ -262,6 +311,8 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       await _workoutExerciseDao.insert(workoutExercise, txn);
       return workoutExercise;
     });
+    await _notifyActiveWorkoutChanged(workoutId);
+    return workoutExercise;
   }
 
   @override
@@ -278,17 +329,22 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         await _workoutExerciseDao.updateOrder(id, index, txn);
       }
     });
+    await _notifyActiveWorkoutChanged(workoutId);
   }
 
   @override
   Future<void> removeExerciseFromWorkout(String workoutExerciseId) async {
-    await _db.transaction((txn) async {
+    final workoutId = await _db.transaction<String?>((txn) async {
       final workoutExercise = await _workoutExerciseDao.getById(workoutExerciseId, txn);
-      if (workoutExercise == null) return;
+      if (workoutExercise == null) return null;
       await _workoutExerciseDao.delete(workoutExerciseId, txn);
       final newVolume = await _workoutSetDao.computeVolume(workoutExercise.workoutId, txn);
       await _workoutDao.updateVolume(workoutExercise.workoutId, newVolume, txn);
+      return workoutExercise.workoutId;
     });
+    if (workoutId != null) {
+      await _notifyActiveWorkoutChanged(workoutId);
+    }
   }
 
   @override
@@ -296,24 +352,47 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     required String workoutExerciseId,
     SetType setType = SetType.working,
   }) async {
-    return await _db.transaction((txn) async {
-      final maxOrder = await _workoutSetDao.getMaxOrder(workoutExerciseId, txn);
-      final wsId = _uuid.v4();
-      final workoutSet = WorkoutSet(
-        id: wsId,
-        workoutExerciseId: workoutExerciseId,
-        setType: setType,
-        order: maxOrder + 1,
-        isCompleted: false,
-      );
-      await _workoutSetDao.insert(workoutSet, txn);
-      return workoutSet;
-    });
+    final result = await _db.transaction<({WorkoutSet set, String workoutId})>(
+      (txn) async {
+        final workoutExercise = await _workoutExerciseDao.getById(
+          workoutExerciseId,
+          txn,
+        );
+        if (workoutExercise == null) {
+          throw Exception('Workout exercise not found: $workoutExerciseId');
+        }
+        final maxOrder = await _workoutSetDao.getMaxOrder(
+          workoutExerciseId,
+          txn,
+        );
+        final previousSet = await _workoutSetDao.getLastByWorkoutExerciseId(
+          workoutExerciseId,
+          txn,
+        );
+        final previousWeight = previousSet?.weight;
+        final wsId = _uuid.v4();
+        final workoutSet = WorkoutSet(
+          id: wsId,
+          workoutExerciseId: workoutExerciseId,
+          setType: setType,
+          weight: previousWeight != null && previousWeight > 0
+              ? previousWeight
+              : null,
+          reps: _defaultWorkoutSetReps,
+          order: maxOrder + 1,
+          isCompleted: false,
+        );
+        await _workoutSetDao.insert(workoutSet, txn);
+        return (set: workoutSet, workoutId: workoutExercise.workoutId);
+      },
+    );
+    await _notifyActiveWorkoutChanged(result.workoutId);
+    return result.set;
   }
 
   @override
   Future<WorkoutSet> updateSet(WorkoutSet set) async {
-    return await _db.transaction((txn) async {
+    final result = await _db.transaction<({WorkoutSet set, String? workoutId})>((txn) async {
       await _workoutSetDao.update(set, txn);
       // Recalculate volume so it stays in sync after weight/reps edits.
       final we = await _workoutExerciseDao.getById(set.workoutExerciseId, txn);
@@ -321,16 +400,26 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         final newVolume = await _workoutSetDao.computeVolume(we.workoutId, txn);
         await _workoutDao.updateVolume(we.workoutId, newVolume, txn);
       }
-      return set;
+      return (set: set, workoutId: we?.workoutId);
     });
+    if (result.workoutId != null) {
+      await _notifyActiveWorkoutChanged(result.workoutId!);
+    }
+    return result.set;
   }
 
   @override
   Future<({WorkoutSet set, double newVolume})> completeSet(String setId) async {
-    return await _db.transaction((txn) async {
+    String? workoutId;
+    final result = await _db.transaction((txn) async {
       final set = await _workoutSetDao.getById(setId, txn);
       if (set == null) {
         throw Exception('Set not found: $setId');
+      }
+      if (!_hasValidWeightAndReps(set)) {
+        throw StateError(
+          'Weight and reps must be greater than 0 before completing a set.',
+        );
       }
 
       final updatedSet = WorkoutSet(
@@ -352,18 +441,29 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       if (workoutExercise == null) {
         throw Exception('Workout exercise not found');
       }
-      final workoutId = workoutExercise.workoutId;
+      workoutId = workoutExercise.workoutId;
 
-      final newVolume = await _workoutSetDao.computeVolume(workoutId, txn);
-      await _workoutDao.updateVolume(workoutId, newVolume, txn);
+      final newVolume = await _workoutSetDao.computeVolume(workoutId!, txn);
+      await _workoutDao.updateVolume(workoutId!, newVolume, txn);
 
       return (set: updatedSet, newVolume: newVolume);
     });
+    if (workoutId != null) {
+      await _notifyActiveWorkoutChanged(workoutId!);
+    }
+    return result;
+  }
+
+  static bool _hasValidWeightAndReps(WorkoutSet set) {
+    final weight = set.weight;
+    final reps = set.reps;
+    return weight != null && weight > 0 && reps != null && reps > 0;
   }
 
   @override
   Future<({WorkoutSet set, double newVolume})> uncompleteSet(String setId) async {
-    return await _db.transaction((txn) async {
+    String? workoutId;
+    final result = await _db.transaction((txn) async {
       final set = await _workoutSetDao.getById(setId, txn);
       if (set == null) {
         throw Exception('Set not found: $setId');
@@ -388,18 +488,23 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       if (workoutExercise == null) {
         throw Exception('Workout exercise not found');
       }
-      final workoutId = workoutExercise.workoutId;
+      workoutId = workoutExercise.workoutId;
 
-      final newVolume = await _workoutSetDao.computeVolume(workoutId, txn);
-      await _workoutDao.updateVolume(workoutId, newVolume, txn);
+      final newVolume = await _workoutSetDao.computeVolume(workoutId!, txn);
+      await _workoutDao.updateVolume(workoutId!, newVolume, txn);
 
       return (set: updatedSet, newVolume: newVolume);
     });
+    if (workoutId != null) {
+      await _notifyActiveWorkoutChanged(workoutId!);
+    }
+    return result;
   }
 
   @override
   Future<double> removeSet(String setId) async {
-    return await _db.transaction((txn) async {
+    String? workoutId;
+    final newVolume = await _db.transaction((txn) async {
       final set = await _workoutSetDao.getById(setId, txn);
       if (set == null) {
         throw Exception('Set not found: $setId');
@@ -409,14 +514,18 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       if (workoutExercise == null) {
         throw Exception('Workout exercise not found');
       }
-      final workoutId = workoutExercise.workoutId;
+      workoutId = workoutExercise.workoutId;
 
       await _workoutSetDao.delete(setId, txn);
 
-      final newVolume = await _workoutSetDao.computeVolume(workoutId, txn);
-      await _workoutDao.updateVolume(workoutId, newVolume, txn);
+      final newVolume = await _workoutSetDao.computeVolume(workoutId!, txn);
+      await _workoutDao.updateVolume(workoutId!, newVolume, txn);
       return newVolume;
     });
+    if (workoutId != null) {
+      await _notifyActiveWorkoutChanged(workoutId!);
+    }
+    return newVolume;
   }
 
   @override
@@ -424,7 +533,8 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     required String workoutExerciseId,
     required List<String> orderedIds,
   }) async {
-    await _db.transaction((txn) async {
+    final workoutId = await _db.transaction<String?>((txn) async {
+      final workoutExercise = await _workoutExerciseDao.getById(workoutExerciseId, txn);
       // Two-pass: avoid unique constraint violation on (workout_exercise_id, order).
       for (final (index, id) in orderedIds.indexed) {
         await _workoutSetDao.updateOrder(id, -(index + 1), txn);
@@ -432,11 +542,26 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       for (final (index, id) in orderedIds.indexed) {
         await _workoutSetDao.updateOrder(id, index, txn);
       }
+      return workoutExercise?.workoutId;
     });
+    if (workoutId != null) {
+      await _notifyActiveWorkoutChanged(workoutId);
+    }
   }
 
   @override
   Future<DateTime?> getLastCompletedSetTime(String workoutExerciseId) async {
     return await _workoutSetDao.getLastCompletedAt(workoutExerciseId);
+  }
+
+  Future<void> _notifyActiveWorkoutChanged(String workoutId) async {
+    final active = await getActiveWorkout();
+    if (active == null) {
+      _activeWorkoutSubject.add(null);
+      return;
+    }
+    if (active.workout.id == workoutId) {
+      _activeWorkoutSubject.add(active);
+    }
   }
 }

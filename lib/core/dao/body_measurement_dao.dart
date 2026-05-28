@@ -2,7 +2,7 @@ import 'package:gym_tracker/core/models/body_measure_entry_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 
-@Injectable()
+@lazySingleton
 class BodyMeasurementDao {
   final Database _db;
 
@@ -30,7 +30,7 @@ class BodyMeasurementDao {
     await db.insert(
       BodyMeasureEntry.tableName,
       entry.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 

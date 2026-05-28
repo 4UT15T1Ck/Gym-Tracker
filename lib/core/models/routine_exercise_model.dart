@@ -1,4 +1,6 @@
-class RoutineExercise {
+import 'package:equatable/equatable.dart';
+
+class RoutineExercise extends Equatable {
   static const String tableName = 'routine_exercises';
   static const String columnId = 'id';
   static const String columnRoutineId = 'routine_id';
@@ -12,7 +14,7 @@ class RoutineExercise {
   final int order;
   final int? targetRestSeconds;
 
-  RoutineExercise({
+  const RoutineExercise({
     required this.id,
     required this.routineId,
     required this.exerciseId,
@@ -35,4 +37,13 @@ class RoutineExercise {
     order: map[columnOrder] as int,
     targetRestSeconds: map[columnTargetRestSeconds] as int?,
   );
+
+  @override
+  List<Object?> get props => [
+        id,
+        routineId,
+        exerciseId,
+        order,
+        targetRestSeconds,
+      ];
 }

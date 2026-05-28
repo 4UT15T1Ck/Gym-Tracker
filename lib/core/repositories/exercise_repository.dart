@@ -26,4 +26,6 @@ abstract class ExerciseRepository {
 
   /// Returns the top [limit] personal records across all exercises.
   Future<List<PersonalRecordSummary>> getTopPersonalRecords({int limit = 3});
+
+  Future<Map<String, String>> getPreviousSetLabels(List<String> exerciseIds);
 }

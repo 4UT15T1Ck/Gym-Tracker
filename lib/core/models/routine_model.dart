@@ -1,4 +1,6 @@
-class Routine {
+import 'package:equatable/equatable.dart';
+
+class Routine extends Equatable {
   static const String tableName = 'routines';
   static const String columnId = 'id';
   static const String columnName = 'name';
@@ -8,7 +10,7 @@ class Routine {
   final String name;
   final String? notes;
 
-  Routine({required this.id, required this.name, this.notes});
+  const Routine({required this.id, required this.name, this.notes});
 
   Map<String, dynamic> toMap() => {
     columnId: id,
@@ -21,4 +23,7 @@ class Routine {
     name: map[columnName] as String,
     notes: map[columnNotes] as String?,
   );
+
+  @override
+  List<Object?> get props => [id, name, notes];
 }

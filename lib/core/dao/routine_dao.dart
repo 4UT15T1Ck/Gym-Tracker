@@ -2,7 +2,7 @@ import 'package:gym_tracker/core/models/routine_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 
-@injectable
+@lazySingleton
 class RoutineDao {
   final Database _db;
 
@@ -31,7 +31,7 @@ class RoutineDao {
     await db.insert(
       Routine.tableName,
       routine.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
     return routine.id;
   }

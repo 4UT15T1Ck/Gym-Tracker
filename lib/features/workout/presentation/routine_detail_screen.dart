@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
+import 'package:gym_tracker/common/utils/workout_start_guard.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
 import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
-import 'package:gym_tracker/features/shell/bloc/shell_active_workout_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/routine_detail_cubit.dart';
 
 class RoutineDetailScreen extends StatelessWidget {
   const RoutineDetailScreen({super.key});
+
   static const _bgColor = Color(0xFF080A0F);
   static const _cardColor = Color(0xFF151A23);
   static const _mutedText = Color(0xFF8C94A5);
@@ -174,17 +175,13 @@ class RoutineDetailScreen extends StatelessWidget {
                             onPressed: state.isLoading
                                 ? null
                                 : () async {
-                                    final id = await context
-                                        .read<RoutineDetailCubit>()
-                                        .startWorkoutFromCurrentRoutine();
-                                    if (context.mounted) {
-                                      context
-                                          .read<ShellActiveWorkoutCubit>()
-                                          .refreshNow();
-                                    }
-                                    if (!context.mounted || id == null) {
-                                      return;
-                                    }
+                                    final id = await guardedStartWorkout(
+                                      context,
+                                      onStart: () => context
+                                          .read<RoutineDetailCubit>()
+                                          .startWorkoutFromCurrentRoutine(),
+                                    );
+                                    if (!context.mounted || id == null) return;
                                     Navigator.of(context).pushNamed(
                                       Routes.activeWorkout,
                                       arguments: ActiveWorkoutRouteArgs(
@@ -220,7 +217,7 @@ class RoutineDetailScreen extends StatelessWidget {
                           'Exercises (${detail.exercises.length})',
                           style: theme.textTheme.titleLarge?.copyWith(
                             color: _mutedText,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -247,10 +244,10 @@ class RoutineDetailScreen extends StatelessWidget {
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
                                 color: _cardColor,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(10),
+                                padding: const EdgeInsets.all(12),
                                 child: Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
@@ -260,7 +257,7 @@ class RoutineDetailScreen extends StatelessWidget {
                                       style: theme.textTheme.titleLarge
                                           ?.copyWith(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.w600,
+                                            fontWeight: FontWeight.w700,
                                           ),
                                     ),
                                     const SizedBox(height: 4),

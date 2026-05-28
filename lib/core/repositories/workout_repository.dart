@@ -5,6 +5,8 @@ import 'package:gym_tracker/core/models/workout_set_model.dart';
 import 'package:gym_tracker/core/repositories/repository_models.dart';
 
 abstract class WorkoutRepository {
+  Stream<WorkoutDetail?> get activeWorkoutChanges;
+
   Future<WorkoutDetail> startWorkout({required String name, String? routineId});
 
   Future<WorkoutDetail?> getActiveWorkout();
@@ -22,10 +24,15 @@ abstract class WorkoutRepository {
     DateTime? to,
   });
 
+  Future<List<({String workoutId, String exerciseId, String primaryMuscleId})>> getWorkoutMuscleGroups(
+    List<String> workoutIds,
+  );
+
   Future<Workout> updateWorkoutMeta({
     required String workoutId,
     String? name,
     String? notes,
+    bool clearNotes = false,
   });
 
   Future<WorkoutExercise> addExerciseToWorkout({

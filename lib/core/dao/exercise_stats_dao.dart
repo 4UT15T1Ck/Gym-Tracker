@@ -7,7 +7,7 @@ import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 
-@injectable
+@lazySingleton
 class ExerciseStatsDao {
   final Database _db;
 
@@ -133,21 +133,71 @@ class ExerciseStatsDao {
   /// ordered by most recently achieved.
   Future<List<Map<String, dynamic>>> getTopPersonalRecords({int limit = 3}) async {
     return await _db.rawQuery('''
-      SELECT e.${Exercise.columnName} as exercise_name,
-             MAX(ws.${WorkoutSet.columnWeight} * COALESCE(ws.${WorkoutSet.columnReps}, 1)) as best_volume,
-             ws.${WorkoutSet.columnWeight} as weight,
-             ws.${WorkoutSet.columnReps} as reps,
-             ws.${WorkoutSet.columnCompletedAt} as completed_at
-      FROM ${WorkoutSet.tableName} ws
-      JOIN ${WorkoutExercise.tableName} we ON we.${WorkoutExercise.columnId} = ws.${WorkoutSet.columnWorkoutExerciseId}
-      JOIN ${Workout.tableName} w ON w.${Workout.columnId} = we.${WorkoutExercise.columnWorkoutId}
-      JOIN ${Exercise.tableName} e ON e.${Exercise.columnId} = we.${WorkoutExercise.columnExerciseId}
-      WHERE ws.${WorkoutSet.columnIsCompleted} = 1
-        AND ws.${WorkoutSet.columnWeight} IS NOT NULL
-        AND w.${Workout.columnStatus} = ?
-      GROUP BY we.${WorkoutExercise.columnExerciseId}
-      ORDER BY ws.${WorkoutSet.columnCompletedAt} DESC
+      WITH ranked_records AS (
+        SELECT
+          e.${Exercise.columnName} as exercise_name,
+          ws.${WorkoutSet.columnWeight} * COALESCE(ws.${WorkoutSet.columnReps}, 1) as best_volume,
+          ws.${WorkoutSet.columnWeight} as weight,
+          ws.${WorkoutSet.columnReps} as reps,
+          ws.${WorkoutSet.columnCompletedAt} as completed_at,
+          ROW_NUMBER() OVER (
+            PARTITION BY we.${WorkoutExercise.columnExerciseId}
+            ORDER BY
+              ws.${WorkoutSet.columnWeight} * COALESCE(ws.${WorkoutSet.columnReps}, 1) DESC,
+              ws.${WorkoutSet.columnCompletedAt} DESC
+          ) as rn
+        FROM ${WorkoutSet.tableName} ws
+        JOIN ${WorkoutExercise.tableName} we ON we.${WorkoutExercise.columnId} = ws.${WorkoutSet.columnWorkoutExerciseId}
+        JOIN ${Workout.tableName} w ON w.${Workout.columnId} = we.${WorkoutExercise.columnWorkoutId}
+        JOIN ${Exercise.tableName} e ON e.${Exercise.columnId} = we.${WorkoutExercise.columnExerciseId}
+        WHERE ws.${WorkoutSet.columnIsCompleted} = 1
+          AND ws.${WorkoutSet.columnWeight} IS NOT NULL
+          AND w.${Workout.columnStatus} = ?
+      )
+      SELECT exercise_name, best_volume, weight, reps, completed_at
+      FROM ranked_records
+      WHERE rn = 1
+      ORDER BY completed_at DESC
       LIMIT ?
     ''', [WorkoutStatus.completed.dbValue, limit]);
+  }
+
+  Future<Map<String, String>> getPreviousSetLabels(List<String> exerciseIds) async {
+    if (exerciseIds.isEmpty) return {};
+    final placeholders = List.filled(exerciseIds.length, '?').join(',');
+    final maps = await _db.rawQuery('''
+      WITH ranked_sets AS (
+        SELECT
+          we.${WorkoutExercise.columnExerciseId} as exercise_id,
+          ws.${WorkoutSet.columnWeight} as weight,
+          ws.${WorkoutSet.columnReps} as reps,
+          ROW_NUMBER() OVER (
+            PARTITION BY we.${WorkoutExercise.columnExerciseId}
+            ORDER BY
+              ws.${WorkoutSet.columnCompletedAt} DESC,
+              w.${Workout.columnStartTime} DESC,
+              ws."${WorkoutSet.columnOrder}" ASC
+          ) as rn
+        FROM ${WorkoutSet.tableName} ws
+        JOIN ${WorkoutExercise.tableName} we ON we.${WorkoutExercise.columnId} = ws.${WorkoutSet.columnWorkoutExerciseId}
+        JOIN ${Workout.tableName} w ON w.${Workout.columnId} = we.${WorkoutExercise.columnWorkoutId}
+        WHERE we.${WorkoutExercise.columnExerciseId} IN ($placeholders)
+          AND ws.${WorkoutSet.columnIsCompleted} = 1
+          AND w.${Workout.columnStatus} = ?
+      )
+      SELECT exercise_id, weight, reps
+      FROM ranked_sets
+      WHERE rn = 1
+    ''', [...exerciseIds, WorkoutStatus.completed.dbValue]);
+
+    return {
+      for (final map in maps)
+        map['exercise_id'] as String: '${_labelWeight(map['weight'])} kg x ${map['reps'] ?? '-'}',
+    };
+  }
+
+  String _labelWeight(Object? value) {
+    final number = value is num ? value.toDouble() : double.tryParse(value?.toString() ?? '');
+    return number?.toStringAsFixed(1) ?? '-';
   }
 }

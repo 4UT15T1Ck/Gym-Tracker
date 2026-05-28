@@ -3,13 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_tracker/common/routes/routes.dart';
 import 'package:gym_tracker/common/utils/date_formatters.dart';
 import 'package:gym_tracker/common/utils/muscle_group_utils.dart';
+import 'package:gym_tracker/common/utils/workout_start_guard.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
 import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/core/repositories/repository_models.dart';
 import 'package:gym_tracker/core/services/dashboard_service.dart';
 import 'package:gym_tracker/features/home/bloc/home_dashboard_cubit.dart';
-import 'package:gym_tracker/features/shell/bloc/shell_active_workout_cubit.dart';
 
 class HomeDashboardScreen extends StatelessWidget {
   static const _bgColor = Color(0xFF080A0F);
@@ -49,13 +49,12 @@ class HomeDashboardScreen extends StatelessWidget {
                     suggestedRoutineName: summary?.suggestedRoutine?.name,
                     suggestedRoutineReason: summary?.suggestedRoutine?.reason,
                     onStartEmptyWorkout: () async {
-                      final id = await context
-                          .read<HomeDashboardCubit>()
-                          .startEmptyWorkout();
-                      if (context.mounted) {
-                        context.read<ShellActiveWorkoutCubit>().refreshNow();
-                      }
-                      if (!context.mounted) return;
+                      final id = await guardedStartWorkout(
+                        context,
+                        onStart: () =>
+                            context.read<HomeDashboardCubit>().startEmptyWorkout(),
+                      );
+                      if (!context.mounted || id == null) return;
                       Navigator.of(context).pushNamed(
                         Routes.activeWorkout,
                         arguments: ActiveWorkoutRouteArgs(workoutId: id),
@@ -64,14 +63,12 @@ class HomeDashboardScreen extends StatelessWidget {
                     onPickRoutine: summary?.suggestedRoutine == null
                         ? onOpenWorkoutTab
                         : () async {
-                            final id = await context
-                                .read<HomeDashboardCubit>()
-                                .startSuggestedRoutine();
-                            if (context.mounted) {
-                              context
-                                  .read<ShellActiveWorkoutCubit>()
-                                  .refreshNow();
-                            }
+                            final id = await guardedStartWorkout(
+                              context,
+                              onStart: () => context
+                                  .read<HomeDashboardCubit>()
+                                  .startSuggestedRoutine(),
+                            );
                             if (!context.mounted || id == null) return;
                             Navigator.of(context).pushNamed(
                               Routes.activeWorkout,
@@ -654,62 +651,81 @@ class _RecoveryCard extends StatelessWidget {
                       color: HomeDashboardScreen._mutedText,
                     ),
                   )
-                : GridView.builder(
+                : Column(
                     key: ValueKey<String>(
                       'recovery-${source.map((e) => '${e.group}-${e.status.name}-${e.sinceLabel}').join('|')}',
                     ),
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: source.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: source.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           mainAxisSpacing: 12,
                           crossAxisSpacing: 12,
                           childAspectRatio: 2.55,
                         ),
-                    itemBuilder: (context, index) {
-                      final item = source[index];
-                      return Row(
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _recoveryColor(item.status),
+                        itemBuilder: (context, index) {
+                          final item = source[index];
+                          return Center(
+                            child: SizedBox(
+                              width: 128,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _recoveryColor(item.status),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.group,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          _compactSince(item),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: HomeDashboardScreen
+                                                    ._mutedText,
+                                              ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.group,
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _compactSince(item),
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: HomeDashboardScreen._mutedText,
-                                      ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      const _RecoveryLegend(),
+                    ],
                   ),
           ),
         ),
@@ -762,6 +778,62 @@ class _RecoveryCard extends StatelessWidget {
       return '1y ago';
     }
     return '${years}y ago';
+  }
+}
+
+class _RecoveryLegend extends StatelessWidget {
+  const _RecoveryLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 6,
+      children: const [
+        _RecoveryLegendItem(status: RecoveryStatus.fresh, label: 'Fresh'),
+        _RecoveryLegendItem(status: RecoveryStatus.ready, label: 'Ready'),
+        _RecoveryLegendItem(
+          status: RecoveryStatus.recovering,
+          label: 'Recovering',
+        ),
+        _RecoveryLegendItem(status: RecoveryStatus.sore, label: 'Sore'),
+      ],
+    );
+  }
+}
+
+class _RecoveryLegendItem extends StatelessWidget {
+  final RecoveryStatus status;
+  final String label;
+
+  const _RecoveryLegendItem({
+    required this.status,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _recoveryColor(status),
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: HomeDashboardScreen._mutedText,
+          ),
+        ),
+      ],
+    );
   }
 }
 
