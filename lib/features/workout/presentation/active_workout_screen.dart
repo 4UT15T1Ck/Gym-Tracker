@@ -8,6 +8,7 @@ import 'package:gym_tracker/common/utils/date_formatters.dart';
 import 'package:gym_tracker/common/widgets/app_haptics.dart';
 import 'package:gym_tracker/common/widgets/motion_tokens.dart';
 import 'package:gym_tracker/common/widgets/success_pulse_overlay.dart';
+import 'package:gym_tracker/common/widgets/tap_scale.dart';
 import 'package:gym_tracker/core/enums/set_type_enum.dart';
 import 'package:gym_tracker/core/models/exercise_model.dart';
 import 'package:gym_tracker/core/models/workout_set_model.dart';
@@ -19,18 +20,45 @@ import 'package:gym_tracker/features/workout/bloc/active_workout_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/rest_timer_bloc.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_home_cubit.dart';
 
-final TextInputFormatter _weightInputFormatter = TextInputFormatter.withFunction(
-  (oldValue, newValue) {
-    final text = newValue.text;
-    if (text.isEmpty || RegExp(r'^\d{1,3}(\.\d{0,1})?$').hasMatch(text)) {
-      return newValue;
-    }
-    return oldValue;
-  },
-);
+final TextInputFormatter _weightInputFormatter =
+    TextInputFormatter.withFunction((oldValue, newValue) {
+      final text = newValue.text;
+      if (text.isEmpty || RegExp(r'^\d{1,3}(\.\d{0,1})?$').hasMatch(text)) {
+        return newValue;
+      }
+      return oldValue;
+    });
 
 class ActiveWorkoutScreen extends StatelessWidget {
   const ActiveWorkoutScreen({super.key});
+  static const _bgColor = Color(0xFF080A0F);
+  static const _cardColor = Color(0xFF151A23);
+  static const _mutedText = Color(0xFF8C94A5);
+  static const _accent = Color(0xFF4A8DFF);
+  static const _outline = Color(0xFF283041);
+
+  static AlertDialog _styledDialog({
+    required String title,
+    required String content,
+    required List<Widget> actions,
+  }) {
+    return AlertDialog(
+      backgroundColor: _cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: _outline),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      content: Text(content, style: const TextStyle(color: _mutedText)),
+      actions: actions,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +69,9 @@ class ActiveWorkoutScreen extends StatelessWidget {
       listener: (context, state) async {
         final errorMessage = state.errorMessage;
         if (errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(errorMessage)));
         }
         if (state.didFinish) {
           await AppHaptics.success(context);
@@ -66,7 +94,10 @@ class ActiveWorkoutScreen extends StatelessWidget {
         builder: (context, state) {
           final detail = state.detail;
           return Scaffold(
+            backgroundColor: _bgColor,
             appBar: AppBar(
+              backgroundColor: _bgColor,
+              foregroundColor: Colors.white,
               title: const Text('Log Workout'),
               actions: [
                 TextButton(
@@ -75,18 +106,24 @@ class ActiveWorkoutScreen extends StatelessWidget {
                       : () async {
                           final shouldFinish = await showDialog<bool>(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Finish workout?'),
-                              content: const Text(
-                                'Completed sets will be saved to history.',
-                              ),
+                            builder: (context) => _styledDialog(
+                              title: 'Finish workout?',
+                              content:
+                                  'Completed sets will be saved to history.',
                               actions: [
                                 TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: _mutedText,
+                                  ),
                                   onPressed: () =>
                                       Navigator.of(context).pop(false),
                                   child: const Text('Cancel'),
                                 ),
                                 FilledButton(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: _accent,
+                                    foregroundColor: Colors.white,
+                                  ),
                                   onPressed: () =>
                                       Navigator.of(context).pop(true),
                                   child: const Text('Finish'),
@@ -121,11 +158,19 @@ class ActiveWorkoutScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         detail.workout.name,
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       if (detail.workout.notes?.trim().isNotEmpty == true) ...[
                         const SizedBox(height: 4),
-                        Text(detail.workout.notes!.trim()),
+                        Text(
+                          detail.workout.notes!.trim(),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(color: _mutedText),
+                        ),
                       ],
                       const SizedBox(height: 12),
                       if (detail.exercises.isEmpty)
@@ -146,38 +191,54 @@ class ActiveWorkoutScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      FilledButton.icon(
-                        onPressed: () async {
-                          final selected = await Navigator.of(context)
-                              .pushNamed<List<Exercise>>(
-                                Routes.addExercise,
-                                arguments: const AddExerciseRouteArgs(),
-                              );
-                          if (!context.mounted || selected == null) return;
-                          context.read<ActiveWorkoutCubit>().addExercises(
-                            selected,
-                          );
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Exercise'),
+                      TapScale(
+                        child: FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _cardColor,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size.fromHeight(52),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final selected = await Navigator.of(context)
+                                .pushNamed<List<Exercise>>(
+                                  Routes.addExercise,
+                                  arguments: const AddExerciseRouteArgs(),
+                                );
+                            if (!context.mounted || selected == null) return;
+                            context.read<ActiveWorkoutCubit>().addExercises(
+                              selected,
+                            );
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Exercise'),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         onPressed: () async {
                           final shouldDiscard = await showDialog<bool>(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Discard workout?'),
-                              content: const Text(
-                                'This will discard the current workout and nothing will be saved.',
-                              ),
+                            builder: (context) => _styledDialog(
+                              title: 'Discard workout?',
+                              content:
+                                  'This will discard the current workout and nothing will be saved.',
                               actions: [
                                 TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: _mutedText,
+                                  ),
                                   onPressed: () =>
                                       Navigator.of(context).pop(false),
                                   child: const Text('Keep'),
                                 ),
                                 FilledButton(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                  ),
                                   onPressed: () =>
                                       Navigator.of(context).pop(true),
                                   child: const Text('Discard'),
@@ -186,10 +247,10 @@ class ActiveWorkoutScreen extends StatelessWidget {
                             ),
                           );
                           if (shouldDiscard == true && context.mounted) {
-                            final activeCubit =
-                                context.read<ActiveWorkoutCubit>();
-                            final shellCubit =
-                                context.read<ShellActiveWorkoutCubit>();
+                            final activeCubit = context
+                                .read<ActiveWorkoutCubit>();
+                            final shellCubit = context
+                                .read<ShellActiveWorkoutCubit>();
                             await activeCubit.cancel();
                             if (!context.mounted) return;
                             await shellCubit.refreshNow();
@@ -202,6 +263,11 @@ class ActiveWorkoutScreen extends StatelessWidget {
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Theme.of(context).colorScheme.error,
+                          side: const BorderSide(color: _outline),
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
                         ),
                         icon: const Icon(Icons.delete_outline),
                         label: const Text('Discard Workout'),
@@ -248,7 +314,7 @@ class _RestTimerBottomBar extends StatelessWidget {
         child: Material(
           elevation: 6,
           borderRadius: BorderRadius.circular(14),
-          color: Theme.of(context).colorScheme.surfaceContainerHigh,
+          color: const Color(0xFF1A2230),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
@@ -357,7 +423,12 @@ class _ExerciseBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: ActiveWorkoutScreen._cardColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -369,7 +440,8 @@ class _ExerciseBlock extends StatelessWidget {
                   child: Text(
                     detail.exercise.name,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.lightBlueAccent,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -421,16 +493,23 @@ class _ExerciseBlock extends StatelessWidget {
             ...detail.sets.indexed.map((entry) {
               final index = entry.$1;
               final set = entry.$2;
-              return _SetRow(
-                key: ValueKey(set.id),
-                index: index,
-                set: set,
-                previous: state.previousByExerciseId[detail.exercise.id] ?? '-',
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: _SetRow(
+                  key: ValueKey(set.id),
+                  index: index,
+                  set: set,
+                  previous:
+                      state.previousByExerciseId[detail.exercise.id] ?? '-',
+                ),
               );
             }),
             TextButton.icon(
               onPressed: () => context.read<ActiveWorkoutCubit>().addSet(
                 detail.workoutExercise.id,
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: ActiveWorkoutScreen._accent,
               ),
               icon: const Icon(Icons.add),
               label: const Text('Add Set'),
@@ -668,7 +747,7 @@ class _SetRowState extends State<_SetRow> {
       duration: MotionTokens.resolve(context, MotionTokens.base),
       curve: MotionTokens.standardCurve,
       color: set.isCompleted
-          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.18)
+          ? ActiveWorkoutScreen._accent.withValues(alpha: 0.18)
           : set.setType == SetType.warmUp
           ? Colors.amber.withValues(alpha: 0.12)
           : null,
@@ -698,11 +777,13 @@ class _SetRowState extends State<_SetRow> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              inputFormatters: [
-                _weightInputFormatter,
-                LengthLimitingTextInputFormatter(5),
-              ],
-              decoration: const InputDecoration(isDense: true),
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: Color(0xFF0F141D),
+                border: OutlineInputBorder(),
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -712,11 +793,13 @@ class _SetRowState extends State<_SetRow> {
               controller: _repsController,
               focusNode: _repsFocus,
               keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(3),
-              ],
-              decoration: const InputDecoration(isDense: true),
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: Color(0xFF0F141D),
+                border: OutlineInputBorder(),
+              ),
             ),
           ),
           IconButton(
@@ -754,7 +837,10 @@ class _Stat extends StatelessWidget {
     return Column(
       children: [
         Text(value, style: Theme.of(context).textTheme.titleMedium),
-        Text(label),
+        Text(
+          label,
+          style: const TextStyle(color: ActiveWorkoutScreen._mutedText),
+        ),
       ],
     );
   }

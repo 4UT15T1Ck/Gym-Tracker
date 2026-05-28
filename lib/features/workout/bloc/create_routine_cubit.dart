@@ -21,7 +21,8 @@ DraftRoutineSet _newWorkingSet({double? targetWeight}) {
 class CreateRoutineCubit extends Cubit<CreateRoutineState> {
   final RoutineRepository _routineRepository;
 
-  CreateRoutineCubit(this._routineRepository) : super(const CreateRoutineState());
+  CreateRoutineCubit(this._routineRepository)
+    : super(const CreateRoutineState());
 
   void prepareNew() {
     emit(const CreateRoutineState());
@@ -92,7 +93,10 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
         ? previousWeight
         : null;
     items[exerciseIndex] = exercise.copyWith(
-      sets: [...exercise.sets, _newWorkingSet(targetWeight: inheritedWeight)],
+      sets: [
+        ...exercise.sets,
+        _newWorkingSet(targetWeight: inheritedWeight),
+      ],
     );
     emit(state.copyWith(exercises: items, clearError: true));
   }
@@ -139,7 +143,10 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
       final input = _buildRoutineInput();
       final editingId = state.routineIdBeingEdited;
       if (editingId != null) {
-        await _routineRepository.updateRoutine(routineId: editingId, input: input);
+        await _routineRepository.updateRoutine(
+          routineId: editingId,
+          input: input,
+        );
       } else {
         await _routineRepository.saveRoutine(input);
       }
@@ -152,6 +159,9 @@ class CreateRoutineCubit extends Cubit<CreateRoutineState> {
   String? _validateDraft() {
     if (state.title.trim().isEmpty) {
       return 'Routine title is required';
+    }
+    if (state.exercises.isEmpty) {
+      return 'Routine needs at least one exercise';
     }
     for (final exerciseEntry in state.exercises.indexed) {
       final item = exerciseEntry.$2;
@@ -262,7 +272,15 @@ class CreateRoutineState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [title, notes, exercises, routineIdBeingEdited, isSaving, didSave, errorMessage];
+  List<Object?> get props => [
+    title,
+    notes,
+    exercises,
+    routineIdBeingEdited,
+    isSaving,
+    didSave,
+    errorMessage,
+  ];
 }
 
 class DraftRoutineExercise extends Equatable {

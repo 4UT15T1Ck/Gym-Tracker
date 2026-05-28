@@ -44,7 +44,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
     _workoutId = workoutId;
     final now = DateTime.now();
-    final keepRest = sameWorkout && state.restEndsAt != null && state.restEndsAt!.isAfter(now);
+    final keepRest =
+        sameWorkout &&
+        state.restEndsAt != null &&
+        state.restEndsAt!.isAfter(now);
     if (!keepRest) {
       _restTimerBloc.add(const CancelRestTimer());
     }
@@ -116,7 +119,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       final workoutId = _workoutId;
       if (detail == null || workoutId == null) return;
       final exercises = [...detail.exercises]
-        ..sort((a, b) => a.workoutExercise.order.compareTo(b.workoutExercise.order));
+        ..sort(
+          (a, b) => a.workoutExercise.order.compareTo(b.workoutExercise.order),
+        );
       final index = exercises.indexWhere(
         (item) => item.workoutExercise.id == workoutExerciseId,
       );
@@ -137,7 +142,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   Future<void> removeExercise(String workoutExerciseId) async {
     try {
-      final clearActiveRest = state.activeRestWorkoutExerciseId == workoutExerciseId;
+      final clearActiveRest =
+          state.activeRestWorkoutExerciseId == workoutExerciseId;
       if (clearActiveRest) _restTimerBloc.add(const CancelRestTimer());
       await _workoutRepository.removeExerciseFromWorkout(workoutExerciseId);
       await _refreshImmediate(clearRest: clearActiveRest);
@@ -240,9 +246,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         await _workoutRepository.uncompleteSet(currentSet.id);
         final clearActiveRest =
             state.activeRestWorkoutExerciseId == currentSet.workoutExerciseId;
-        await _refreshImmediate(
-          clearRest: clearActiveRest,
-        );
+        await _refreshImmediate(clearRest: clearActiveRest);
         return;
       }
 
@@ -313,8 +317,16 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     final id = _workoutId;
     if (id == null) return;
     try {
+      final guardError = _finishGuardError();
+      if (guardError != null) {
+        // Re-emit even when message is unchanged so UI snackbar shows every tap.
+        emit(state.copyWith(clearError: true));
+        emit(state.copyWith(errorMessage: guardError));
+        return;
+      }
       final invalidCompletedSet = _firstInvalidCompletedSet();
       if (invalidCompletedSet != null) {
+        emit(state.copyWith(clearError: true));
         emit(
           state.copyWith(
             errorMessage: _setValidationMessage(invalidCompletedSet),
@@ -328,12 +340,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       emit(state.copyWith(isFinishing: true, clearError: true));
       await _workoutRepository.completeWorkout(id);
     } on StateError catch (error) {
-      emit(
-        state.copyWith(
-          isFinishing: false,
-          errorMessage: error.message,
-        ),
-      );
+      emit(state.copyWith(isFinishing: false, errorMessage: error.message));
       return;
     } catch (error) {
       _emitMutationError(error);
@@ -407,10 +414,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           state.restEndsAt == timerState.restEndsAt &&
           state.activeRestWorkoutExerciseId == timerState.workoutExerciseId;
       if (!alreadySynced) {
-        applyRestFromTimer(
-          timerState.restEndsAt,
-          timerState.workoutExerciseId,
-        );
+        applyRestFromTimer(timerState.restEndsAt, timerState.workoutExerciseId);
       }
       return;
     }
@@ -511,6 +515,41 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     return null;
   }
 
+  String? _finishGuardError() {
+    final detail = state.detail;
+    if (detail == null) return 'Workout data is not ready yet.';
+
+    if (detail.exercises.isEmpty) {
+      return 'Workout cannot be saved without exercises.';
+    }
+
+    final completedSets = detail.exercises
+        .expand((exercise) => exercise.sets)
+        .where((set) => set.isCompleted)
+        .toList();
+    if (completedSets.isEmpty) {
+      return 'Workout cannot be saved without any completed sets.';
+    }
+
+    final totalCompletedReps = completedSets.fold<int>(
+      0,
+      (sum, set) => sum + (set.reps ?? 0),
+    );
+    if (totalCompletedReps <= 0) {
+      return 'Workout cannot be saved without any completed reps.';
+    }
+
+    final elapsedSeconds =
+        DateTime.now().difference(detail.workout.startTime).inMilliseconds /
+        1000.0;
+    final minimumRequiredSeconds = totalCompletedReps * 0.5;
+    if (elapsedSeconds < minimumRequiredSeconds) {
+      return 'Workout duration is too short for completed reps. Minimum ${minimumRequiredSeconds.toStringAsFixed(0)}s required.';
+    }
+
+    return null;
+  }
+
   String _setValidationMessage(WorkoutSet targetSet) {
     final detail = state.detail;
     if (detail == null) {
@@ -535,10 +574,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   void _emitMutationError(Object error) {
     emit(
-      state.copyWith(
-        isFinishing: false,
-        errorMessage: _errorMessage(error),
-      ),
+      state.copyWith(isFinishing: false, errorMessage: _errorMessage(error)),
     );
   }
 
@@ -618,25 +654,29 @@ class ActiveWorkoutState extends Equatable {
       detail: detail ?? this.detail,
       previousByExerciseId: previousByExerciseId ?? this.previousByExerciseId,
       restEndsAt: clearRest ? null : restEndsAt ?? this.restEndsAt,
-      activeRestWorkoutExerciseId: clearRest ? null : activeRestWorkoutExerciseId ?? this.activeRestWorkoutExerciseId,
+      activeRestWorkoutExerciseId: clearRest
+          ? null
+          : activeRestWorkoutExerciseId ?? this.activeRestWorkoutExerciseId,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
 
   int get completedSets {
-    final items = detail?.exercises.expand((exercise) => exercise.sets) ?? const Iterable<WorkoutSet>.empty();
+    final items =
+        detail?.exercises.expand((exercise) => exercise.sets) ??
+        const Iterable<WorkoutSet>.empty();
     return items.where((set) => set.isCompleted).length;
   }
 
   @override
   List<Object?> get props => [
-        isLoading,
-        isFinishing,
-        didFinish,
-        detail,
-        previousByExerciseId,
-        restEndsAt,
-        activeRestWorkoutExerciseId,
-        errorMessage,
-      ];
+    isLoading,
+    isFinishing,
+    didFinish,
+    detail,
+    previousByExerciseId,
+    restEndsAt,
+    activeRestWorkoutExerciseId,
+    errorMessage,
+  ];
 }
