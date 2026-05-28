@@ -18,6 +18,11 @@ class MainShellScreen extends StatefulWidget {
 }
 
 class _MainShellScreenState extends State<MainShellScreen> {
+  static const _barBg = Color(0xFF12151D);
+  static const _inactive = Color(0xFF5E646F);
+  static const _active = Color(0xFF4A8DFF);
+  static const _activeBorder = Color(0xFF7A7F89);
+
   int _selectedIndex = 0;
   late final List<Widget> _screens;
 
@@ -55,14 +60,40 @@ class _MainShellScreenState extends State<MainShellScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.grid_view), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.add_circle_outline), label: 'Workout'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),
-        ],
+      bottomNavigationBar: Container(
+        color: _barBg,
+        padding: const EdgeInsets.fromLTRB(4, 2, 4, 6),
+        child: SafeArea(
+          top: false,
+          child: Row(
+            children: [
+              Expanded(
+                child: _TabItem(
+                  icon: Icons.home,
+                  label: 'Home',
+                  active: _selectedIndex == 0,
+                  onTap: () => _onItemTapped(0),
+                ),
+              ),
+              Expanded(
+                child: _TabItem(
+                  icon: Icons.fitness_center,
+                  label: 'Workout',
+                  active: _selectedIndex == 1,
+                  onTap: () => _onItemTapped(1),
+                ),
+              ),
+              Expanded(
+                child: _TabItem(
+                  icon: Icons.person,
+                  label: 'Profile',
+                  active: _selectedIndex == 2,
+                  onTap: () => _onItemTapped(2),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: BlocBuilder<ShellActiveWorkoutCubit, ShellActiveWorkoutState>(
@@ -71,6 +102,56 @@ class _MainShellScreenState extends State<MainShellScreen> {
           return _ActiveWorkoutFab(state: state);
         },
       ),
+    );
+  }
+}
+
+class _TabItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _TabItem({
+    required this.icon,
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const inactive = _MainShellScreenState._inactive;
+    const activeColor = _MainShellScreenState._active;
+    final child = AnimatedContainer(
+      duration: const Duration(milliseconds: 170),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        border: active
+            ? Border.all(color: _MainShellScreenState._activeBorder, width: 1.2)
+            : null,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: active ? activeColor : inactive, size: 26),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: active ? activeColor : inactive,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: child,
     );
   }
 }
@@ -105,11 +186,11 @@ class _ActiveWorkoutFab extends StatelessWidget {
               }
             },
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+              padding: const EdgeInsets.fromLTRB(8, 4, 2, 4),
               child: Row(
                 children: [
                   const Icon(Icons.fitness_center),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
